@@ -1,3 +1,4 @@
+import 'package:crm_app_dv/features/budgets/presentation/budget_list_screen.dart';
 import 'package:crm_app_dv/features/customer/presentation/home_customer.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_page.dart';
 import 'package:crm_app_dv/navigation/controller/main_navigation_controller.dart';
@@ -16,7 +17,8 @@ class MainNavigationScreen extends StatelessWidget {
             index: controller.currentIndex.value,
             children:  [
              HomePageCustomer(),
-             WorkListPage()
+             WorkListPage(),
+             CreateBudgetScreen()
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(

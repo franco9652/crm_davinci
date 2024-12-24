@@ -1,6 +1,7 @@
 
 
 import 'package:crm_app_dv/features/auth/login/presentation/login_page.dart';
+import 'package:crm_app_dv/features/budgets/presentation/budget_list_screen.dart';
 import 'package:crm_app_dv/features/customer/presentation/home_customer.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_page.dart';
 import 'package:crm_app_dv/navigation/main_navigation.dart';
@@ -12,9 +13,10 @@ class AppRoutes {
   static const register = '/register';
   static const mainNavigation = '/main-navigation';
   static const home = '/customers';
-  static const tickets = '/alta-customer';
+  static const altaCustomer = '/alta-customer';
   static const projects = '/projects';
   static const walletHome = '/alta-projects';
+  static const budgets = '/budgets';
   
 
   // Todas las rutas registradas
@@ -23,7 +25,8 @@ class AppRoutes {
     // Páginas principales del BottomNavigationBar
     GetPage(name: login, page: () => LoginPage()),
     GetPage(name: home, page: () => HomePageCustomer()),
-    GetPage(name: projects, page: () => WorkListPage())
+    GetPage(name: projects, page: () => WorkListPage()),
+    GetPage(name: budgets, page: () => CreateBudgetScreen())
    
    // Sub-páginas adicionales
     

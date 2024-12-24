@@ -19,7 +19,9 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchCustomers(); // Cargar clientes al inicializar
+     Future.delayed(Duration.zero, () {
+      fetchCustomers();
+    });
   }
 
   Future<void> fetchCustomers() async {

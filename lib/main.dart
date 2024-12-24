@@ -1,6 +1,9 @@
 import 'package:crm_app_dv/app_routes.dart';
+import 'package:crm_app_dv/core/domain/repositories/budget_repository.dart';
 import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
 import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
+import 'package:crm_app_dv/features/budgets/controllers/budget_controller.dart';
+import 'package:crm_app_dv/features/budgets/data/budget_data_source.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_remote_data_source.dart';
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:crm_app_dv/features/projects/data/works_remote_data_source.dart';
@@ -25,7 +28,11 @@ void main() async{
   Get.put(customerRepository); // Repository
    Get.put(workRemoteDataSource); // Work Remote Data Source
   Get.put(workRepository); // Work Repository
-  Get.lazyPut(() => WorkController(repository: workRepository, customerRepository: customerRepository)); // Work Controller
+  Get.lazyPut(() => WorkController(repository: workRepository,
+   customerRepository: customerRepository)); // Work Controller
+   final dataSource = BudgetDataSource();
+  final repository = BudgetRepository(dataSource);
+  Get.put(BudgetController(repository));
 
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.containsKey('auth_token');

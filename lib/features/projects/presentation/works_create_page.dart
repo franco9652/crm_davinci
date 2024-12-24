@@ -21,8 +21,6 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   final budgetController = TextEditingController();
   final startDateController = TextEditingController();
   final endDateController = TextEditingController();
-  final customerNameController = TextEditingController();
-  final emailCustomerController = TextEditingController();
   final statusWorkController = TextEditingController();
   final workUbicationController = TextEditingController();
   final projectTypeController = TextEditingController();
@@ -35,7 +33,9 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   @override
   void initState() {
     super.initState();
-    customerController.fetchCustomers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      customerController.fetchCustomers();
+    });
   }
 
   Future<void> _selectDate(
@@ -82,8 +82,10 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                     items: customerController.customers.map((customer) {
                       return DropdownMenuItem(
                         value: customer,
-                        child: Text(customer.name,
-                            style: const TextStyle(color: Colors.white)),
+                        child: Text(
+                          customer.name,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       );
                     }).toList(),
                     onChanged: (CustomerModel? value) {
@@ -93,12 +95,35 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                     },
                     decoration: InputDecoration(
                       labelText: 'Seleccionar Cliente',
-                      labelStyle: const TextStyle(color: Colors.white),
+                      labelStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: const Color(0xFF242038),
+                      fillColor: const Color(0xFF242038), // Fondo oscuro
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.grey),
                       ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.blueAccent),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                    ),
+                    dropdownColor:
+                        const Color(0xFF1B1926), // Fondo del menú desplegable
+                    style: const TextStyle(
+                      color: Colors.white, // Color del texto
+                      fontSize: 14, // Tamaño del texto
+                    ),
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.white, // Color del icono
+                    ),
+                    hint: const Text(
+                      'Seleccione un cliente',
+                      style: TextStyle(color: Colors.white38),
                     ),
                   ),
                   const SizedBox(height: 16),
