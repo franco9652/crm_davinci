@@ -51,11 +51,11 @@ class WorkListPage extends StatelessWidget {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF4380FF),
+        heroTag: 'createWork', // Añade un tag único
         onPressed: () {
-          // Navegar hacia el formulario de alta de proyectos
-          Get.to(() => CreateWorkPage());
+          Get.to(() => const CreateWorkPage());
         },
+        backgroundColor: const Color(0xFFFF8329),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

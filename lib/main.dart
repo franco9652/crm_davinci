@@ -15,28 +15,36 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-void main() async{
-   WidgetsFlutterBinding.ensureInitialized();
-    // Inicializamos las dependencias
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializamos las dependencias
   final client = http.Client();
   final customerRemoteDataSource = CustomerRemoteDataSource(client);
   final customerRepository = CustomerRepository(customerRemoteDataSource);
- final workRemoteDataSource = WorkRemoteDataSource(client);
+
+  final workRemoteDataSource = WorkRemoteDataSource(client);
   final workRepository = WorkRepository(workRemoteDataSource);
+
+  final dataSource = BudgetDataSource();
+  final budgetRepository = BudgetRepository(dataSource);
+
   // Registramos las dependencias con Get
   Get.put(customerRemoteDataSource); // Remote Data Source
   Get.put(customerRepository); // Repository
-   Get.put(workRemoteDataSource); // Work Remote Data Source
+  Get.put(workRemoteDataSource); // Work Remote Data Source
   Get.put(workRepository); // Work Repository
-  Get.lazyPut(() => WorkController(repository: workRepository,
-   customerRepository: customerRepository)); // Work Controller
-   final dataSource = BudgetDataSource();
-  final repository = BudgetRepository(dataSource);
-  Get.put(BudgetController(repository));
+  Get.put(BudgetController(budgetRepository)); // Budget Controller
+
+  Get.lazyPut(() => WorkController(
+        customerRepository: customerRepository,
+        workRemoteDataSource: workRemoteDataSource,
+      )); // Work Controller
 
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.containsKey('auth_token');
-  runApp(MyApp(isLoggedIn: isLoggedIn,));
+
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {

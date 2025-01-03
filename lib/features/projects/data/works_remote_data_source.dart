@@ -8,24 +8,23 @@ class WorkRemoteDataSource {
 
   WorkRemoteDataSource(this.client);
 
-Future<List<WorkModel>> getAllWorks(int page, int limit) async {
-  final response = await client.get(
-    Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
-    headers: {'Content-Type': 'application/json'},
-  );
+  Future<List<WorkModel>> getAllWorks(int page, int limit) async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-  if (response.statusCode == 200) {
-    final jsonResponse = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
 
-    List<WorkModel> works = (jsonResponse['works'] as List)
-        .map((data) => WorkModel.fromJson(data))
-        .toList();
-    return works;
-  } else {
-    throw Exception('Error al obtener los proyectos');
+      List<WorkModel> works = (jsonResponse['works'] as List)
+          .map((data) => WorkModel.fromJson(data))
+          .toList();
+      return works;
+    } else {
+      throw Exception('Error al obtener los proyectos');
+    }
   }
-}
-
 
   Future<void> createWork(WorkModel work) async {
     final response = await client.post(
@@ -34,9 +33,52 @@ Future<List<WorkModel>> getAllWorks(int page, int limit) async {
       body: jsonEncode(work.toJson()),
     );
 
-    if (response.statusCode != 201) {
-      throw Exception(
-          'Error al crear el proyecto: ${jsonDecode(response.body)['message']}');
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      // Éxito: No lances excepción, solo imprime el resultado
+      print('Proyecto creado exitosamente: ${response.body}');
+    } else {
+      // Manejo de errores
+      final errorResponse = json.decode(response.body);
+      final errorMessage =
+          errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
+      throw Exception(errorMessage);
+    }
+  }
+
+  Future<List<WorkModel>> getWorksByCustomerId(String customerId) async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/works?customerId=$customerId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return (jsonResponse['works'] as List)
+          .map((data) => WorkModel.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Error al obtener los trabajos del cliente');
+    }
+  }
+
+  Future<List<WorkModel>> fetchAllWorks({int page = 1, int limit = 10}) async {
+    try {
+      final response = await client.get(
+        Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        List<WorkModel> works = (jsonResponse['works'] as List)
+            .map((data) => WorkModel.fromJson(data))
+            .toList();
+        return works;
+      } else {
+        throw Exception('Error al obtener la lista de proyectos');
+      }
+    } catch (e) {
+      throw Exception('Error en fetchAllWorks: $e');
     }
   }
 }

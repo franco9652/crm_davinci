@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -97,7 +99,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       labelText: 'Seleccionar Cliente',
                       labelStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: const Color(0xFF242038), // Fondo oscuro
+                      fillColor: const Color(0xFF242038),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.grey),
@@ -111,15 +113,14 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                         borderSide: const BorderSide(color: Colors.grey),
                       ),
                     ),
-                    dropdownColor:
-                        const Color(0xFF1B1926), // Fondo del menú desplegable
+                    dropdownColor: const Color(0xFF1B1926),
                     style: const TextStyle(
-                      color: Colors.white, // Color del texto
-                      fontSize: 14, // Tamaño del texto
+                      color: Colors.white,
+                      fontSize: 14,
                     ),
                     icon: const Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.white, // Color del icono
+                      color: Colors.white,
                     ),
                     hint: const Text(
                       'Seleccione un cliente',
@@ -163,30 +164,42 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           selectedCustomer != null) {
-                        final work = WorkModel(
-                          name: nameController.text,
-                          userId: [
-                            selectedCustomer!.id ?? ''
-                          ], // Convertimos a lista
-                          address: addressController.text,
-                          startDate: startDateController.text,
-                          endDate: endDateController.text.isNotEmpty
-                              ? endDateController.text
-                              : null,
-                          budget: double.parse(budgetController.text),
-                          statusWork: statusWorkController.text,
-                          workUbication: workUbicationController.text,
-                          projectType: projectTypeController.text,
-                          documents: [], // Inicializamos como lista vacía
-                          employeeInWork: [], // Inicializamos como lista vacía
-                        );
+                        try {
+                          final work = WorkModel(
+                            name: nameController.text,
+                            userId: [selectedCustomer!.id ?? ''],
+                            address: addressController.text,
+                            startDate: startDateController.text,
+                            endDate: endDateController.text.isNotEmpty
+                                ? endDateController.text
+                                : null,
+                            budget: double.parse(budgetController.text),
+                            customerName: selectedCustomer!.name,
+                            number: generateRandomNumber(),
+                            statusWork: statusWorkController.text,
+                            workUbication: workUbicationController.text,
+                            projectType: projectTypeController.text,
+                            documents: [],
+                            employeeInWork: [],
+                          );
 
-                        await workController.createWork(work);
-                        Get.back();
+                          await workController
+                              .createWork(work); // Llama al controlador
+                        } catch (e) {
+                          // Mostrar error en caso de fallo inesperado
+                          Get.snackbar(
+                            'Error',
+                            'Ocurrió un error inesperado: $e',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
                       } else {
                         Get.snackbar(
                           'Error',
-                          'Por favor complete todos los campos requeridos.',
+                          selectedCustomer == null
+                              ? 'Seleccione un cliente'
+                              : 'Por favor complete todos los campos requeridos.',
+                          snackPosition: SnackPosition.BOTTOM,
                         );
                       }
                     },
@@ -226,5 +239,10 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
         ),
       ),
     );
+  }
+
+  String generateRandomNumber() {
+    final random = Random();
+    return (100000 + random.nextInt(900000)).toString();
   }
 }

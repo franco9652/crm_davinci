@@ -6,7 +6,7 @@ class BudgetDataSource {
   final String baseUrl = "http://localhost:8080";
 
   Future<List<BudgetModel>> getAllBudgets() async {
-    final response = await http.get(Uri.parse("$baseUrl/budgets"));
+    final response = await http.get(Uri.parse("$baseUrl/budget"));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
