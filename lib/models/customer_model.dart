@@ -1,5 +1,5 @@
 class CustomerModel {
-  final String? id;
+  final String? userId;
   final String name;
   final String secondName;
   final String dni;
@@ -18,7 +18,7 @@ class CustomerModel {
   final bool active;
 
   CustomerModel({
-    this.id,
+    this.userId,
     required this.name,
     required this.secondName,
     required this.dni,
@@ -39,7 +39,7 @@ class CustomerModel {
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
-      id: json['_id'],
+      userId: json['userId'] ?? '',
       name: json['name'] ?? 'No Name',
       secondName: json['secondName'] ?? '',
       dni: json['dni'] ?? '',
@@ -65,7 +65,7 @@ class CustomerModel {
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
+      'userId': userId,
       'name': name,
       'secondName': secondName,
       'dni': dni,

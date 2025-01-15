@@ -4,6 +4,7 @@ class WorkModel {
   final String name;
   final String address;
   final String startDate;
+  final String? description; 
   final String? endDate;
   final double budget;
   final String statusWork;
@@ -16,6 +17,7 @@ class WorkModel {
 
   WorkModel({
     this.id, // Inicializar el campo id
+    this.description,
     required this.userId,
     required this.name,
     required this.address,
@@ -34,6 +36,7 @@ class WorkModel {
   factory WorkModel.fromJson(Map<String, dynamic> json) {
     return WorkModel(
       id: json['_id'], // Asegurarte que el id venga del backend
+      description: json['description'],
       name: json['name'] ?? '',
       userId: (json['userId'] is List)
           ? List<String>.from(json['userId'])
@@ -59,6 +62,7 @@ class WorkModel {
   Map<String, dynamic> toJson() {
     return {
       '_id': id, // Agregar el id al JSON
+      'description': description,
       'name': name,
       'userId': userId,
       'address': address,

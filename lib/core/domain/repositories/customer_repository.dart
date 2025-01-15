@@ -1,10 +1,12 @@
 
 import 'package:crm_app_dv/features/customer/controllers/customer_remote_data_source.dart';
+import 'package:crm_app_dv/models/budget_model.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
+import 'package:crm_app_dv/models/work_model.dart';
 
 class CustomerRepository {
   final CustomerRemoteDataSource remoteDataSource;
-
+  
   CustomerRepository(this.remoteDataSource);
 
   // Crear un cliente
@@ -16,4 +18,20 @@ class CustomerRepository {
   Future<Map<String, dynamic>> fetchCustomers(int page) async {
     return await remoteDataSource.getAllCustomers(page);
   }
+
+Future<CustomerModel> getCustomerById(String userId) async {
+  final response = await remoteDataSource.getCustomerById(userId);
+  return CustomerModel.fromJson(response); // Convierte el JSON al modelo
+}
+
+Future<List<WorkModel>> getWorksByCustomer(String customerId) async {
+  return await remoteDataSource.getWorksByCustomerId(customerId);
+}
+
+Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
+  return await remoteDataSource.getBudgetsByCustomerId(customerId);
+}
+
+
+
 }

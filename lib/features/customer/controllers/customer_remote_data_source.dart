@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:crm_app_dv/core/contants/app_constants.dart';
+import 'package:crm_app_dv/models/budget_model.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
+import 'package:crm_app_dv/models/work_model.dart';
 import 'package:http/http.dart' as http;
 
 class CustomerRemoteDataSource {
@@ -52,5 +54,39 @@ Future<Map<String, dynamic>> getAllCustomers(int page) async {
   }
 }
 
+
+Future<List<WorkModel>> getWorksByCustomerId(String customerId) async {
+  final response = await client.get(Uri.parse('${AppConstants.baseUrl}/works?customerId=$customerId'));
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((work) => WorkModel.fromJson(work)).toList();
+  } else {
+    throw Exception('Error al obtener los trabajos del cliente');
+  }
+}
+
+Future<List<BudgetModel>> getBudgetsByCustomerId(String customerId) async {
+  final response = await client.get(Uri.parse('${AppConstants.baseUrl}/budgets?customerId=$customerId'));
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((budget) => BudgetModel.fromJson(budget)).toList();
+  } else {
+    throw Exception('Error al obtener los presupuestos del cliente');
+  }
+}
+
+Future<Map<String, dynamic>> getCustomerById(String userId) async {
+  final response = await client.get(
+    Uri.parse('${AppConstants.baseUrl}/getcustomersbyid/$userId'),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final json = jsonDecode(response.body);
+    return json['customer']; // Ahora 'customer' será un objeto, no un array.
+  } else {
+    throw Exception('Error al obtener el cliente por ID');
+  }
+}
 
 }

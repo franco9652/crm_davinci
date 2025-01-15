@@ -1,11 +1,11 @@
 import 'package:crm_app_dv/features/customer/controllers/customer_controller.dart';
 import 'package:crm_app_dv/features/customer/presentation/create_customer_page.dart';
+import 'package:crm_app_dv/features/customer/presentation/customer_info_screen.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 
 class HomePageCustomer extends StatelessWidget {
   final HomeController controller = Get.put(HomeController(
@@ -18,7 +18,10 @@ class HomePageCustomer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clientes', style: TextStyle(color: Colors.white),),
+        title: const Text(
+          'Clientes',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF1B1926),
       ),
       body: Obx(() {
@@ -62,77 +65,57 @@ class HomePageCustomer extends StatelessWidget {
   }
 
   Widget _buildCustomerCard(CustomerModel customer) {
-    return Card(
-      color: const Color(0xFF242038),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "${customer.name} ${customer.secondName}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        if (customer.userId != null && customer.userId!.isNotEmpty) {
+          Get.to(() => CustomerInfoScreen(userId: customer.userId!));
+        } else {
+          Get.snackbar('Error', 'El cliente no tiene un User ID válido');
+        }
+      },
+      child: Card(
+        color: const Color(0xFF242038),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "${customer.name} ${customer.secondName}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  customer.address,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  "Tel: ${customer.contactNumber}",
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () => _openWhatsApp(customer.contactNumber),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    customer.address,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
                     ),
                   ),
-                  icon: const Icon(Iconsax.message),
-                  label: const Text("WhatsApp"),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _sendEmail(customer.email),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4380FF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  Text(
+                    "Tel: ${customer.contactNumber}",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
                     ),
                   ),
-                  icon: const Icon(Icons.email),
-                  label: const Text("Email"),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      
     );
   }
 
@@ -157,9 +140,12 @@ class HomePageCustomer extends StatelessWidget {
               onTap: () => controller.goToPage(pageIndex),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFFF8329) : const Color(0xFF242038),
+                  color: isSelected
+                      ? const Color(0xFFFF8329)
+                      : const Color(0xFF242038),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFF4380FF)),
                 ),
@@ -174,7 +160,8 @@ class HomePageCustomer extends StatelessWidget {
             );
           }),
           IconButton(
-            onPressed: controller.currentPage.value < controller.totalPages.value
+            onPressed: controller.currentPage.value <
+                    controller.totalPages.value
                 ? () => controller.goToPage(controller.currentPage.value + 1)
                 : null,
             icon: const Icon(Icons.arrow_forward, color: Colors.white),

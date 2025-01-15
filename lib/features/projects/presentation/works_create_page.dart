@@ -167,7 +167,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                         try {
                           final work = WorkModel(
                             name: nameController.text,
-                            userId: [selectedCustomer!.id ?? ''],
+                            userId: [selectedCustomer!.userId ?? ''],
                             address: addressController.text,
                             startDate: startDateController.text,
                             endDate: endDateController.text.isNotEmpty

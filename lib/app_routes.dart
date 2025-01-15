@@ -3,6 +3,7 @@
 import 'package:crm_app_dv/features/auth/login/presentation/login_page.dart';
 import 'package:crm_app_dv/features/budgets/presentation/budget_list_screen.dart';
 import 'package:crm_app_dv/features/customer/presentation/home_customer.dart';
+import 'package:crm_app_dv/features/profile/presentation/profile_screen.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_page.dart';
 import 'package:crm_app_dv/navigation/main_navigation.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const projects = '/projects';
   static const walletHome = '/alta-projects';
   static const budgets = '/budgets';
+  static const profile = '/profile';
   
 
   // Todas las rutas registradas
@@ -26,7 +28,8 @@ class AppRoutes {
     GetPage(name: login, page: () => LoginPage()),
     GetPage(name: home, page: () => HomePageCustomer()),
     GetPage(name: projects, page: () => WorkListPage()),
-    GetPage(name: budgets, page: () => CreateBudgetScreen())
+    GetPage(name: budgets, page: () => CreateBudgetScreen()),
+    GetPage(name: profile, page: () => ProfileScreen())
    
    // Sub-páginas adicionales
     
