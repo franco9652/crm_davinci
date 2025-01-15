@@ -45,21 +45,24 @@ class WorkRemoteDataSource {
     }
   }
 
-  Future<List<WorkModel>> getWorksByCustomerId(String customerId) async {
-    final response = await client.get(
-      Uri.parse('${AppConstants.baseUrl}/works?customerId=$customerId'),
-      headers: {'Content-Type': 'application/json'},
-    );
+Future<List<WorkModel>> getWorksByUserId(String userId) async {
+  final response = await client.get(
+    Uri.parse('${AppConstants.baseUrl}/worksbyuserid/$userId'),
+    headers: {'Content-Type': 'application/json'},
+  );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      return (jsonResponse['works'] as List)
-          .map((data) => WorkModel.fromJson(data))
-          .toList();
-    } else {
-      throw Exception('Error al obtener los trabajos del cliente');
-    }
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
+    return (jsonResponse['works'] as List)
+        .map((data) => WorkModel.fromJson(data))
+        .toList();
+  } else if (response.statusCode == 404) {
+    return []; // Devuelve una lista vacía si no hay trabajos
+  } else {
+    throw Exception('Error al obtener los trabajos del usuario');
   }
+}
+
 
   Future<List<WorkModel>> fetchAllWorks({int page = 1, int limit = 10}) async {
     try {

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../auth/login/controllers/login_controller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final LoginController loginController = Get.find<LoginController>();
     return Scaffold(
       backgroundColor: const Color(0xFF1B1926), // Fondo oscuro
       appBar: AppBar(
@@ -47,18 +51,18 @@ class ProfileScreen extends StatelessWidget {
                 Icons.chat_bubble_outline, 'Customer Helpdesk', 'Chat'),
             const SizedBox(height: 30),
             // Logout Button
-            Center(
+          Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Acción para cerrar sesión
+                  loginController.logout();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 50, vertical: 16),
                 ),
                 child: const Text(
                   'Logout',
@@ -91,7 +95,7 @@ class ProfileScreen extends StatelessWidget {
                 const CircleAvatar(
                   radius: 20,
                   backgroundImage:
-                      AssetImage('assets/avatar.png'), // Imagen del avatar
+                      AssetImage(''), // Imagen del avatar
                 ),
                 const Spacer(),
                 TextButton(

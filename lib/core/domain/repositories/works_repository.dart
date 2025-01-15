@@ -13,4 +13,9 @@ class WorkRepository {
   Future<void> createWork(WorkModel work) {
     return remoteDataSource.createWork(work);
   }
+
+  Future<List<WorkModel>> getWorksByUserId(String userId) async {
+  return await remoteDataSource.getWorksByUserId(userId);
+}
+
 }

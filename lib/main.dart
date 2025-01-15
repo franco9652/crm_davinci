@@ -2,6 +2,9 @@ import 'package:crm_app_dv/app_routes.dart';
 import 'package:crm_app_dv/core/domain/repositories/budget_repository.dart';
 import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
 import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/auth_remote_data_source.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/auth_repository_impl.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/login_controller.dart';
 import 'package:crm_app_dv/features/budgets/controllers/budget_controller.dart';
 import 'package:crm_app_dv/features/budgets/data/budget_data_source.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_remote_data_source.dart';
@@ -29,6 +32,10 @@ void main() async {
   final dataSource = BudgetDataSource();
   final budgetRepository = BudgetRepository(dataSource);
 
+   // Auth Repositories
+  final authRemoteDataSource = AuthRemoteDataSource(client);
+  final authRepository = AuthRepositoryImpl(authRemoteDataSource);
+
   // Registramos las dependencias con Get
   Get.put(customerRemoteDataSource); // Remote Data Source
   Get.put(customerRepository); // Repository
@@ -36,10 +43,14 @@ void main() async {
   Get.put(workRepository); // Work Repository
   Get.put(BudgetController(budgetRepository)); // Budget Controller
 
-  Get.lazyPut(() => WorkController(
-        customerRepository: customerRepository,
-        workRemoteDataSource: workRemoteDataSource,
-      )); // Work Controller
+  Get.put(WorkController(
+      customerRepository: customerRepository,
+      workRemoteDataSource: workRemoteDataSource,
+));
+ // Work Controller
+
+  Get.put(authRepository); // Auth Repository
+  Get.put(LoginController(authRepository)); // Login Controller
 
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.containsKey('auth_token');

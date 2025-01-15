@@ -68,7 +68,7 @@ class WorkController extends GetxController {
     isLoadingWorks.value = true;
 
     try {
-      final fetchedWorks = await workRemoteDataSource.getWorksByCustomerId(customerId);
+      final fetchedWorks = await workRemoteDataSource.getWorksByUserId(customerId);
       worksByCustomer.value = fetchedWorks;
     } catch (e) {
       Get.snackbar("Error", "No se pudieron cargar los trabajos del cliente: $e");

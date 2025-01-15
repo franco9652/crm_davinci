@@ -1,6 +1,7 @@
 import 'package:crm_app_dv/features/customer/controllers/customer_controller.dart';
 import 'package:crm_app_dv/features/customer/presentation/create_customer_page.dart';
 import 'package:crm_app_dv/features/customer/presentation/customer_info_screen.dart';
+import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ class HomePageCustomer extends StatelessWidget {
   final HomeController controller = Get.put(HomeController(
     repository: Get.find(),
   ));
+  final WorkController workController = Get.find<WorkController>();
 
   HomePageCustomer({super.key});
 
