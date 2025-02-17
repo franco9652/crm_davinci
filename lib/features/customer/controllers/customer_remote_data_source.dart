@@ -55,15 +55,26 @@ Future<Map<String, dynamic>> getAllCustomers(int page) async {
 }
 
 
-Future<List<WorkModel>> getWorksByCustomerId(String customerId) async {
-  final response = await client.get(Uri.parse('${AppConstants.baseUrl}/works?customerId=$customerId'));
+Future<List<WorkModel>> getWorksByUserId(String customerId) async {
+  final response = await client.get(
+    Uri.parse('${AppConstants.baseUrl}/workgetbyuser/$customerId'),
+    headers: {'Content-Type': 'application/json'},
+  );
+  print("Llamando a: ${AppConstants.baseUrl}/workgetbyuser/$customerId");
+   print("Response status: ${response.statusCode}");
+  print("Response body: ${response.body}");
   if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
-    return data.map((work) => WorkModel.fromJson(work)).toList();
+    final jsonResponse = json.decode(response.body);
+    return (jsonResponse['works'] as List)
+        .map((data) => WorkModel.fromJson(data))
+        .toList();
+  } else if (response.statusCode == 404) {
+    return []; // Devuelve una lista vacía si no hay trabajos
   } else {
-    throw Exception('Error al obtener los trabajos del cliente');
+    throw Exception('Error al obtener los trabajos del usuario');
   }
 }
+
 
 Future<List<BudgetModel>> getBudgetsByCustomerId(String customerId) async {
   final response = await client.get(Uri.parse('${AppConstants.baseUrl}/budgets?customerId=$customerId'));
@@ -83,7 +94,7 @@ Future<Map<String, dynamic>> getCustomerById(String userId) async {
 
   if (response.statusCode == 200) {
     final json = jsonDecode(response.body);
-    return json['customer']; // Ahora 'customer' será un objeto, no un array.
+    return json['customer'][0];
   } else {
     throw Exception('Error al obtener el cliente por ID');
   }

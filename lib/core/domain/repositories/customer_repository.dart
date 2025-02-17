@@ -25,7 +25,8 @@ Future<CustomerModel> getCustomerById(String userId) async {
 }
 
 Future<List<WorkModel>> getWorksByCustomer(String customerId) async {
-  return await remoteDataSource.getWorksByCustomerId(customerId);
+   print("🟢 cutomer repo Llamando a getWorksByUserId en WorkRepository con customerId: $customerId");
+  return await remoteDataSource.getWorksByUserId(customerId);
 }
 
 Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {

@@ -1,10 +1,10 @@
 class WorkModel {
-  final String? id; // Agregar este campo
+  final String? id;
   final List<String> userId;
   final String name;
   final String address;
   final String startDate;
-  final String? description; 
+  final String? description;
   final String? endDate;
   final double budget;
   final String statusWork;
@@ -13,15 +13,16 @@ class WorkModel {
   final List<String> documents;
   final List<String> employeeInWork;
   final String customerName;
+  final String? emailCustomer;
   String? number;
 
   WorkModel({
-    this.id, // Inicializar el campo id
-    this.description,
+    this.id,
     required this.userId,
     required this.name,
     required this.address,
     required this.startDate,
+    this.description,
     this.endDate,
     required this.budget,
     required this.statusWork,
@@ -30,41 +31,44 @@ class WorkModel {
     required this.documents,
     required this.employeeInWork,
     required this.customerName,
+    this.emailCustomer,
     this.number,
   });
 
   factory WorkModel.fromJson(Map<String, dynamic> json) {
     return WorkModel(
-      id: json['_id'], // Asegurarte que el id venga del backend
-      description: json['description'],
-      name: json['name'] ?? '',
+      id: json['_id'] as String?,
       userId: (json['userId'] is List)
-          ? List<String>.from(json['userId'])
-          : [json['userId'] as String],
-      address: json['address'] ?? '',
-      startDate: json['startDate'],
-      endDate: json['endDate'],
-      budget: json['budget']?.toDouble() ?? 0.0,
-      documents: json['documents'] != null
-          ? List<String>.from(json['documents'])
+          ? List<String>.from(json['userId'].map((e) => e.toString()))
           : [],
+      name: json['name'] ?? 'Nombre no disponible',
+      address: json['address'] ?? 'Dirección no disponible',
+      startDate: json['startDate'] ?? 'Fecha de inicio no disponible',
+      endDate: json['endDate'] ?? 'Fecha de fin no disponible',
+      budget: (json['budget'] != null)
+          ? (json['budget'] is int
+              ? (json['budget'] as int).toDouble()
+              : json['budget'])
+          : 0.0,
+      documents:
+          json['documents'] != null ? List<String>.from(json['documents']) : [],
       employeeInWork: json['employeeInWork'] != null
           ? List<String>.from(json['employeeInWork'])
           : [],
-      statusWork: json['statusWork'] ?? '',
-      workUbication: json['workUbication'] ?? '',
-      projectType: json['projectType'] ?? '',
-      customerName: json['customerName'] ?? '',
-      number: json['number'] ?? '0XXX',
+      statusWork: json['statusWork'] ?? 'Estado no disponible',
+      workUbication: json['workUbication'] ?? 'Ubicación no especificada',
+      projectType: json['projectType'] ?? 'Tipo de proyecto no disponible',
+      customerName: json['customerName'] ?? 'Sin cliente',
+      emailCustomer: json['emailCustomer'] ?? 'Sin email',
+      number: json['number'] ?? 'T000',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id, // Agregar el id al JSON
-      'description': description,
-      'name': name,
+      '_id': id,
       'userId': userId,
+      'name': name,
       'address': address,
       'startDate': startDate,
       'endDate': endDate,
@@ -75,6 +79,7 @@ class WorkModel {
       'workUbication': workUbication,
       'projectType': projectType,
       'customerName': customerName,
+      'emailCustomer': emailCustomer,
       'number': number,
     };
   }

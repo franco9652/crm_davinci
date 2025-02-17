@@ -26,6 +26,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   final statusWorkController = TextEditingController();
   final workUbicationController = TextEditingController();
   final projectTypeController = TextEditingController();
+  final emailCustomer  =  TextEditingController();
 
   final WorkController workController = Get.find<WorkController>();
   final HomeController customerController = Get.find<HomeController>();
@@ -180,7 +181,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                             workUbication: workUbicationController.text,
                             projectType: projectTypeController.text,
                             documents: [],
-                            employeeInWork: [],
+                            employeeInWork: [], /* emailCustomer: emailCustomer.text, */
                           );
 
                           await workController

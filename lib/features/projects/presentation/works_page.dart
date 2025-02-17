@@ -1,4 +1,5 @@
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
+import 'package:crm_app_dv/features/projects/presentation/work_info_screen.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_create_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -111,7 +112,11 @@ class WorkListPage extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  // Acción para ver detalles
+                  if (work.id != null && work.id!.isNotEmpty) {
+                    Get.to(() => WorkInfoScreen(workId: work.id!));
+                  } else {
+                    Get.snackbar("Error", "El ID del trabajo no es válido");
+                  }
                 },
                 icon: const Icon(Icons.info, color: Colors.white),
                 label: const Text("Ver detalles"),

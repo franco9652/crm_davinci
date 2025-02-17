@@ -1,5 +1,6 @@
 class CustomerModel {
-  final String? userId;
+  final String? id; // _id del cliente en MongoDB
+  final String? userId; // Usuario que registró el cliente
   final String name;
   final String secondName;
   final String dni;
@@ -12,12 +13,13 @@ class CustomerModel {
   final String password;
   final bool firstRegister;
   final bool clienteActivo;
-  final List<String>? worksActive; // Trabajos activos
+  final List<String> worksActive; // Lista de IDs de trabajos activos
   final List<String> documents;
   final DateTime createdAt;
   final bool active;
 
   CustomerModel({
+    this.id,
     this.userId,
     required this.name,
     required this.secondName,
@@ -31,15 +33,17 @@ class CustomerModel {
     required this.password,
     required this.firstRegister,
     required this.clienteActivo,
-    this.worksActive,
+    required this.worksActive,
     required this.documents,
     required this.createdAt,
     required this.active,
   });
 
+  /// **Método para convertir JSON a `CustomerModel`**
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(
-      userId: json['userId'] ?? '',
+      id: json['_id'] ?? '', // Identificador de MongoDB
+      userId: json['userId'] ?? '', // Usuario dueño del cliente
       name: json['name'] ?? 'No Name',
       secondName: json['secondName'] ?? '',
       dni: json['dni'] ?? '',
@@ -53,8 +57,8 @@ class CustomerModel {
       firstRegister: json['firstRegister'] ?? true,
       clienteActivo: json['clienteActivo'] ?? true,
       worksActive: json.containsKey('worksActive') && json['worksActive'] != null
-          ? List<String>.from(json['worksActive'])
-          : null,
+          ? List<String>.from(json['worksActive'].map((work) => work.toString()))
+          : [],
       documents: List<String>.from(json['documents'] ?? []),
       createdAt: json.containsKey('createdAt') && json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
@@ -63,8 +67,10 @@ class CustomerModel {
     );
   }
 
+  /// **Método para convertir `CustomerModel` a JSON**
   Map<String, dynamic> toJson() {
     return {
+      '_id': id, // Asegura que se envíe al backend
       'userId': userId,
       'name': name,
       'secondName': secondName,
@@ -78,7 +84,7 @@ class CustomerModel {
       'password': password,
       'firstRegister': firstRegister,
       'clienteActivo': clienteActivo,
-      'worksActive': worksActive ?? [],
+      'worksActive': worksActive, // Lista de trabajos activos
       'documents': documents,
       'createdAt': createdAt.toIso8601String(),
       'active': active,

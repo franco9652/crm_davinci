@@ -14,6 +14,20 @@ class WorkRepository {
     return remoteDataSource.createWork(work);
   }
 
+ Future<List<WorkModel>> getWorksByCustomerId(String customerId) async {
+   print("🟢work repo Llamando a getWorksByUserId en WorkRepository con customerId: $customerId");
+  return await remoteDataSource.getWorksByCustomerId(customerId);
+}
+
+Future<WorkModel> getWorkById(String? workId) async {
+  if (workId == null || workId.isEmpty) {
+    throw Exception("El ID del trabajo es nulo o vacío");
+  }
+  
+  return await remoteDataSource.getWorkById(workId);
+}
+
+
   Future<List<WorkModel>> getWorksByUserId(String userId) async {
   return await remoteDataSource.getWorksByUserId(userId);
 }

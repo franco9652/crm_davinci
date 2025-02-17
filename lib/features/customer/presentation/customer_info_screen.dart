@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_info_controller.dart';
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CustomerInfoScreen extends StatelessWidget {
@@ -23,7 +23,12 @@ class CustomerInfoScreen extends StatelessWidget {
     );
 
     customerController.fetchCustomerInfo(userId);
-    workController.fetchWorksByCustomer(userId);
+
+    // Asegurarse de obtener el customerId correcto (_id en MongoDB)
+    ever(customerController.customer, (_) {
+      final String customerId = customerController.customer.value?.id ?? userId;
+      workController.fetchWorksByCustomer(customerId);
+    });
 
     return Scaffold(
       appBar: AppBar(
