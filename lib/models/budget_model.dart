@@ -1,6 +1,6 @@
 class BudgetModel {
   final String? id;
-  final String workId;
+  final String? workId;
   final String customerId;
   final String customerName;
   final String email;
@@ -9,22 +9,22 @@ class BudgetModel {
   final String m2;
   final String? levels;
   final String? rooms;
-  final List<String>? materials;
+  final List<String> materials;
   final bool? demolition;
-  final List<String>? approvals;
+  final List<String> approvals;
   final String budgetDate;
-  final List<String>? subcontractors;
+  final List<String> subcontractors;
   final String startDate;
   final String endDate;
   final double estimatedBudget;
   final String currency;
   final bool? advancePayment;
-  final List<String>? documentation;
+  final List<String> documentation;
   final String status;
 
   BudgetModel({
     this.id,
-    required this.workId,
+    this.workId,
     required this.customerId,
     required this.customerName,
     required this.email,
@@ -33,18 +33,18 @@ class BudgetModel {
     required this.m2,
     this.levels,
     this.rooms,
-    this.materials,
+    required this.materials,
     this.demolition,
-    this.approvals,
+    required this.approvals,
     required this.budgetDate,
-    this.subcontractors,
+    required this.subcontractors,
     required this.startDate,
     required this.endDate,
     required this.estimatedBudget,
     required this.currency,
     this.advancePayment,
-    this.documentation,
-    required this.status,
+    required this.documentation,
+    this.status = "DENEGADO",
   });
 
   factory BudgetModel.fromJson(Map<String, dynamic> json) {
@@ -60,7 +60,7 @@ class BudgetModel {
       levels: json['levels'],
       rooms: json['rooms'],
       materials: List<String>.from(json['materials'] ?? []),
-      demolition: json['demolition'],
+      demolition: json['demolition'] ?? false,
       approvals: List<String>.from(json['approvals'] ?? []),
       budgetDate: json['budgetDate'],
       subcontractors: List<String>.from(json['subcontractors'] ?? []),
@@ -68,35 +68,35 @@ class BudgetModel {
       endDate: json['endDate'],
       estimatedBudget: json['estimatedBudget'].toDouble(),
       currency: json['currency'],
-      advancePayment: json['advancePayment'],
+      advancePayment: json['advancePayment'] ?? false,
       documentation: List<String>.from(json['documentation'] ?? []),
-      status: json['status'],
+      status: json['status'] ?? "DENEGADO",
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "workId": workId,
-      "customerId": customerId,
-      "customerName": customerName,
-      "email": email,
-      "projectAddress": projectAddress,
-      "projectType": projectType,
-      "m2": m2,
-      "levels": levels,
-      "rooms": rooms,
-      "materials": materials,
-      "demolition": demolition,
-      "approvals": approvals,
-      "budgetDate": budgetDate,
-      "subcontractors": subcontractors,
-      "startDate": startDate,
-      "endDate": endDate,
-      "estimatedBudget": estimatedBudget,
-      "currency": currency,
-      "advancePayment": advancePayment,
-      "documentation": documentation,
-      "status": status,
+      'workId': workId,
+      'customerId': customerId,
+      'customerName': customerName,
+      'email': email,
+      'projectAddress': projectAddress,
+      'projectType': projectType,
+      'm2': m2,
+      'levels': levels,
+      'rooms': rooms,
+      'materials': materials,
+      'demolition': demolition,
+      'approvals': approvals,
+      'budgetDate': budgetDate,
+      'subcontractors': subcontractors,
+      'startDate': startDate,
+      'endDate': endDate,
+      'estimatedBudget': estimatedBudget,
+      'currency': currency,
+      'advancePayment': advancePayment,
+      'documentation': documentation,
+      'status': status,
     };
   }
 }

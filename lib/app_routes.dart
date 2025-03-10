@@ -29,9 +29,7 @@ class AppRoutes {
     GetPage(name: home, page: () => HomePageCustomer()),
     GetPage(name: projects, page: () => WorkListPage()),
     GetPage(name: budgets, page: () => CreateBudgetScreen()),
-    GetPage(name: profile, page: () => ProfileScreen())
-   
-   // Sub-páginas adicionales
+    GetPage(name: profile, page: () => ProfileScreen()),
     
   ];
 }

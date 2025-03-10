@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:crm_app_dv/core/contants/app_constants.dart';
+import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:crm_app_dv/models/work_model.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class WorkRemoteDataSource {
@@ -8,45 +10,58 @@ class WorkRemoteDataSource {
 
   WorkRemoteDataSource(this.client);
 
-  Future<List<WorkModel>> getAllWorks(int page, int limit) async {
-    final response = await client.get(
-      Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
-      headers: {'Content-Type': 'application/json'},
-    );
+ Future<List<WorkModel>> getAllWorks(int page, int limit) async {
+  final response = await client.get(
+    Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
+    headers: {'Content-Type': 'application/json'},
+  );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
+  if (response.statusCode == 200) {
+    final jsonResponse = json.decode(response.body);
 
-      List<WorkModel> works = (jsonResponse['works'] as List)
-          .map((data) => WorkModel.fromJson(data))
-          .toList();
-      return works;
-    } else {
-      throw Exception('Error al obtener los proyectos');
+    // 🔹 Asegurar que el total de páginas se almacena correctamente
+    if (jsonResponse.containsKey('totalPages')) {
+      final totalPagesFromServer = jsonResponse['totalPages'];
+      Get.find<WorkController>().totalPages.value = totalPagesFromServer;
     }
-  }
 
-  Future<void> createWork(WorkModel work) async {
-    final response = await client.post(
-      Uri.parse('${AppConstants.baseUrl}/workCreate'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(work.toJson()),
-    );
-
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      // Éxito: No lances excepción, solo imprime el resultado
-      print('Proyecto creado exitosamente: ${response.body}');
-    } else {
-      // Manejo de errores
-      final errorResponse = json.decode(response.body);
-      final errorMessage =
-          errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
-      throw Exception(errorMessage);
-    }
+    return (jsonResponse['works'] as List)
+        .map((data) => WorkModel.fromJson(data))
+        .toList();
+  } else {
+    throw Exception('Error al obtener los proyectos');
   }
+}
+
+
+Future<void> createWork(WorkModel work) async {
+  final workJson = jsonEncode(work.toJson());
+  
+  print("📤 Enviando Work al Backend: $workJson"); 
+
+  final response = await client.post(
+    Uri.parse('${AppConstants.baseUrl}/workCreate'),
+    headers: {'Content-Type': 'application/json'},
+    body: workJson,
+  );
+
+  print("🔵 Status Code: ${response.statusCode}");
+  print("🔵 Respuesta del Backend: ${response.body}");
+
+  if (response.statusCode == 201 || response.statusCode == 200) {
+    print('✅ Proyecto creado exitosamente: ${response.body}');
+  } else {
+    final errorResponse = json.decode(response.body);
+    final errorMessage =
+        errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
+    print("❌ Error al crear trabajo: $errorMessage");
+    throw Exception(errorMessage);
+  }
+}
+
 
   Future<List<WorkModel>> getWorksByUserId(String customerId) async {
-    final url = '${AppConstants.baseUrl}/workgetbyuser/$customerId';
+    final url = '${AppConstants.baseUrl}/workgetbycustomerid/$customerId';
 
     print("🔵 WorkRemoteDataSource: Haciendo petición a: $url");
 

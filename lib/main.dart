@@ -29,34 +29,38 @@ void main() async {
   final workRemoteDataSource = WorkRemoteDataSource(client);
   final workRepository = WorkRepository(workRemoteDataSource);
 
-  final dataSource = BudgetDataSource();
-  final budgetRepository = BudgetRepository(dataSource);
+  final budgetRemoteDataSource = BudgetRemoteDataSource(client); // ✅ Instancia correcta
+  final budgetRepository = BudgetRepository(budgetRemoteDataSource); // ✅ Repositorio
 
-   // Auth Repositories
+  // Auth Repositories
   final authRemoteDataSource = AuthRemoteDataSource(client);
   final authRepository = AuthRepositoryImpl(authRemoteDataSource);
 
-  // Registramos las dependencias con Get
-  Get.put(customerRemoteDataSource); // Remote Data Source
-  Get.put(customerRepository); // Repository
-  Get.put(workRemoteDataSource); // Work Remote Data Source
-  Get.put(workRepository); // Work Repository
-  Get.put(BudgetController(budgetRepository)); // Budget Controller
+  // 🔹 Primero, registramos `BudgetRemoteDataSource` en GetX
+  Get.put(budgetRemoteDataSource); // ✅ Ahora está registrado antes de usarlo
+  Get.put(budgetRepository); // ✅ Registro del repositorio
+  Get.put(BudgetController(budgetRemoteDataSource: Get.find())); // ✅ Ahora sí funciona
 
+  // Registramos las demás dependencias en el orden correcto
+  Get.put(customerRemoteDataSource);
+  Get.put(customerRepository);
+  Get.put(workRemoteDataSource);
+  Get.put(workRepository);
   Get.put(WorkController(
-      customerRepository: customerRepository,
-      workRemoteDataSource: workRemoteDataSource,
-));
- // Work Controller
+    customerRepository: customerRepository,
+    workRemoteDataSource: workRemoteDataSource,
+  ));
 
-  Get.put(authRepository); // Auth Repository
-  Get.put(LoginController(authRepository)); // Login Controller
+  Get.put(authRemoteDataSource);
+  Get.put(authRepository);
+  Get.put(LoginController(authRepository));
 
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.containsKey('auth_token');
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
+
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;

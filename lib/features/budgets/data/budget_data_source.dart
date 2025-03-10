@@ -1,58 +1,97 @@
 import 'dart:convert';
-import 'package:crm_app_dv/models/budget_model.dart';
-import 'package:crm_app_dv/models/work_model.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:crm_app_dv/core/contants/app_constants.dart';
+import 'package:crm_app_dv/models/budget_model.dart';
 
-class BudgetDataSource {
-  final String baseUrl = "http://10.0.2.2:8080";
+class BudgetRemoteDataSource {
+  final http.Client client;
 
-  Future<List<BudgetModel>> getAllBudgets() async {
-    final response = await http.get(Uri.parse("$baseUrl/budget"));
+  BudgetRemoteDataSource(this.client);
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((budget) => BudgetModel.fromJson(budget)).toList();
-    } else {
-      throw Exception("Error al obtener los presupuestos");
-    }
-  }
-
- Future<List<WorkModel>> getWorksByCustomer(String customerId) async {
-  final response = await http.get(Uri.parse("$baseUrl/works?customerId=$customerId"));
-
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
-    if (data.isEmpty) {
-      throw Exception("No hay trabajos asociados a este cliente.");
-    }
-    return data.map((work) => WorkModel.fromJson(work)).toList();
-  } else {
-    throw Exception("Error al obtener los trabajos del cliente: ${response.statusCode}");
-  }
-}
-
-Future<List<dynamic>> getCustomers() async {
-  final response = await http.get(Uri.parse("$baseUrl/customers"));
-
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
-    return data;
-  } else {
-    throw Exception("Error al obtener la lista de clientes");
-  }
-}
-
-
-
-  Future<void> createBudget(BudgetModel budget) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/budget"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(budget.toJson()),
+  // 🔹 Obtener lista de clientes
+  Future<List<Map<String, dynamic>>> getCustomers() async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/customers'),
+      headers: {'Content-Type': 'application/json'},
     );
 
-    if (response.statusCode != 200) {
-      throw Exception("Error al crear el presupuesto");
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(jsonResponse['customers']);
+    } else {
+      throw Exception('Error al obtener la lista de clientes');
+    }
+  }
+
+  // 🔹 Obtener obras de un cliente
+  Future<List<Map<String, dynamic>>> getWorksByCustomer(
+      String customerId) async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/worksbycustomerid/$customerId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    print("🔹 Status Code: ${response.statusCode}");
+    print("🔹 Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+
+      if (jsonResponse.containsKey('works') && jsonResponse['works'] is List) {
+        return List<Map<String, dynamic>>.from(jsonResponse['works']);
+      } else {
+        throw Exception(
+            "Formato de respuesta inválido: falta 'works' o no es una lista.");
+      }
+    } else {
+      throw Exception(
+          "Error al obtener las obras del cliente (Status ${response.statusCode}): ${response.body}");
+    }
+  }
+
+  // 🔹 Obtener presupuestos de un cliente
+  Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/budgetgetbyuser/$customerId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      List<dynamic> budgetsJson = jsonResponse['budgets'];
+
+      return budgetsJson.map((json) => BudgetModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Error al obtener los presupuestos');
+    }
+  }
+
+  // 🔹 Crear un presupuesto
+  Future<void> createBudget(BudgetModel budget) async {
+    final budgetData = budget.toJson();
+    if (budgetData['workId'] == null || budgetData['workId'].isEmpty) {
+      budgetData.remove('workId');
+    }
+
+    try {
+      final response = await client.post(
+        Uri.parse('${AppConstants.baseUrl}/budget'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(budgetData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("✅ Presupuesto creado con éxito: ${response.body}");
+        Get.snackbar("Éxito", "Presupuesto creado correctamente");
+      } else {
+        print("❌ Error al crear el presupuesto: ${response.body}");
+        Get.snackbar(
+            "Error", "No se pudo crear el presupuesto: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Excepción en la solicitud: $e");
+      Get.snackbar("Error", "Hubo un problema con la solicitud.");
     }
   }
 }

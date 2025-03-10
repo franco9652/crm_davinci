@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +17,7 @@ class CreateWorkPage extends StatefulWidget {
 class _CreateWorkPageState extends State<CreateWorkPage> {
   final _formKey = GlobalKey<FormState>();
 
+  // Controladores de texto
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final budgetController = TextEditingController();
@@ -26,7 +26,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   final statusWorkController = TextEditingController();
   final workUbicationController = TextEditingController();
   final projectTypeController = TextEditingController();
-  final emailCustomer  =  TextEditingController();
+  final emailCustomerController = TextEditingController();
 
   final WorkController workController = Get.find<WorkController>();
   final HomeController customerController = Get.find<HomeController>();
@@ -80,6 +80,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 🔹 Dropdown para seleccionar el cliente
                   DropdownButtonFormField<CustomerModel>(
                     value: selectedCustomer,
                     items: customerController.customers.map((customer) {
@@ -94,6 +95,8 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                     onChanged: (CustomerModel? value) {
                       setState(() {
                         selectedCustomer = value;
+                        emailCustomerController.text =
+                            value?.email ?? ''; // Auto completar email
                       });
                     },
                     decoration: InputDecoration(
@@ -105,30 +108,17 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Colors.grey),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.blueAccent),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
                     ),
                     dropdownColor: const Color(0xFF1B1926),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.white,
-                    ),
+                    style: const TextStyle(color: Colors.white),
                     hint: const Text(
                       'Seleccione un cliente',
                       style: TextStyle(color: Colors.white38),
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // 🔹 Campos del formulario
                   _buildTextField(nameController, 'Nombre del Proyecto'),
                   const SizedBox(height: 16),
                   _buildTextField(addressController, 'Dirección'),
@@ -136,14 +126,15 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                   _buildTextField(budgetController, 'Presupuesto',
                       inputType: TextInputType.number),
                   const SizedBox(height: 16),
+
                   GestureDetector(
                     onTap: () => _selectDate(context, startDateController),
                     child: AbsorbPointer(
-                      child: _buildTextField(
-                          startDateController, 'Fecha de Inicio'),
+                      child: _buildTextField(startDateController, 'Fecha de Inicio'),
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   GestureDetector(
                     onTap: () => _selectDate(context, endDateController),
                     child: AbsorbPointer(
@@ -152,21 +143,24 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField(
-                      workUbicationController, 'Ubicación del Proyecto'),
+
+                  _buildTextField(workUbicationController, 'Ubicación del Proyecto'),
                   const SizedBox(height: 16),
-                  _buildTextField(statusWorkController,
-                      'Estado del Proyecto (activo, pausado, inactivo)'),
+                  _buildTextField(emailCustomerController, 'Correo del Cliente'),
                   const SizedBox(height: 16),
-                  _buildTextField(projectTypeController,
-                      'Tipo de Proyecto (residencial, comercial, industrial)'),
+                  _buildTextField(statusWorkController, 'Estado del Proyecto (activo, pausado, inactivo)'),
                   const SizedBox(height: 16),
+                  _buildTextField(projectTypeController, 'Tipo de Proyecto (residencial, comercial, industrial)'),
+                  const SizedBox(height: 16),
+
+                  // 🔹 Botón para crear el proyecto
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           selectedCustomer != null) {
                         try {
                           final work = WorkModel(
+                            customerId: selectedCustomer!.id ?? '', // ✅ Ahora se envía el `customerId`
                             name: nameController.text,
                             userId: [selectedCustomer!.userId ?? ''],
                             address: addressController.text,
@@ -176,18 +170,18 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                                 : null,
                             budget: double.parse(budgetController.text),
                             customerName: selectedCustomer!.name,
+                            emailCustomer: emailCustomerController.text, // ✅ Correo del cliente
                             number: generateRandomNumber(),
                             statusWork: statusWorkController.text,
                             workUbication: workUbicationController.text,
                             projectType: projectTypeController.text,
                             documents: [],
-                            employeeInWork: [], /* emailCustomer: emailCustomer.text, */
+                            employeeInWork: [],
                           );
 
-                          await workController
-                              .createWork(work); // Llama al controlador
+                          await workController.createWork(work);
+                          Get.back(); // 🔹 Regresa a la pantalla anterior
                         } catch (e) {
-                          // Mostrar error en caso de fallo inesperado
                           Get.snackbar(
                             'Error',
                             'Ocurrió un error inesperado: $e',
@@ -219,6 +213,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
+  // 🔹 Widget para construir los campos de entrada
   Widget _buildTextField(TextEditingController controller, String label,
       {TextInputType inputType = TextInputType.text}) {
     return TextFormField(
@@ -242,6 +237,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
+  // 🔹 Generar número aleatorio para el proyecto
   String generateRandomNumber() {
     final random = Random();
     return (100000 + random.nextInt(900000)).toString();

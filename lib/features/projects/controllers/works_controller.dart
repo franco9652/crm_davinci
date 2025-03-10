@@ -29,26 +29,33 @@ class WorkController extends GetxController {
     fetchWorks();
   }
 
-  Future<void> fetchWorks({int limit = 10}) async {
-    if (isLoading.value) return;
+ Future<void> fetchWorks({int limit = 10}) async {
+  if (isLoading.value) return;
 
-    isLoading.value = true;
+  isLoading(true);
 
-    try {
-      final fetchedWorks =
-          await workRemoteDataSource.getAllWorks(currentPage.value, limit);
-      print("Proyectos obtenidos: $fetchedWorks");
-      if (fetchedWorks.isEmpty) {
-        noWorkMessage.value = "No hay proyectos disponibles en este momento.";
-      } else {
-        works.value = fetchedWorks;
-      }
-    } catch (e) {
-      Get.snackbar("Error", "No se pudo cargar los proyectos: $e");
-    } finally {
-      isLoading.value = false;
+  try {
+    final fetchedWorks = await workRemoteDataSource.getAllWorks(currentPage.value, limit);
+    
+    if (fetchedWorks.isEmpty) {
+      noWorkMessage.value = "No hay proyectos disponibles en este momento.";
+    } else {
+      works.assignAll(fetchedWorks); // 🔄 Refresca la lista
+      update(); // 🔄 Forzar actualización en la UI
     }
+    
+    // 🔄 Actualizar el total de páginas para la paginación
+    final totalPagesFromServer = fetchedWorks.length < limit ? currentPage.value : currentPage.value + 1;
+    totalPages.value = totalPagesFromServer;
+
+  } catch (e) {
+    Get.snackbar("Error", "No se pudo cargar los proyectos: $e");
+  } finally {
+    isLoading(false);
   }
+}
+
+
 
   Future<void> fetchCustomers() async {
     isLoading.value = true;
@@ -77,38 +84,42 @@ class WorkController extends GetxController {
     }
   }
 
-  void goToPage(int page) {
-    if (page < 1 || page > totalPages.value) return;
-    currentPage.value = page;
-    fetchWorks();
+ void goToPage(int page) {
+  if (page < 1 || page > totalPages.value) return;
+  currentPage.value = page;
+  fetchWorks();
+}
+
+
+Future<void> createWork(WorkModel work) async {
+  try {
+    isLoading(true);
+    await workRemoteDataSource.createWork(work);
+    print("✅ Trabajo creado correctamente");
+
+    // 🔄 Recargar la lista de trabajos después de la creación
+    await fetchWorks();
+
+    // Mostrar mensaje de éxito y volver al listado
+    Get.defaultDialog(
+      title: "Éxito",
+      middleText: "El proyecto ha sido creado correctamente.",
+      textConfirm: "Aceptar",
+      onConfirm: () {
+        Get.back(); // Cierra el pop-up
+        Get.offNamed(AppRoutes.projects); // Navega directamente al listado
+      },
+    );
+  } catch (e) {
+    Get.defaultDialog(
+      title: "Error",
+      middleText: "Error en la creación del proyecto:\n$e",
+      textConfirm: "Aceptar",
+      onConfirm: () => Get.back(),
+    );
+  } finally {
+    isLoading(false);
   }
+}
 
-  Future<void> createWork(WorkModel work) async {
-    try {
-      await workRemoteDataSource
-          .createWork(work); // Crea el proyecto sin excepción
-
-      // Muestra el mensaje de éxito
-      Get.defaultDialog(
-        title: "Éxito",
-        middleText: "El proyecto ha sido creado correctamente.",
-        textConfirm: "Aceptar",
-        onConfirm: () {
-          Get.back(); // Cierra el pop-up
-          Get.offNamed(AppRoutes.projects); // Navega directamente al listado
-        },
-      );
-
-      // Refresca la lista de trabajos
-      await fetchWorks();
-    } catch (e) {
-      // Manejo de errores
-      Get.defaultDialog(
-        title: "Error",
-        middleText: "Error en la creación del proyecto:\n$e",
-        textConfirm: "Aceptar",
-        onConfirm: () => Get.back(), // Cierra el popup
-      );
-    }
-  }
 }

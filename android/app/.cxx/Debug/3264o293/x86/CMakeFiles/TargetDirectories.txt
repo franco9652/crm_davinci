@@ -1,0 +1,2 @@
+D:/Facu/davinci/crm_davinci/android/app/.cxx/Debug/3264o293/x86/CMakeFiles/edit_cache.dir
+D:/Facu/davinci/crm_davinci/android/app/.cxx/Debug/3264o293/x86/CMakeFiles/rebuild_cache.dir

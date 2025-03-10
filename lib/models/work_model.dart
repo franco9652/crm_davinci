@@ -1,5 +1,6 @@
 class WorkModel {
   final String? id;
+  final String customerId;
   final List<String> userId;
   final String name;
   final String address;
@@ -18,6 +19,7 @@ class WorkModel {
 
   WorkModel({
     this.id,
+    required this.customerId,
     required this.userId,
     required this.name,
     required this.address,
@@ -33,11 +35,13 @@ class WorkModel {
     required this.customerName,
     this.emailCustomer,
     this.number,
+    
   });
 
   factory WorkModel.fromJson(Map<String, dynamic> json) {
     return WorkModel(
       id: json['_id'] as String?,
+      customerId: json['customerId'] ?? '',
       userId: (json['userId'] is List)
           ? List<String>.from(json['userId'].map((e) => e.toString()))
           : [],
@@ -67,6 +71,7 @@ class WorkModel {
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
+      'customerId': customerId,
       'userId': userId,
       'name': name,
       'address': address,
@@ -79,7 +84,7 @@ class WorkModel {
       'workUbication': workUbication,
       'projectType': projectType,
       'customerName': customerName,
-      'emailCustomer': emailCustomer,
+      'emailCustomer': emailCustomer ??  "",
       'number': number,
     };
   }
