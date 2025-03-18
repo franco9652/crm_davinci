@@ -14,6 +14,11 @@ class BudgetController extends GetxController {
   var selectedCustomerId = RxnString();
   var selectedWorkId = RxnString();
 
+  // 🔹 Agregar listas observables para los dropdowns de selección múltiple
+  var selectedMaterials = <String>[].obs;
+  var selectedApprovals = <String>[].obs;
+  var selectedSubcontractors = <String>[].obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -64,20 +69,22 @@ class BudgetController extends GetxController {
   }
 
   // 🔹 Crear un presupuesto
-  Future<void> createBudget(BudgetModel budget) async {
+  Future<bool> createBudget(BudgetModel budget) async {
     try {
       isLoading(true);
 
-      final budgetData = budget.toJson();
-      if (budgetData['workId'] == null || budgetData['workId'].isEmpty) {
-        budgetData.remove('workId');
-      }
+      bool success = await budgetRemoteDataSource.createBudget(budget);
 
-      await budgetRemoteDataSource
-          .createBudget(BudgetModel.fromJson(budgetData));
-      Get.snackbar("Éxito", "Presupuesto creado correctamente");
+      if (success) {
+        Get.snackbar("Éxito", "Presupuesto creado correctamente");
+        return true;
+      } else {
+        Get.snackbar("Error", "No se pudo crear el presupuesto.");
+        return false;
+      }
     } catch (e) {
-      Get.snackbar("Error", "No se pudo crear el presupuesto");
+      Get.snackbar("Error", "Error inesperado: $e");
+      return false;
     } finally {
       isLoading(false);
     }

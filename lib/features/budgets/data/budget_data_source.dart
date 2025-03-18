@@ -68,30 +68,30 @@ class BudgetRemoteDataSource {
   }
 
   // 🔹 Crear un presupuesto
-  Future<void> createBudget(BudgetModel budget) async {
-    final budgetData = budget.toJson();
-    if (budgetData['workId'] == null || budgetData['workId'].isEmpty) {
-      budgetData.remove('workId');
-    }
-
-    try {
-      final response = await client.post(
-        Uri.parse('${AppConstants.baseUrl}/budget'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(budgetData),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print("✅ Presupuesto creado con éxito: ${response.body}");
-        Get.snackbar("Éxito", "Presupuesto creado correctamente");
-      } else {
-        print("❌ Error al crear el presupuesto: ${response.body}");
-        Get.snackbar(
-            "Error", "No se pudo crear el presupuesto: ${response.body}");
-      }
-    } catch (e) {
-      print("❌ Excepción en la solicitud: $e");
-      Get.snackbar("Error", "Hubo un problema con la solicitud.");
-    }
+Future<bool> createBudget(BudgetModel budget) async {
+  final budgetData = budget.toJson();
+  if (budgetData['workId'] == null || budgetData['workId'].isEmpty) {
+    budgetData.remove('workId');
   }
+
+  try {
+    final response = await client.post(
+      Uri.parse('${AppConstants.baseUrl}/budget'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(budgetData),
+    );
+
+    print("🔵 Respuesta del servidor: ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print("❌ Error en la solicitud: $e");
+    return false;
+  }
+}
+
 }

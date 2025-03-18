@@ -12,13 +12,58 @@ class CreateBudgetScreen extends StatelessWidget {
   final estimatedBudgetController = TextEditingController();
   final startDateController = TextEditingController();
   final endDateController = TextEditingController();
-  final materialsController = TextEditingController();
-  final approvalsController = TextEditingController();
-  final subcontractorsController = TextEditingController();
 
-  void _createBudget() {
+  // Listas de selección
+  final List<String> materiales = [
+    "Cemento",
+    "Madera",
+    "Vidrio",
+    "Acero",
+    "Ladrillos"
+  ];
+  final List<String> aprobaciones = [
+    "Planos aprobados",
+    "Permiso municipal",
+    "Certificado ambiental"
+  ];
+  final List<String> subcontratistas = [
+    "Electricidad",
+    "Plomería",
+    "Pintura",
+    "Carpintero",
+    "Albañil"
+  ];
+
+  /// 📌 **Abrir DatePicker**
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark(),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      controller.text = "${picked.day}/${picked.month}/${picked.year}";
+    }
+  }
+
+  /// 📌 **Crear Presupuesto**
+  void _createBudget() async {
     if (budgetController.selectedCustomerId.value == null) {
       Get.snackbar("Error", "Selecciona un cliente primero.");
+      return;
+    }
+
+    if (startDateController.text.isEmpty || endDateController.text.isEmpty) {
+      Get.snackbar("Error", "Selecciona una fecha de inicio y finalización.");
       return;
     }
 
@@ -34,6 +79,11 @@ class CreateBudgetScreen extends StatelessWidget {
       orElse: () => {},
     );
 
+    if (selectedCustomer.isEmpty) {
+      Get.snackbar("Error", "El cliente seleccionado no existe.");
+      return;
+    }
+
     final budget = BudgetModel(
       customerId: budgetController.selectedCustomerId.value!,
       customerName: selectedCustomer['name'] ?? '',
@@ -41,21 +91,9 @@ class CreateBudgetScreen extends StatelessWidget {
       projectAddress: projectAddressController.text,
       projectType: projectTypeController.text,
       m2: m2Controller.text,
-      materials: materialsController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList(),
-      approvals: approvalsController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList(),
-      subcontractors: subcontractorsController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList(),
+      materials: budgetController.selectedMaterials.toList(),
+      approvals: budgetController.selectedApprovals.toList(),
+      subcontractors: budgetController.selectedSubcontractors.toList(),
       budgetDate: DateTime.now().toIso8601String().split('T')[0],
       startDate: startDateController.text,
       endDate: endDateController.text,
@@ -65,55 +103,162 @@ class CreateBudgetScreen extends StatelessWidget {
       advancePayment: true,
       documentation: [],
     );
-
-    budgetController.createBudget(budget);
+    try {
+      bool success = await budgetController.createBudget(budget);
+      if (success) {
+        Get.defaultDialog(
+          title: "Éxito",
+          middleText: "Presupuesto creado correctamente.",
+          textConfirm: "Aceptar",
+          onConfirm: () {
+            Get.back();
+            Get.offNamed("/budgets");
+          },
+        );
+      }
+    } catch (e) {
+      Get.defaultDialog(
+        title: "Error",
+        middleText: "No se pudo crear el presupuesto: $e",
+        textConfirm: "Aceptar",
+        onConfirm: () => Get.back(),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear Presupuesto')),
+      backgroundColor: Color(0xFF0F172A),
+      appBar: AppBar(
+        title: const Text('Crear Presupuesto',
+            style: TextStyle(color: Colors.white, fontSize: 18)),
+        backgroundColor: Color(0xFF1E293B),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: ListView(
           children: [
-            DropdownButtonFormField<String>(
-              value: budgetController.selectedCustomerId.value,
-              items: budgetController.customers
-                  .map<DropdownMenuItem<String>>((customer) {
-                return DropdownMenuItem<String>(
-                  value: customer['userId'].toString(),
-                  child: Text(customer['name'].toString()),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  budgetController.selectedCustomerId.value = value;
-                }
-              },
-              decoration:
-                  const InputDecoration(labelText: 'Seleccionar Cliente'),
-            ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: projectAddressController,
-              decoration:
-                  const InputDecoration(labelText: 'Dirección del Proyecto'),
-            ),
-            TextFormField(
-              controller: estimatedBudgetController,
-              keyboardType: TextInputType.number,
-              decoration:
-                  const InputDecoration(labelText: 'Presupuesto Estimado'),
-            ),
-            const SizedBox(height: 15),
+            Obx(() => _buildDropdownField(
+                  "Seleccionar Cliente",
+                  budgetController.selectedCustomerId.value,
+                  budgetController.customers
+                      .map<DropdownMenuItem<String>>((customer) {
+                    return DropdownMenuItem<String>(
+                      value: customer['_id'].toString(),
+                      child: Text(customer['name'].toString(),
+                          style: TextStyle(color: Colors.white)),
+                    );
+                  }).toList(),
+                  (value) {
+                    if (value != null)
+                      budgetController.selectedCustomerId.value = value;
+                  },
+                )),
+            _buildTextField(projectAddressController, "Dirección del Proyecto"),
+            _buildTextField(projectTypeController, "Tipo de Proyecto"),
+            _buildTextField(m2Controller, "Metros Cuadrados (m²)",
+                isNumeric: true),
+            _buildTextField(estimatedBudgetController, "Presupuesto Estimado",
+                isNumeric: true),
+            _buildDateField(startDateController, "Fecha de inicio", context),
+            _buildDateField(
+                endDateController, "Fecha de finalización", context),
+            Obx(() => _buildMultiSelectDropdown(
+                "Materiales", materiales, budgetController.selectedMaterials)),
+            Obx(() => _buildMultiSelectDropdown("Aprobaciones", aprobaciones,
+                budgetController.selectedApprovals)),
+            Obx(() => _buildMultiSelectDropdown("Subcontratistas",
+                subcontratistas, budgetController.selectedSubcontractors)),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createBudget,
-              child: const Text('Crear Presupuesto'),
+              child: const Text('Crear Presupuesto',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF1B98E0),
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool isNumeric = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+        style: TextStyle(color: Colors.white),
+        decoration: _inputDecoration(label),
+      ),
+    );
+  }
+
+  Widget _buildDateField(
+      TextEditingController controller, String label, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        style: TextStyle(color: Colors.white),
+        decoration: _inputDecoration(label).copyWith(
+          suffixIcon: Icon(Icons.calendar_today, color: Colors.white70),
+        ),
+        onTap: () => _selectDate(context, controller),
+      ),
+    );
+  }
+
+  Widget _buildMultiSelectDropdown(
+      String label, List<String> options, RxList<String> selectedValues) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Obx(() => DropdownButtonFormField<String>(
+            items: options.map((String item) {
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Text(item, style: TextStyle(color: Colors.white)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null && !selectedValues.contains(value)) {
+                selectedValues.add(value);
+              }
+            },
+            decoration: _inputDecoration(label),
+          )),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value,
+      List<DropdownMenuItem<String>> items, Function(String?)? onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items,
+        onChanged: onChanged,
+        decoration: _inputDecoration(label),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      filled: true,
+      fillColor: Colors.white24,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }
