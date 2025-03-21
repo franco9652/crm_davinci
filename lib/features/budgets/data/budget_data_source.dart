@@ -9,7 +9,7 @@ class BudgetRemoteDataSource {
 
   BudgetRemoteDataSource(this.client);
 
-  // 🔹 Obtener lista de clientes
+
   Future<List<Map<String, dynamic>>> getCustomers() async {
     final response = await client.get(
       Uri.parse('${AppConstants.baseUrl}/customers'),
@@ -24,7 +24,6 @@ class BudgetRemoteDataSource {
     }
   }
 
-  // 🔹 Obtener obras de un cliente
   Future<List<Map<String, dynamic>>> getWorksByCustomer(
       String customerId) async {
     final response = await client.get(
@@ -50,7 +49,6 @@ class BudgetRemoteDataSource {
     }
   }
 
-  // 🔹 Obtener presupuestos de un cliente
   Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
     final response = await client.get(
       Uri.parse('${AppConstants.baseUrl}/budgetgetbyuser/$customerId'),
@@ -67,7 +65,6 @@ class BudgetRemoteDataSource {
     }
   }
 
-  // 🔹 Crear un presupuesto
 Future<bool> createBudget(BudgetModel budget) async {
   final budgetData = budget.toJson();
   if (budgetData['workId'] == null || budgetData['workId'].isEmpty) {

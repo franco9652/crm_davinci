@@ -22,35 +22,98 @@ class WorkListPage extends StatelessWidget {
         ),
         elevation: 0,
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.works.isEmpty) {
-          return Center(
-            child: Text(
-              controller.noWorkMessage.value,
-              style: const TextStyle(color: Colors.white),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2937),
+              borderRadius: BorderRadius.circular(12),
             ),
-          );
-        }
+            margin: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Buscador
+                TextField(
+                  onChanged: controller.updateSearchQuery,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar proyecto...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: Color(0xFF1B1926),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                // Filtro de estado
+                DropdownButtonFormField<String>(
+                  value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
+                  items: [
+                    DropdownMenuItem<String>(
+                      value: '',
+                      child: Text('Todos los estados', style: TextStyle(color: Colors.white)),
+                    ),
+                    ...controller.workStatuses.map((status) => DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(status, style: TextStyle(color: Colors.white)),
+                    )).toList(),
+                  ],
+                  onChanged: controller.updateSelectedStatus,
+                  decoration: InputDecoration(
+                    hintText: 'Filtrar por estado',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    prefixIcon: Icon(Icons.filter_list, color: Colors.grey),
+                    filled: true,
+                    fillColor: Color(0xFF1B1926),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  dropdownColor: Color(0xFF1B1926),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: controller.works.length,
+              final displayedWorks = controller.searchQuery.isEmpty && controller.selectedStatus.isEmpty
+                  ? controller.works
+                  : controller.filteredWorks;
+
+              if (displayedWorks.isEmpty) {
+                return Center(
+                  child: Text(
+                    controller.noWorkMessage.value,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: displayedWorks.length,
                 itemBuilder: (context, index) {
-                  final work = controller.works[index];
+                  final work = displayedWorks[index];
                   return _buildWorkCard(work);
                 },
-              ),
-            ),
-            _buildPagination(),
-          ],
-        );
-      }),
+              );
+            }),
+          ),
+          _buildPagination(),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'createWork', 
         onPressed: () {
@@ -142,26 +205,41 @@ class WorkListPage extends StatelessWidget {
   }
 
   Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: controller.currentPage.value > 1
-              ? () => controller.goToPage(controller.currentPage.value - 1)
-              : null,
-        ),
-        Text(
-          "${controller.currentPage.value} / ${controller.totalPages.value}",
-          style: const TextStyle(color: Colors.white),
-        ),
-        IconButton(
-          icon: const Icon(Icons.arrow_forward, color: Colors.white),
-          onPressed: controller.currentPage.value < controller.totalPages.value
-              ? () => controller.goToPage(controller.currentPage.value + 1)
-              : null,
-        ),
-      ],
-    );
+    return Obx(() => Container(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: controller.currentPage.value > 1
+                ? () => controller.goToPage(controller.currentPage.value - 1)
+                : null,
+            disabledColor: Colors.grey.withOpacity(0.5),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2937),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              "Página ${controller.currentPage.value} / ${controller.totalPages.value}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward, color: Colors.white),
+            onPressed: controller.hasNextPage.value
+                ? () => controller.goToPage(controller.currentPage.value + 1)
+                : null,
+            disabledColor: Colors.grey.withOpacity(0.5),
+          ),
+        ],
+      ),
+    ));
   }
 }

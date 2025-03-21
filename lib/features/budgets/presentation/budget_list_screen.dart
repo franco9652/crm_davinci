@@ -164,12 +164,12 @@ class CreateBudgetScreen extends StatelessWidget {
             _buildDateField(startDateController, "Fecha de inicio", context),
             _buildDateField(
                 endDateController, "Fecha de finalización", context),
-            Obx(() => _buildMultiSelectDropdown(
-                "Materiales", materiales, budgetController.selectedMaterials)),
-            Obx(() => _buildMultiSelectDropdown("Aprobaciones", aprobaciones,
-                budgetController.selectedApprovals)),
-            Obx(() => _buildMultiSelectDropdown("Subcontratistas",
-                subcontratistas, budgetController.selectedSubcontractors)),
+            _buildMultiSelectDropdown(
+                "Materiales", materiales, budgetController.selectedMaterials),
+            _buildMultiSelectDropdown("Aprobaciones", aprobaciones,
+                budgetController.selectedApprovals),
+            _buildMultiSelectDropdown("Subcontratistas",
+                subcontratistas, budgetController.selectedSubcontractors),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createBudget,
@@ -222,7 +222,8 @@ class CreateBudgetScreen extends StatelessWidget {
       String label, List<String> options, RxList<String> selectedValues) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Obx(() => DropdownButtonFormField<String>(
+      child: DropdownButtonFormField<String>(
+            value: selectedValues.isEmpty ? null : selectedValues.last,
             items: options.map((String item) {
               return DropdownMenuItem<String>(
                 value: item,
@@ -235,7 +236,7 @@ class CreateBudgetScreen extends StatelessWidget {
               }
             },
             decoration: _inputDecoration(label),
-          )),
+          ),
     );
   }
 

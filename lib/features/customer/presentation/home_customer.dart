@@ -26,35 +26,64 @@ class HomePageCustomer extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFF1B1926),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value && controller.customers.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.customers.isEmpty) {
-          return Center(
-            child: Text(
-              controller.noClientMessage.value,
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: controller.customers.length,
-                itemBuilder: (context, index) {
-                  final customer = controller.customers[index];
-                  return _buildCustomerCard(customer);
-                },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: controller.updateSearchQuery,
+              decoration: InputDecoration(
+                hintText: 'Buscar por nombre...',
+                hintStyle: TextStyle(color: Colors.grey),
+                prefixIcon: Icon(Iconsax.search_normal, color: Colors.grey),
+                filled: true,
+                fillColor: Color(0xFF2A2937),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
+              style: TextStyle(color: Colors.white),
             ),
-            _buildPaginationControls(),
-          ],
-        );
-      }),
+          ),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value && controller.customers.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final displayedCustomers = controller.searchQuery.isEmpty 
+                  ? controller.customers 
+                  : controller.filteredCustomers;
+
+              if (displayedCustomers.isEmpty) {
+                return Center(
+                  child: Text(
+                    controller.noClientMessage.value,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: displayedCustomers.length,
+                      itemBuilder: (context, index) {
+                        final customer = displayedCustomers[index];
+                        return _buildCustomerCard(customer);
+                      },
+                    ),
+                  ),
+                  _buildPaginationControls(),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
       backgroundColor: const Color(0xFF1B1926),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

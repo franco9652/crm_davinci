@@ -14,10 +14,10 @@ class BudgetController extends GetxController {
   var selectedCustomerId = RxnString();
   var selectedWorkId = RxnString();
 
-  // 🔹 Agregar listas observables para los dropdowns de selección múltiple
-  var selectedMaterials = <String>[].obs;
-  var selectedApprovals = <String>[].obs;
-  var selectedSubcontractors = <String>[].obs;
+
+  final selectedMaterials = <String>[].obs;
+  final selectedApprovals = <String>[].obs;
+  final selectedSubcontractors = <String>[].obs;
 
   @override
   void onInit() {
@@ -25,7 +25,7 @@ class BudgetController extends GetxController {
     fetchCustomers();
   }
 
-  // 🔹 Obtener lista de clientes
+ 
   Future<void> fetchCustomers() async {
     try {
       isLoading(true);
@@ -39,7 +39,6 @@ class BudgetController extends GetxController {
     }
   }
 
-  // 🔹 Obtener lista de obras según cliente seleccionado
   Future<void> fetchWorksByCustomer(String customerId) async {
     try {
       isLoading(true);
@@ -53,7 +52,7 @@ class BudgetController extends GetxController {
     }
   }
 
-  // 🔹 Obtener lista de presupuestos de un cliente
+
   Future<void> fetchBudgetsByCustomer(String customerId) async {
     try {
       isLoading(true);
@@ -68,7 +67,7 @@ class BudgetController extends GetxController {
     }
   }
 
-  // 🔹 Crear un presupuesto
+  
   Future<bool> createBudget(BudgetModel budget) async {
     try {
       isLoading(true);
