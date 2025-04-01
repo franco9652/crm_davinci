@@ -113,17 +113,19 @@ class LoginPage extends StatelessWidget {
                               controller.password.value = value,
                           errorText: controller.passwordError.value,
                         )),
-
                     const SizedBox(height: 10),
 
-                    // Forgot Password
+                    // Forgot Password Link
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {}, // Agregar funcionalidad aquí
+                        onPressed: () => Get.toNamed('/forgot-password'),
                         child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.blueAccent),
+                          '¿Olvidaste tu contraseña?',
+                          style: TextStyle(
+                            color: Color(0xFF3B82F6),
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -165,26 +167,6 @@ class LoginPage extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    // Link de registro
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Don't have an account?",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Get.toNamed(AppRoutes.register);
-                          },
-                          child: const Text(
-                            "Sign Up",
-                            style: TextStyle(color: Colors.blueAccent),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -219,7 +201,7 @@ class LoginPage extends StatelessWidget {
 
               // Footer
               const Text(
-                '© 2025 CRM\nTerminos & Condiciones | Politica de privacidad | Legal',
+                ' 2025 CRM\nTerminos & Condiciones | Politica de privacidad | Legal',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),

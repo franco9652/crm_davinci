@@ -34,4 +34,31 @@ class AuthRemoteDataSource {
       throw Exception('Error al registrar');
     }
   }
+
+  Future<void> sendPasswordRecoveryEmail(String email) async {
+    final response = await client.post(
+      Uri.parse('${AppConstants.baseUrl}/recovery'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al enviar el correo de recuperación');
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    final response = await client.post(
+      Uri.parse('${AppConstants.baseUrl}/auth/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'token': token,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al restablecer la contraseña');
+    }
+  }
 }

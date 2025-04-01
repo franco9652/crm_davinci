@@ -1,11 +1,11 @@
-
-
 import 'package:crm_app_dv/features/auth/login/presentation/login_page.dart';
 import 'package:crm_app_dv/features/budgets/presentation/budget_list_screen.dart';
 import 'package:crm_app_dv/features/customer/presentation/home_customer.dart';
 import 'package:crm_app_dv/features/profile/presentation/profile_screen.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_page.dart';
 import 'package:crm_app_dv/navigation/main_navigation.dart';
+import 'package:crm_app_dv/features/auth/forgot_password/presentation/forgot_password_page.dart';
+import 'package:crm_app_dv/features/auth/forgot_password/presentation/reset_password_page.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
@@ -19,7 +19,8 @@ class AppRoutes {
   static const walletHome = '/alta-projects';
   static const budgets = '/budgets';
   static const profile = '/profile';
-  
+  static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
 
   // Todas las rutas registradas
   static final List<GetPage> pages = [
@@ -30,6 +31,11 @@ class AppRoutes {
     GetPage(name: projects, page: () => WorkListPage()),
     GetPage(name: budgets, page: () => CreateBudgetScreen()),
     GetPage(name: profile, page: () => ProfileScreen()),
-    
+    GetPage(name: forgotPassword, page: () => ForgotPasswordPage()),
+    GetPage(
+      name: resetPassword, 
+      page: () => ResetPasswordPage(),
+      parameters: {'token': ''}, // El token se pasará dinámicamente
+    ),
   ];
 }
