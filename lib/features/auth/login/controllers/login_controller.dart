@@ -11,6 +11,7 @@ class LoginController extends GetxController {
   var email = ''.obs;
   var password = ''.obs;
   var isPasswordVisible = false.obs;
+  var isLoading = false.obs;
 
   var emailError = ''.obs;
   var passwordError = ''.obs;
@@ -18,6 +19,7 @@ class LoginController extends GetxController {
   Future<void> login() async {
     if (!_validateForm()) return;
 
+    isLoading.value = true;
     try {
       final token = await authRepository.login(email.value, password.value);
 
@@ -28,6 +30,8 @@ class LoginController extends GetxController {
       Get.offAllNamed(AppRoutes.mainNavigation); // Redirigir al listado de clientes
     } catch (e) {
       Get.snackbar('Error', 'Credenciales incorrectas');
+    } finally {
+      isLoading.value = false;
     }
   }
 

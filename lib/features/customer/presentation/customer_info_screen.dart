@@ -3,11 +3,21 @@ import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 class CustomerInfoScreen extends StatelessWidget {
   final String userId;
 
   const CustomerInfoScreen({Key? key, required this.userId}) : super(key: key);
+
+  String _formatDateTime(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd/MM/yyyy HH:mm').format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +92,7 @@ class CustomerInfoScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Se registró el: ${customer.createdAt}', // Ajustar formato si es necesario
+                      'Se registró el: ${_formatDateTime(customer.createdAt.toString())}',
                       style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
@@ -93,8 +103,9 @@ class CustomerInfoScreen extends StatelessWidget {
                             Icons.email, 'Email', () => _sendEmail(customer.email)),
                         _buildActionButton(Icons.phone, 'Teléfono',
                             () => _makeCall(customer.contactNumber)),
-                        _buildActionButton(Icons.calendar_today, 'Agenda', () {}),
-                        _buildActionButton(Icons.note, 'Notas', () {}),
+                        _buildActionButton(
+                            Icons.message, 'WhatsApp',
+                            () => _launchWhatsApp(customer.contactNumber, customer.name)),
                       ],
                     ),
                   ],
@@ -241,6 +252,22 @@ class CustomerInfoScreen extends StatelessWidget {
       await launch(phoneUri.toString());
     } else {
       Get.snackbar('Error', 'No se pudo realizar la llamada');
+    }
+  }
+
+  Future<void> _launchWhatsApp(String phoneNumber, String name) async {
+    final message = "Hola $name";
+    final whatsappUrl = "whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}";
+    
+    if (await canLaunch(whatsappUrl)) {
+      await launch(whatsappUrl);
+    } else {
+      Get.snackbar(
+        'Error',
+        'No se pudo abrir WhatsApp',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }

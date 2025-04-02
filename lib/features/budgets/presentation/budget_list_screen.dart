@@ -222,21 +222,35 @@ class CreateBudgetScreen extends StatelessWidget {
       String label, List<String> options, RxList<String> selectedValues) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: DropdownButtonFormField<String>(
-            value: selectedValues.isEmpty ? null : selectedValues.last,
-            items: options.map((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item, style: TextStyle(color: Colors.white)),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null && !selectedValues.contains(value)) {
-                selectedValues.add(value);
-              }
-            },
-            decoration: _inputDecoration(label),
-          ),
+      child: Theme(
+        data: Theme.of(Get.context!).copyWith(
+          canvasColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
+        ),
+        child: DropdownButtonFormField<String>(
+          value: selectedValues.isEmpty ? null : selectedValues.last,
+          items: options.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null && !selectedValues.contains(value)) {
+              selectedValues.add(value);
+            }
+          },
+          dropdownColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
+          style: const TextStyle(color: Colors.white), // Color del texto seleccionado
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+          decoration: _inputDecoration(label),
+        ),
+      ),
     );
   }
 
@@ -244,11 +258,19 @@ class CreateBudgetScreen extends StatelessWidget {
       List<DropdownMenuItem<String>> items, Function(String?)? onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        items: items,
-        onChanged: onChanged,
-        decoration: _inputDecoration(label),
+      child: Theme(
+        data: Theme.of(Get.context!).copyWith(
+          canvasColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
+        ),
+        child: DropdownButtonFormField<String>(
+          value: value,
+          items: items,
+          onChanged: onChanged,
+          dropdownColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
+          style: const TextStyle(color: Colors.white), // Color del texto seleccionado
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+          decoration: _inputDecoration(label),
+        ),
       ),
     );
   }
@@ -256,10 +278,21 @@ class CreateBudgetScreen extends StatelessWidget {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      labelStyle: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
       filled: true,
-      fillColor: Colors.white24,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      fillColor: const Color(0xFF1E293B),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.white24),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.white24),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+      ),
     );
   }
 }

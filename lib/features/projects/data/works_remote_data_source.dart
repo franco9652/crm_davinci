@@ -10,68 +10,68 @@ class WorkRemoteDataSource {
 
   WorkRemoteDataSource(this.client);
 
- Future<List<WorkModel>> getAllWorks(int page, int limit) async {
-  final response = await client.get(
-    Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
-    headers: {'Content-Type': 'application/json'},
-  );
+  Future<List<WorkModel>> getAllWorks(int page, int limit) async {
+    final response = await client.get(
+      Uri.parse('${AppConstants.baseUrl}/works?page=$page&limit=$limit'),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-  if (response.statusCode == 200) {
-    final jsonResponse = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
 
-    // 🔹 Asegurar que el total de páginas se almacena correctamente
-    if (jsonResponse.containsKey('totalPages')) {
-      final totalPagesFromServer = jsonResponse['totalPages'];
-      Get.find<WorkController>().totalPages.value = totalPagesFromServer;
+      // Actualizar el total de páginas en el controlador
+      if (jsonResponse.containsKey('totalPages')) {
+        final totalPagesFromServer = jsonResponse['totalPages'] as int;
+        final workController = Get.find<WorkController>();
+        workController.totalPages.value = totalPagesFromServer;
+        workController.hasNextPage.value = page < totalPagesFromServer;
+      }
+
+      return (jsonResponse['works'] as List)
+          .map((data) => WorkModel.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Error al obtener los proyectos');
     }
-
-    return (jsonResponse['works'] as List)
-        .map((data) => WorkModel.fromJson(data))
-        .toList();
-  } else {
-    throw Exception('Error al obtener los proyectos');
   }
-}
 
-
-Future<void> createWork(WorkModel work) async {
-  final workJson = jsonEncode(work.toJson());
+  Future<void> createWork(WorkModel work) async {
+    final workJson = jsonEncode(work.toJson());
   
-  print("📤 Enviando Work al Backend: $workJson"); 
+    print(" Enviando Work al Backend: $workJson"); 
 
-  final response = await client.post(
-    Uri.parse('${AppConstants.baseUrl}/workCreate'),
-    headers: {'Content-Type': 'application/json'},
-    body: workJson,
-  );
+    final response = await client.post(
+      Uri.parse('${AppConstants.baseUrl}/workCreate'),
+      headers: {'Content-Type': 'application/json'},
+      body: workJson,
+    );
 
-  print("🔵 Status Code: ${response.statusCode}");
-  print("🔵 Respuesta del Backend: ${response.body}");
+    print(" Status Code: ${response.statusCode}");
+    print(" Respuesta del Backend: ${response.body}");
 
-  if (response.statusCode == 201 || response.statusCode == 200) {
-    print('✅ Proyecto creado exitosamente: ${response.body}');
-  } else {
-    final errorResponse = json.decode(response.body);
-    final errorMessage =
-        errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
-    print("❌ Error al crear trabajo: $errorMessage");
-    throw Exception(errorMessage);
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      print(' Proyecto creado exitosamente: ${response.body}');
+    } else {
+      final errorResponse = json.decode(response.body);
+      final errorMessage =
+          errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
+      print(" Error al crear trabajo: $errorMessage");
+      throw Exception(errorMessage);
+    }
   }
-}
-
 
   Future<List<WorkModel>> getWorksByUserId(String customerId) async {
     final url = '${AppConstants.baseUrl}/workgetbycustomerid/$customerId';
 
-    print("🔵 WorkRemoteDataSource: Haciendo petición a: $url");
+    print(" WorkRemoteDataSource: Haciendo petición a: $url");
 
     final response = await client.get(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
     );
 
-    print("🔵 WorkRemoteDataSource: Status: ${response.statusCode}");
-    print("🔵 WorkRemoteDataSource: Body: ${response.body}");
+    print(" WorkRemoteDataSource: Status: ${response.statusCode}");
+    print(" WorkRemoteDataSource: Body: ${response.body}");
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
@@ -79,7 +79,7 @@ Future<void> createWork(WorkModel work) async {
           .map((data) => WorkModel.fromJson(data))
           .toList();
     } else if (response.statusCode == 404) {
-      print("🔴 No se encontraron trabajos para este cliente.");
+      print(" No se encontraron trabajos para este cliente.");
       return [];
     } else {
       throw Exception('Error al obtener los trabajos del usuario');

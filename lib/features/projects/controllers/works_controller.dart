@@ -26,6 +26,7 @@ class WorkController extends GetxController {
   final selectedStatus = ''.obs;
   final filteredWorks = <WorkModel>[].obs;
   final hasNextPage = true.obs;
+  final limit = 10;
 
   // Lista de estados posibles
   final List<String> workStatuses = [
@@ -43,7 +44,7 @@ class WorkController extends GetxController {
     fetchWorks();
   }
 
-  Future<void> fetchWorks({int limit = 10}) async {
+  Future<void> fetchWorks() async {
     if (isLoading.value) return;
 
     isLoading(true);
@@ -54,20 +55,10 @@ class WorkController extends GetxController {
       if (response.isEmpty && currentPage.value == 1) {
         noWorkMessage.value = "No hay proyectos disponibles en este momento.";
         works.clear();
-        totalPages.value = 1;
         hasNextPage.value = false;
       } else {
         works.assignAll(response);
         hasNextPage.value = response.length >= limit;
-        
-        // Actualizar el total de páginas basado en la respuesta actual
-        if (response.isEmpty) {
-          totalPages.value = currentPage.value - 1;
-        } else if (!hasNextPage.value) {
-          totalPages.value = currentPage.value;
-        } else {
-          totalPages.value = currentPage.value + 1;
-        }
       }
 
     } catch (e) {
