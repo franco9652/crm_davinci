@@ -15,6 +15,21 @@ class LoginController extends GetxController {
 
   var emailError = ''.obs;
   var passwordError = ''.obs;
+  
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUserEmail();
+  }
+  
+  // Cargar el email guardado
+  Future<void> _loadUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('user_email');
+    if (savedEmail != null && savedEmail.isNotEmpty) {
+      email.value = savedEmail;
+    }
+  }
 
   Future<void> login() async {
     if (!_validateForm()) return;
@@ -23,9 +38,10 @@ class LoginController extends GetxController {
     try {
       final token = await authRepository.login(email.value, password.value);
 
-      // Guardar el token en SharedPreferences
+      // Guardar el token y email en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
+      await prefs.setString('user_email', email.value); // Guardar el email
 
       Get.offAllNamed(AppRoutes.mainNavigation); // Redirigir al listado de clientes
     } catch (e) {

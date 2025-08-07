@@ -41,29 +41,65 @@ class CustomerModel {
 
   /// **Método para convertir JSON a `CustomerModel`**
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
+    // Función auxiliar para convertir cualquier tipo a String de forma segura
+    String safeString(dynamic value, String defaultValue) {
+      if (value == null) return defaultValue;
+      return value is String ? value : value.toString();
+    }
+    
+    // Función auxiliar para convertir cualquier tipo a bool de forma segura
+    bool safeBool(dynamic value, bool defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is bool) return value;
+      if (value is String) return value.toLowerCase() == 'true';
+      if (value is num) return value != 0;
+      return defaultValue;
+    }
+    
+    // Función auxiliar para parsear DateTime de forma segura
+    DateTime safeDateTime(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      return DateTime.now();
+    }
+
+    // Función auxiliar para convertir a List<String> de forma segura
+    List<String> safeStringList(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value.map((item) => item?.toString() ?? '').toList();
+      }
+      if (value is Map) {
+        return value.values.map((item) => item?.toString() ?? '').toList();
+      }
+      return [];
+    }
+    
     return CustomerModel(
-      id: json['_id'] ?? '', // Identificador de MongoDB
-      userId: json['userId'] ?? '', // Usuario dueño del cliente
-      name: json['name'] ?? 'No Name',
-      secondName: json['secondName'] ?? '',
-      dni: json['dni'] ?? '',
-      cuit: json['cuit'] ?? '',
-      cuil: json['cuil'] ?? '',
-      address: json['address'] ?? '',
-      workDirection: json['workDirection'] ?? '',
-      contactNumber: json['contactNumber'] ?? 'No Contact',
-      email: json['email'] ?? 'No Email',
-      password: json['password'] ?? '',
-      firstRegister: json['firstRegister'] ?? true,
-      clienteActivo: json['clienteActivo'] ?? true,
-      worksActive: json.containsKey('worksActive') && json['worksActive'] != null
-          ? List<String>.from(json['worksActive'].map((work) => work.toString()))
-          : [],
-      documents: List<String>.from(json['documents'] ?? []),
-      createdAt: json.containsKey('createdAt') && json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      active: json['active'] ?? true,
+      id: safeString(json['_id'], ''),
+      userId: safeString(json['userId'], ''),
+      name: safeString(json['name'], 'No Name'),
+      secondName: safeString(json['secondName'], ''),
+      dni: safeString(json['dni'], ''),
+      cuit: safeString(json['cuit'], ''),
+      cuil: safeString(json['cuil'], ''),
+      address: safeString(json['address'], ''),
+      workDirection: safeString(json['workDirection'], ''),
+      contactNumber: safeString(json['contactNumber'], 'No Contact'),
+      email: safeString(json['email'], 'No Email'),
+      password: safeString(json['password'], ''),
+      firstRegister: safeBool(json['firstRegister'], true),
+      clienteActivo: safeBool(json['clienteActivo'], true),
+      worksActive: safeStringList(json['worksActive']),
+      documents: safeStringList(json['documents']),
+      createdAt: safeDateTime(json['createdAt']),
+      active: safeBool(json['active'], true),
     );
   }
 

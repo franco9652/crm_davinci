@@ -33,15 +33,53 @@ class HomeController extends GetxController {
 
     try {
       final response = await repository.fetchCustomers(currentPage.value);
+      
+      // Verificar si hay un error en la respuesta
+      if (response.containsKey('success') && response['success'] == false) {
+        final errorMsg = response['error'] as String? ?? 'Error desconocido';
+        noClientMessage.value = errorMsg;
+        // Mostrar snackbar con el error para mejorar la UX
+        Get.snackbar(
+          'Error',
+          errorMsg,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red[400],
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(10),
+          duration: const Duration(seconds: 3),
+        );
+        return;
+      }
+      
       final fetchedCustomers = response['customers'] as List<CustomerModel>;
       final totalPagesFromApi = response['totalPages'] as int;
-
-      customers.value = fetchedCustomers; // Guardar clientes de la página actual
-      totalPages.value = totalPagesFromApi; // Guardar total de páginas
+      final totalCount = response['totalCount'] as int? ?? fetchedCustomers.length;
+      
+      if (fetchedCustomers.isEmpty && totalCount == 0) {
+        noClientMessage.value = "No hay clientes disponibles";
+      } else {
+        customers.value = fetchedCustomers; // Guardar clientes de la página actual
+        totalPages.value = totalPagesFromApi; // Guardar total de páginas
+      }
     } catch (e) {
-      noClientMessage.value = "Error al cargar los clientes.";
+      print('Error en el controlador al cargar clientes: $e');
+      noClientMessage.value = "Error al cargar los clientes. Intente nuevamente.";
+      // Mostrar snackbar con el error para mejorar la UX
+      Get.snackbar(
+        'Error',
+        'Ocurrió un problema al cargar los clientes',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[400],
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(10),
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       isLoading.value = false;
+      // Aplicar filtro si hay una búsqueda activa
+      if (searchQuery.value.isNotEmpty) {
+        filterCustomers();
+      }
     }
   }
 

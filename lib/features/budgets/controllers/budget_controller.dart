@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crm_app_dv/features/budgets/data/budget_data_source.dart';
 import 'package:crm_app_dv/models/budget_model.dart';
@@ -72,17 +73,100 @@ class BudgetController extends GetxController {
     try {
       isLoading(true);
 
-      bool success = await budgetRemoteDataSource.createBudget(budget);
-
-      if (success) {
-        Get.snackbar("Éxito", "Presupuesto creado correctamente");
+      final result = await budgetRemoteDataSource.createBudget(budget);
+      debugPrint('💾 Resultado de creación de presupuesto: $result');
+      
+      if (result['success'] == true) {
+        // Éxito - Mostrar snackbar verde
+        Get.snackbar(
+          "Éxito", 
+          "Presupuesto creado correctamente",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(10),
+        );
         return true;
       } else {
-        Get.snackbar("Error", "No se pudo crear el presupuesto.");
+        // Error - Mostrar diálogo
+        String errorTitle = "Error al crear presupuesto";
+        String errorMsg = "No se pudo crear el presupuesto";
+        String btnText = "Entendido";
+        
+        // Verificar si es un presupuesto duplicado
+        if (result['isDuplicate'] == true || 
+            result['error']?.toString().toLowerCase().contains('duplicado') == true || 
+            result['error']?.toString().toLowerCase().contains('duplicate') == true) {
+          errorTitle = "Presupuesto duplicado";
+          errorMsg = "Ya existe un presupuesto para esta obra y cliente. No se pueden crear duplicados.";
+        }
+        // Verificar errores de servidor (incluyendo error 500)
+        else if (result['statusCode'] == 500 || result['error']?.toString().toLowerCase().contains('server') == true) {
+          errorTitle = "Error del servidor";
+          errorMsg = "El servidor no pudo procesar su solicitud. Esto puede deberse a que:"
+                    "\n\n1. Ya existe un presupuesto similar"
+                    "\n2. El servidor está experimentando problemas temporales"
+                    "\n\nPor favor, verifique si ya existe un presupuesto para este cliente y obra, o inténtelo más tarde.";
+        }
+        // Otros errores específicos
+        else if (result['error']?.toString().toLowerCase().contains('customerid') == true) {
+          errorTitle = "Cliente no válido";
+          errorMsg = "El cliente seleccionado no es válido o no existe.";
+        }
+        else if (result['statusCode'] == 401) {
+          errorTitle = "Sesión expirada";
+          errorMsg = "Su sesión ha expirado. Por favor, inicie sesión nuevamente.";
+        }
+        // Error genérico pero con mensaje
+        else if (result['error'] != null) {
+          errorMsg = result['error'].toString();
+        }
+        
+        // Mostrar diálogo en lugar de snackbar
+        await Get.dialog(
+          AlertDialog(
+            title: Text(errorTitle),
+            content: Text(errorMsg),
+            actions: [
+              TextButton(
+                child: Text(btnText),
+                onPressed: () => Get.back(),
+              ),
+            ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          ),
+          barrierDismissible: false,
+        );
+        
         return false;
       }
     } catch (e) {
-      Get.snackbar("Error", "Error inesperado: $e");
+      debugPrint("❌ Error al crear presupuesto: $e");
+      
+      // Mostrar diálogo para excepciones inesperadas
+      await Get.dialog(
+        AlertDialog(
+          title: const Text("Error inesperado"),
+          content: const Text(
+            "Ha ocurrido un error inesperado al crear el presupuesto. "
+            "Por favor, verifique su conexión a internet e inténtelo nuevamente más tarde."
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Aceptar"),
+              onPressed: () => Get.back(),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        barrierDismissible: false,
+      );
+      
       return false;
     } finally {
       isLoading(false);
