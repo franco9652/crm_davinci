@@ -100,12 +100,12 @@ class CustomerInfoScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildActionButton(
-                            Icons.email, 'Email', () => _sendEmail(customer.email)),
+                            Icons.email, 'Email', () => _sendEmail(context, customer.email)),
                         _buildActionButton(Icons.phone, 'Teléfono',
-                            () => _makeCall(customer.contactNumber)),
+                            () => _makeCall(context, customer.contactNumber)),
                         _buildActionButton(
                             Icons.message, 'WhatsApp',
-                            () => _launchWhatsApp(customer.contactNumber, customer.name)),
+                            () => _launchWhatsApp(context, customer.contactNumber, customer.name)),
                       ],
                     ),
                   ],
@@ -237,36 +237,116 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  void _sendEmail(String email) async {
-    final Uri emailUri = Uri(scheme: 'mailto', path: email);
-    if (await canLaunch(emailUri.toString())) {
-      await launch(emailUri.toString());
-    } else {
-      Get.snackbar('Error', 'No se pudo abrir el correo');
+  void _sendEmail(BuildContext context, String email) async {
+    // 1) Intent Gmail (Android/iOS) -> 2) mailto
+    final gmailUri = Uri.parse('googlegmail://co?to=${Uri.encodeComponent(email)}');
+    final mailtoUri = Uri(scheme: 'mailto', path: email);
+    // 3) Gmail web compose (fallback navegador)
+    final gmailWebUri = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=${Uri.encodeComponent(email)}');
+
+    try {
+      if (await canLaunchUrl(gmailUri)) {
+        final ok = await launchUrl(gmailUri, mode: LaunchMode.externalApplication);
+        if (ok) return;
+      }
+      // Algunos dispositivos devuelven false en canLaunchUrl. Intentamos directo.
+      final okMail = await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+      if (okMail) return;
+
+      // Fallback al navegador (compositor de Gmail web)
+      final okWeb = await launchUrl(gmailWebUri, mode: LaunchMode.externalApplication);
+      if (okWeb) return;
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir el correo'),
+          content: Text('Intentá con la app de Gmail instalada y configurada o accedé vía navegador.\nDirección: $email'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir el correo'),
+          content: Text('Error: $e'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
     }
   }
 
-  void _makeCall(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunch(phoneUri.toString())) {
-      await launch(phoneUri.toString());
-    } else {
-      Get.snackbar('Error', 'No se pudo realizar la llamada');
+  void _makeCall(BuildContext context, String phoneNumber) async {
+    final normalized = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    final Uri phoneUri = Uri(scheme: 'tel', path: normalized); // abre marcador (no requiere permiso)
+    final Uri phonePromptUri = Uri.parse('telprompt:$normalized'); // iOS alternativo
+    try {
+      // Intentamos directo sin chequear canLaunch por dispositivos que devuelven false
+      var ok = await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+      if (!ok && await canLaunchUrl(phonePromptUri)) {
+        ok = await launchUrl(phonePromptUri, mode: LaunchMode.externalApplication);
+      }
+      if (ok) return;
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo realizar la llamada'),
+          content: Text('Número: $normalized'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo realizar la llamada'),
+          content: Text('Error: $e'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
     }
   }
 
-  Future<void> _launchWhatsApp(String phoneNumber, String name) async {
-    final message = "Hola $name";
-    final whatsappUrl = "whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}";
-    
-    if (await canLaunch(whatsappUrl)) {
-      await launch(whatsappUrl);
-    } else {
-      Get.snackbar(
-        'Error',
-        'No se pudo abrir WhatsApp',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+  Future<void> _launchWhatsApp(BuildContext context, String phoneNumber, String name) async {
+    final message = 'Hola $name';
+    // Normalizamos número básico: quitamos espacios y caracteres no numéricos
+    final normalized = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+    final whatsappUri = Uri.parse(
+        'whatsapp://send?phone=$normalized&text=${Uri.encodeComponent(message)}');
+    final waMeUri = Uri.parse(
+        'https://wa.me/$normalized?text=${Uri.encodeComponent(message)}');
+
+    try {
+      if (await canLaunchUrl(whatsappUri)) {
+        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      // Fallback a wa.me (navegador o app)
+      final launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        throw 'No se pudo abrir el enlace wa.me';
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir WhatsApp'),
+          content: Text('Número: $normalized\nError: $e'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
       );
     }
   }

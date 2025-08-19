@@ -199,10 +199,10 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: Colors.orange,
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: const Text('Crear Proyecto'),
+                    child: const Text('Crear Proyecto', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),

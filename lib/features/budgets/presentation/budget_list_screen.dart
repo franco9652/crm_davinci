@@ -173,15 +173,15 @@ class CreateBudgetScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createBudget,
-              child: const Text('Crear Presupuesto',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF1B98E0),
-                padding: EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              child: const Text('Crear Presupuesto',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
             ),
           ],
         ),

@@ -24,7 +24,7 @@ class CreateCustomerPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF1B1926),
       appBar: AppBar(
-        title: const Text("Crear Cliente"),
+        title: const Text("Crear Cliente", style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF1B1926),
       ),
       body: SingleChildScrollView(
@@ -125,7 +125,7 @@ class CreateCustomerPage extends StatelessWidget {
                     ),
                     child: const Text(
                       "Crear Cliente",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ),

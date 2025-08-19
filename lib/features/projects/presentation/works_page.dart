@@ -4,6 +4,7 @@ import 'package:crm_app_dv/features/projects/presentation/works_create_page.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crm_app_dv/models/work_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WorkListPage extends StatelessWidget {
   final WorkController controller = Get.find<WorkController>();
@@ -38,7 +39,7 @@ class WorkListPage extends StatelessWidget {
                   onChanged: controller.updateSearchQuery,
                   decoration: InputDecoration(
                     hintText: 'Buscar proyecto...',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintStyle: TextStyle(color: Colors.white),
                     prefixIcon: Icon(Icons.search, color: Colors.grey),
                     filled: true,
                     fillColor: Color(0xFF1B1926),
@@ -67,7 +68,7 @@ class WorkListPage extends StatelessWidget {
                   onChanged: controller.updateSelectedStatus,
                   decoration: InputDecoration(
                     hintText: 'Filtrar por estado',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintStyle: TextStyle(color: Colors.white),
                     prefixIcon: Icon(Icons.filter_list, color: Colors.grey),
                     filled: true,
                     fillColor: Color(0xFF1B1926),
@@ -106,7 +107,7 @@ class WorkListPage extends StatelessWidget {
                 itemCount: displayedWorks.length,
                 itemBuilder: (context, index) {
                   final work = displayedWorks[index];
-                  return _buildWorkCard(work);
+                  return _buildWorkCard(context, work);
                 },
               );
             }),
@@ -125,7 +126,7 @@ class WorkListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWorkCard(WorkModel work) {
+  Widget _buildWorkCard(BuildContext context, WorkModel work) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
@@ -188,9 +189,7 @@ class WorkListPage extends StatelessWidget {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  // Acción para enviar email
-                },
+                onPressed: () => _sendEmail(context, work.emailCustomer),
                 icon: const Icon(Icons.email, color: Colors.white),
                 label: const Text("Email"),
                 style: ElevatedButton.styleFrom(
@@ -253,5 +252,63 @@ class WorkListPage extends StatelessWidget {
         ],
       ),
     ));
+  }
+}
+
+extension on WorkListPage {
+  void _sendEmail(BuildContext context, String? email) async {
+    final value = (email ?? '').trim();
+    if (value.isEmpty || value.toLowerCase() == 'sin email') {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir el correo'),
+          content: const Text('Este proyecto no tiene un email válido.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final gmailUri = Uri.parse('googlegmail://co?to=${Uri.encodeComponent(value)}');
+    final mailtoUri = Uri(scheme: 'mailto', path: value);
+    final gmailWebUri = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=${Uri.encodeComponent(value)}');
+
+    try {
+      if (await canLaunchUrl(gmailUri)) {
+        final ok = await launchUrl(gmailUri, mode: LaunchMode.externalApplication);
+        if (ok) return;
+      }
+
+      final okMail = await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+      if (okMail) return;
+
+      final okWeb = await launchUrl(gmailWebUri, mode: LaunchMode.externalApplication);
+      if (okWeb) return;
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir el correo'),
+          content: Text('Dirección: $value'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir el correo'),
+          content: Text('Error: $e'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
+          ],
+        ),
+      );
+    }
   }
 }

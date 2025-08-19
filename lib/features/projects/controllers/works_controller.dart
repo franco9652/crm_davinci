@@ -30,10 +30,10 @@ class WorkController extends GetxController {
 
   // Lista de estados posibles
   final List<String> workStatuses = [
-    'En Proceso',
-    'Completado',
+    'Activo',
     'Pausado',
-    'Cancelado',
+    'Inactivo',
+    'En Progreso',
   ];
 
   @override
@@ -70,11 +70,18 @@ class WorkController extends GetxController {
   }
 
   void filterWorks() {
+    String norm(String s) {
+      final t = s.toLowerCase().trim();
+      if (t == 'en proceso') return 'en progreso';
+      return t;
+    }
+
     filteredWorks.value = works.where((work) {
       final matchesSearch = searchQuery.isEmpty ||
           work.name.toLowerCase().contains(searchQuery.value.toLowerCase());
-      final matchesStatus = selectedStatus.isEmpty ||
-          work.statusWork.toLowerCase() == selectedStatus.value.toLowerCase();
+      final selected = norm(selectedStatus.value);
+      final workStatus = norm(work.statusWork);
+      final matchesStatus = selectedStatus.isEmpty || workStatus == selected;
       return matchesSearch && matchesStatus;
     }).toList();
   }

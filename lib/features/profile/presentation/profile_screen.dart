@@ -74,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
           // Settings - FIXED TITLES
           const SizedBox(height: 24),
           _buildSectionHeader('SOPORTE'),
-          _buildSimpleItem('Ayuda', 'Contactar'),
+          _buildSimpleItem('Ayuda', 'Contactar', onTap: () => _launchWhatsApp(context)),
 
           const SizedBox(height: 32),
           Center(
@@ -83,11 +83,11 @@ class ProfileScreen extends StatelessWidget {
                 loginController.logout();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.orange,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                 textStyle: const TextStyle(fontSize: 16),
               ),
-              child: const Text('CERRAR SESIÓN'),
+              child: const Text('CERRAR SESIÓN', style: TextStyle(color: Colors.white)),
             ),
           ),
         ],
@@ -109,21 +109,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleItem(String title, String value) {
-    return GestureDetector(
-      onTap: () async {
-        final url = 'https://wa.me/5491158800708?text=Hola%20necesito%20ayuda%20con%20el%20CRM';
-        if (await canLaunchUrl(Uri.parse(url))) {
-          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-        } else {
-          Get.snackbar(
-            'Error',
-            'No se pudo abrir WhatsApp',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
-      },
+  Widget _buildSimpleItem(String title, String value, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         margin: const EdgeInsets.only(bottom: 8),
@@ -152,5 +141,55 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _launchWhatsApp(BuildContext context) async {
+    const phone = '5491158800708';
+    const message = 'Hola necesito ayuda con el CRM';
+
+    final whatsappUri = Uri.parse(
+        'whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}');
+    final waMeUri = Uri.parse(
+        'https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
+
+    try {
+      if (await canLaunchUrl(whatsappUri)) {
+        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      // Para enlaces http/https, algunos dispositivos retornan false en canLaunchUrl,
+      // probamos directamente con launchUrl y capturamos errores.
+      if (await canLaunchUrl(waMeUri) || true) {
+        final launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
+        if (launched) return;
+      }
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir WhatsApp'),
+          content: const Text('Verificá que WhatsApp esté instalado o intenta nuevamente.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo abrir WhatsApp'),
+          content: Text('Error: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
