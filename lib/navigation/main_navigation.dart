@@ -3,6 +3,7 @@ import 'package:crm_app_dv/features/customer/presentation/home_customer.dart';
 import 'package:crm_app_dv/features/profile/presentation/profile_screen.dart';
 import 'package:crm_app_dv/features/projects/presentation/works_page.dart';
 import 'package:crm_app_dv/navigation/controller/main_navigation_controller.dart';
+import 'package:crm_app_dv/features/meetings/presentation/meetings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -20,6 +21,7 @@ class MainNavigationScreen extends StatelessWidget {
              HomePageCustomer(),
              WorkListPage(),
              CreateBudgetScreen(),
+             MeetingsScreen(),
              ProfileScreen()
             ],
           ),
@@ -34,8 +36,8 @@ class MainNavigationScreen extends StatelessWidget {
               BottomNavigationBarItem(icon: Icon(Iconsax.people), label: 'Clientes'),
               BottomNavigationBarItem(icon: Icon(Iconsax.ticket), label: 'Proyectos'),
               BottomNavigationBarItem(icon: Icon(Iconsax.wallet), label: 'Presupuestos'),
+              BottomNavigationBarItem(icon: Icon(Iconsax.calendar), label: 'Calendario'),
               BottomNavigationBarItem(icon: Icon(Iconsax.personalcard), label: 'Configuracion'),
-            
             ],
           ),
         ));

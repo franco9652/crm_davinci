@@ -125,6 +125,43 @@ class WorkRemoteDataSource {
     }
   }
 
+  // Usa el endpoint correcto provisto: /getcustomersbyid/{userId}
+  // Obtiene el cliente por userId y resuelve los proyectos listados en su payload
+  Future<List<WorkModel>> getWorksByCustomerUserId(String userId) async {
+    final url = '${AppConstants.baseUrl}/getcustomersbyid/$userId';
+    final response = await client.get(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final Map<String, dynamic> customer = (jsonResponse is Map && jsonResponse['customer'] is Map)
+          ? Map<String, dynamic>.from(jsonResponse['customer'])
+          : Map<String, dynamic>.from(jsonResponse as Map);
+
+      final dynamic worksField = customer['worksActive'] ?? customer['works'] ?? [];
+      final List<String> workIds = (worksField is List)
+          ? worksField.map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList()
+          : <String>[];
+
+      final List<WorkModel> works = [];
+      for (final id in workIds) {
+        try {
+          final w = await getWorkById(id);
+          works.add(w);
+        } catch (_) {
+          // continuar con los demás
+        }
+      }
+      return works;
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Error al obtener cliente por userId');
+    }
+  }
+
   Future<WorkModel> getWorkById(String workId) async {
     final response = await client.get(
       Uri.parse('${AppConstants.baseUrl}/workgetbyid/$workId'),

@@ -245,6 +245,8 @@ class CreateBudgetScreen extends StatelessWidget {
               selectedValues.add(value);
             }
           },
+          isExpanded: true,
+          menuMaxHeight: MediaQuery.of(Get.context!).size.height * 0.5,
           dropdownColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
           style: const TextStyle(color: Colors.white), // Color del texto seleccionado
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
@@ -266,6 +268,8 @@ class CreateBudgetScreen extends StatelessWidget {
           value: value,
           items: items,
           onChanged: onChanged,
+          isExpanded: true,
+          menuMaxHeight: MediaQuery.of(Get.context!).size.height * 0.5,
           dropdownColor: const Color(0xFF1E293B), // Color de fondo del menú desplegable
           style: const TextStyle(color: Colors.white), // Color del texto seleccionado
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),

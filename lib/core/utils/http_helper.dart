@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 /// Helper class para manejar peticiones HTTP con gestión de errores consistente
 class HttpHelper {
   /// Realizar una petición GET con manejo de errores
-  static Future<Map<String, dynamic>> get(String url, {Map<String, String>? headers}) async {
+  static Future<Map<String, dynamic>> get(String url, {Map<String, String>? headers, bool suppressErrors = false}) async {
     try {
       final completeHeaders = {
         'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ class HttpHelper {
         headers: completeHeaders,
       );
       
-      return _processResponse(response);
+      return _processResponse(response, suppressErrors: suppressErrors);
     } catch (e) {
       print('❌ Error en petición GET: $e');
       _showErrorSnackbar('Error de conexión', 'No se pudo conectar con el servidor');
@@ -61,7 +61,7 @@ class HttpHelper {
   }
 
   /// Procesar la respuesta HTTP
-  static Map<String, dynamic> _processResponse(http.Response response) {
+  static Map<String, dynamic> _processResponse(http.Response response, {bool suppressErrors = false}) {
     print('🔷 Response Status: ${response.statusCode}');
     print('🔷 Response Body: ${response.body}');
     
@@ -95,7 +95,10 @@ class HttpHelper {
           errorMessage = 'Error del servidor, intente más tarde';
         }
         
-        _showErrorSnackbar('Error', errorMessage);
+        // Evitar snackbar en ciertos casos (por ejemplo, 404 en listados vacíos)
+        if (!suppressErrors && response.statusCode != 404) {
+          _showErrorSnackbar('Error', errorMessage);
+        }
         
         return {
           'success': false,

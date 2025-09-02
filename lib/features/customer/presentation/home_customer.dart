@@ -125,20 +125,29 @@ class HomePageCustomer extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    customer.address,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                  Expanded(
+                    child: Text(
+                      customer.address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                  Text(
-                    "Tel: ${customer.contactNumber}",
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      "Tel: ${customer.contactNumber}",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ],

@@ -65,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                   ),
-                  child: const Text('Cambiar contraseña'),
+                  child: const Text('Cambiar contraseña', style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
