@@ -10,6 +10,7 @@ class MeetingModel {
   final String? description;
   final String? customerId;
   final String? customerName;
+  final String? customerPhone;
   final String? projectId;
   final String? projectTitle;
 
@@ -25,6 +26,7 @@ class MeetingModel {
     this.description,
     this.customerId,
     this.customerName,
+    this.customerPhone,
     this.projectId,
     this.projectTitle,
   });
@@ -36,8 +38,15 @@ class MeetingModel {
     String? cId;
     String? cName;
     if (customer is Map) {
-      cId = customer['_id']?.toString();
+      cId = (customer['_id'] ?? customer['id'])?.toString();
       cName = customer['name']?.toString();
+      // intentar extraer teléfono si viene embebido (varios posibles nombres)
+      try {
+        final phone = (customer['contactNumber'] ?? customer['phone'] ?? customer['telefono'])?.toString();
+        if (phone != null && phone.isNotEmpty) {
+          // asignaremos más abajo
+        }
+      } catch (_) {}
     } else if (customer != null) {
       cId = customer.toString();
     }
@@ -48,6 +57,14 @@ class MeetingModel {
       pTitle = (project['title'] ?? project['name'])?.toString();
     } else if (project != null) {
       pId = project.toString();
+    }
+
+    // obtener teléfono embebido si existe
+    String? cPhone;
+    if (customer is Map) {
+      try {
+        cPhone = (customer['contactNumber'] ?? customer['phone'] ?? customer['telefono'])?.toString();
+      } catch (_) {}
     }
 
     return MeetingModel(
@@ -62,6 +79,7 @@ class MeetingModel {
       description: json['description']?.toString(),
       customerId: cId,
       customerName: cName,
+      customerPhone: cPhone,
       projectId: pId,
       projectTitle: pTitle,
     );

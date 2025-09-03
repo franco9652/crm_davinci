@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:crm_app_dv/features/meetings/controllers/meetings_controller.dart';
 import 'package:crm_app_dv/features/meetings/presentation/create_meeting_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:crm_app_dv/features/meetings/presentation/meeting_detail_screen.dart';
 
 class MeetingsScreen extends StatelessWidget {
   const MeetingsScreen({super.key});
@@ -17,6 +18,14 @@ class MeetingsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF1E293B),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            tooltip: 'Filtros',
+            onPressed: () => _showFilterDialog(context, controller),
+            icon: Obx(() => Icon(
+              controller.isFilterActive.value ? Icons.filter_alt : Icons.filter_alt_outlined,
+              color: controller.isFilterActive.value ? Colors.orange : Colors.white,
+            )),
+          ),
           IconButton(
             tooltip: 'Refrescar',
             onPressed: () => controller.fetchMeetings(forCurrentUser: true),
@@ -39,7 +48,8 @@ class MeetingsScreen extends StatelessWidget {
             ),
           );
         }
-        if (controller.meetings.isEmpty) {
+        final displayMeetings = controller.displayMeetings;
+        if (displayMeetings.isEmpty) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
@@ -62,10 +72,10 @@ class MeetingsScreen extends StatelessWidget {
           onRefresh: () => controller.fetchMeetings(forCurrentUser: true),
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: controller.meetings.length,
+            itemCount: displayMeetings.length,
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (ctx, i) {
-              final m = controller.meetings[i];
+              final m = displayMeetings[i];
               final dateFmt = DateFormat('dd/MM/yyyy');
               return Container(
                 decoration: BoxDecoration(
@@ -96,7 +106,7 @@ class MeetingsScreen extends StatelessWidget {
                   ),
                   trailing: const Icon(Icons.chevron_right, color: Colors.white70),
                   onTap: () {
-                    // Aquí podríamos navegar a detalle/editar en el futuro
+                    Get.to(() => MeetingDetailScreen(meeting: m));
                   },
                 ),
               );
@@ -112,6 +122,111 @@ class MeetingsScreen extends StatelessWidget {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context, MeetingsController controller) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          title: const Text('Filtrar Reuniones', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Filtro por fecha específica
+              ListTile(
+                leading: const Icon(Icons.calendar_today, color: Colors.white70),
+                title: const Text('Fecha específica', style: TextStyle(color: Colors.white)),
+                subtitle: Obx(() => Text(
+                  controller.selectedDate.value != null 
+                    ? DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!)
+                    : 'Seleccionar fecha',
+                  style: const TextStyle(color: Colors.white60),
+                )),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: controller.selectedDate.value ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.dark(
+                            primary: Colors.orange,
+                            surface: Color(0xFF1E293B),
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (date != null) {
+                    controller.filterByDate(date);
+                  }
+                },
+              ),
+              const Divider(color: Colors.white24),
+              // Filtro por día de la semana
+              ListTile(
+                leading: const Icon(Icons.today, color: Colors.white70),
+                title: const Text('Día de la semana', style: TextStyle(color: Colors.white)),
+                subtitle: Obx(() => Text(
+                  controller.selectedDay.value ?? 'Seleccionar día',
+                  style: const TextStyle(color: Colors.white60),
+                )),
+                onTap: () => _showDayPicker(context, controller),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                controller.clearFilters();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Limpiar', style: TextStyle(color: Colors.white70)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cerrar', style: TextStyle(color: Colors.orange)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDayPicker(BuildContext context, MeetingsController controller) {
+    final days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          title: const Text('Seleccionar Día', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: days.map((day) => ListTile(
+              title: Text(day, style: const TextStyle(color: Colors.white)),
+              onTap: () {
+                controller.filterByDay(day);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Cerrar también el diálogo de filtros
+              },
+            )).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

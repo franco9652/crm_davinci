@@ -6,6 +6,7 @@ import 'package:crm_app_dv/models/budget_model.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 class CustomerRemoteDataSource {
@@ -14,40 +15,47 @@ class CustomerRemoteDataSource {
   CustomerRemoteDataSource(this.client);
 
   Future<void> createCustomer(CustomerModel customer) async {
-    final response = await client.post(
-      Uri.parse('${AppConstants.baseUrl}/customerCreate'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(customer.toJson()),
-    );
-
-    final responseBody = jsonDecode(response.body);
-
-    
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    try {
+      debugPrint('🔄 Creando cliente: ${customer.name}');
       
-      return;
-    } else if (response.statusCode == 400 || response.statusCode == 409) {
+      // Obtener token de autorización
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
       
-      throw Exception(responseBody['message'] ?? 'Error desconocido');
-    } else {
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
       
-      if (responseBody['message']?.contains('Cliente creado') == true) {
-        
+      // Usar HttpHelper con headers de auth
+      final response = await HttpHelper.post(
+        '${AppConstants.baseUrl}/customerCreate',
+        customer.toJson(),
+        headers: headers,
+      );
+      
+      if (response['success'] == true) {
+        debugPrint('✅ Cliente creado exitosamente');
         return;
+      } else {
+        final errorMsg = response['error'] ?? 'Error desconocido al crear cliente';
+        debugPrint('❌ Error creando cliente: $errorMsg');
+        throw Exception(errorMsg);
       }
-      
-      throw Exception('Error al dar de alta un cliente: ${response.body}');
+    } catch (e) {
+      debugPrint('❌ Excepción al crear cliente: $e');
+      throw Exception('Error al crear el cliente: ${e.toString()}');
     }
   }
 
   Future<Map<String, dynamic>> getAllCustomers(int page) async {
-    const int limit = 5; // Máximo de clientes por página
     try {
-      // Usamos HttpHelper para tener manejo centralizado y consistente
-      debugPrint('🔄 Solicitando clientes a: ${AppConstants.baseUrl}/customers');
+      // Usar paginación del backend directamente
+      final url = '${AppConstants.baseUrl}/customers?page=$page';
+      debugPrint('🔄 Solicitando clientes a: $url');
       
       // Hacemos la solicitud a través del helper
-      final response = await HttpHelper.get('${AppConstants.baseUrl}/customers');
+      final response = await HttpHelper.get(url);
       
       // Verificar si la solicitud fue exitosa
       if (response['success'] != true) {
@@ -59,109 +67,59 @@ class CustomerRemoteDataSource {
       final dynamic jsonResponse = response['data'];
       debugPrint('✅ Respuesta recibida tipo: ${jsonResponse.runtimeType}');
       
-      // Adaptamos la respuesta al formato esperado por la aplicación
-      List<dynamic> customersData = [];
-      
-      if (jsonResponse is List) {
-        // La API devuelve directamente una lista de clientes
-        debugPrint('📋 Formato de respuesta: Lista directa');
-        customersData = jsonResponse;
-      } else if (jsonResponse is Map) {
-        if (jsonResponse.containsKey('customers')) {
-          // La API devuelve un objeto con una propiedad 'customers'
-          debugPrint('📋 Formato de respuesta: Objeto con propiedad "customers"');
-          customersData = jsonResponse['customers'];
-        } else if (jsonResponse.containsKey('data')) {
-          // Formato alternativo con propiedad 'data'
-          debugPrint('📋 Formato de respuesta: Objeto con propiedad "data"');
-          final dataContent = jsonResponse['data'];
-          if (dataContent is List) {
-            customersData = dataContent;
-          } else if (dataContent is Map && dataContent.containsKey('customers')) {
-            customersData = dataContent['customers'];
-          }
-        } else {
-          // Último recurso: buscar la primera clave que contenga una lista
-          debugPrint('⚠️ Buscando lista de clientes en cualquier propiedad');
-          for (final key in jsonResponse.keys) {
-            if (jsonResponse[key] is List && (jsonResponse[key] as List).isNotEmpty) {
-              debugPrint('🔎 Encontrada posible lista de clientes en la propiedad "$key"');
-              customersData = jsonResponse[key];
-              break;
+      // El backend ya maneja la paginación, usar directamente su respuesta
+      if (jsonResponse is Map && jsonResponse.containsKey('customers')) {
+        final customersData = jsonResponse['customers'] as List<dynamic>;
+        final totalPages = jsonResponse['totalPages'] as int? ?? 1;
+        final currentPage = jsonResponse['page'] as int? ?? 1;
+        
+        debugPrint('📋 Página $currentPage de $totalPages - ${customersData.length} clientes recibidos');
+        
+        // Convertir a CustomerModel
+        List<CustomerModel> customers = [];
+        int errorCount = 0;
+        
+        for (var i = 0; i < customersData.length; i++) {
+          try {
+            final data = customersData[i];
+            debugPrint('🔍 Cliente #$i: ${data['name']} (${data['_id']})');
+            
+            if (data is Map && data.containsKey('name')) {
+              final Map<String, dynamic> customerData = Map<String, dynamic>.from(data);
+              final customer = CustomerModel.fromJson(customerData);
+              customers.add(customer);
+              debugPrint('✅ Cliente convertido: ${customer.name}');
+            } else {
+              debugPrint('⚠️ Cliente #$i no tiene campos mínimos');
+              errorCount++;
             }
-          }
-        }
-      }
-      
-      if (customersData.isEmpty) {
-        debugPrint('⚠️ No se encontraron clientes en la respuesta');
-        return <String, dynamic>{'customers': <CustomerModel>[], 'totalPages': 1};
-      }
-      
-      debugPrint('📋 Cantidad de clientes recibidos: ${customersData.length}');
-      
-      // Convertimos a modelo con diagnóstico detallado
-      List<CustomerModel> allCustomers = [];
-      int errorCount = 0;
-      
-      for (var i = 0; i < customersData.length; i++) {
-        try {
-          final data = customersData[i];
-          // Verificamos que el cliente tenga los campos mínimos necesarios
-          if (data is Map && data.containsKey('name')) {
-            // Convertir explícitamente a Map<String, dynamic> para evitar errores de tipado
-            final Map<String, dynamic> customerData = Map<String, dynamic>.from(data);
-            allCustomers.add(CustomerModel.fromJson(customerData));
-          } else {
-            debugPrint('⚠️ Cliente #$i no tiene campos mínimos: $data');
+          } catch (e) {
+            debugPrint('❌ Error al convertir cliente #$i: $e');
             errorCount++;
           }
-        } catch (e) {
-          debugPrint('❌ Error al convertir cliente #$i: $e');
-          errorCount++;
         }
+        
+        if (errorCount > 0) {
+          debugPrint('⚠️ $errorCount clientes no pudieron ser procesados');
+        }
+        
+        debugPrint('✅ ${customers.length} clientes convertidos exitosamente');
+        
+        return <String, dynamic>{
+          'customers': customers,
+          'totalPages': totalPages,
+          'currentPage': currentPage,
+          'totalCount': customersData.length
+        };
+      } else {
+        debugPrint('❌ Formato de respuesta inesperado: $jsonResponse');
+        return <String, dynamic>{
+          'customers': <CustomerModel>[],
+          'totalPages': 1,
+          'currentPage': 1,
+          'totalCount': 0
+        };
       }
-      
-      if (errorCount > 0) {
-        debugPrint('⚠️ $errorCount clientes no pudieron ser procesados');
-      }
-      
-      debugPrint('✅ Clientes convertidos exitosamente: ${allCustomers.length}');
-      
-      // Si no hay clientes después de todo el procesamiento
-      if (allCustomers.isEmpty) {
-        debugPrint('⚠️ No quedaron clientes después del procesamiento');
-        return <String, dynamic>{'customers': <CustomerModel>[], 'totalPages': 1};
-      }
-      
-      // Implementamos paginación client-side
-      int startIndex = (page - 1) * limit;
-      int endIndex = startIndex + limit;
-      
-      // Validamos índices
-      if (startIndex >= allCustomers.length) {
-        startIndex = 0;
-        debugPrint('⚠️ Índice de inicio fuera de rango, reiniciando a 0');
-      }
-      
-      if (endIndex > allCustomers.length) {
-        endIndex = allCustomers.length;
-      }
-      
-      List<CustomerModel> pagedCustomers = [];
-      if (startIndex < allCustomers.length) {
-        pagedCustomers = allCustomers.sublist(startIndex, endIndex);
-        debugPrint('📄 Página $page: mostrando clientes $startIndex-$endIndex de ${allCustomers.length}');
-      }
-      
-      int totalPages = (allCustomers.length / limit).ceil();
-      if (totalPages < 1) totalPages = 1;
-
-      return <String, dynamic>{
-        'customers': pagedCustomers, 
-        'totalPages': totalPages,
-        'totalCount': allCustomers.length
-      };
     } catch (e, stackTrace) {
       // Log detallado del error
       debugPrint('❌❌❌ ERROR AL OBTENER CLIENTES:');
@@ -228,29 +186,66 @@ class CustomerRemoteDataSource {
   Future<Map<String, dynamic>> getCustomerById(String userId) async {
     try {
       debugPrint('🔎 Obteniendo cliente con ID: $userId');
+      // Recuperar token para autorización
+      String? token;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        token = prefs.getString('auth_token');
+      } catch (_) {}
+
+      final headers = <String, String>{
+        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      };
+
+      // El customerId de meeting apunta al customer embebido, no al customer real
+      // Necesitamos buscar por el _id del customer embebido en lugar del customerId
+      print('🔍 Analizando customerId: $userId');
       
-      final response = await HttpHelper.get(
-        '${AppConstants.baseUrl}/getcustomersbyid/$userId'
-      );
+      // Intentar múltiples endpoints que funcionan en el proyecto
+      final endpoints = [
+        '${AppConstants.baseUrl}/getcustomersbyid/$userId',
+        '${AppConstants.baseUrl}/customers/$userId', 
+        '${AppConstants.baseUrl}/customer/$userId',
+        // Probar con el _id del customer embebido que vimos en logs
+        '${AppConstants.baseUrl}/getcustomersbyid/6893a93c4a9e9b8508717ee2',
+        '${AppConstants.baseUrl}/customers/6893a93c4a9e9b8508717ee2',
+      ];
       
-      if (response['success'] != true) {
-        debugPrint('❌ Error al obtener cliente: ${response['error']}');
-        throw Exception(response['error'] ?? 'Error al obtener el cliente');
-      }
-      
-      final responseData = response['data'];
-      
-      if (responseData is Map && responseData.containsKey('customer')) {
-        final customerList = responseData['customer'];
+      for (final url in endpoints) {
+        debugPrint('🔷 Intentando GET Customer: $url');
+        final resp = await HttpHelper.get(url, headers: headers, suppressErrors: true);
         
-        if (customerList is List && customerList.isNotEmpty) {
-          debugPrint('✅ Cliente obtenido correctamente');
-          return Map<String, dynamic>.from(customerList[0]);
+        if (resp['success'] == true) {
+          final data = resp['data'];
+          Map<String, dynamic>? found;
+          
+          if (data is Map) {
+            // Formato: { customer: [...] }
+            if (data['customer'] is List && (data['customer'] as List).isNotEmpty) {
+              found = Map<String, dynamic>.from((data['customer'] as List).first);
+            }
+            // Formato: { customer: {...} }
+            else if (data['customer'] is Map) {
+              found = Map<String, dynamic>.from(data['customer'] as Map);
+            }
+            // Formato directo: { _id: ..., name: ..., contactNumber: ... }
+            else if (data.containsKey('_id') || data.containsKey('name') || data.containsKey('contactNumber')) {
+              found = Map<String, dynamic>.from(data);
+            }
+          }
+          
+          if (found != null && found.isNotEmpty) {
+            debugPrint('✅ Cliente obtenido correctamente desde $url');
+            debugPrint('📱 contactNumber: ${found['contactNumber']}');
+            return found;
+          }
+        } else {
+          debugPrint('❌ Endpoint $url falló: ${resp['error']}');
         }
       }
       
-      debugPrint('⚠️ Formato de respuesta inesperado');
-      throw Exception('No se encontró el cliente solicitado');
+      debugPrint('⚠️ Ningún endpoint funcionó para userId: $userId');
+      throw Exception('Recurso no encontrado');
     } catch (e) {
       debugPrint('❌ Error al obtener cliente: $e');
       throw Exception('Error al obtener el cliente: ${e.toString().split('\n').first}');

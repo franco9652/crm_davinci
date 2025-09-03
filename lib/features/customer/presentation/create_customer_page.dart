@@ -50,16 +50,20 @@ class CreateCustomerPage extends StatelessWidget {
               _buildInputField(
                 label: "CUIT",
                 controller: cuitController,
-                hint: "Ej. 20123456789",
+                hint: "Ej. 20123456789 (11 dígitos)",
                 icon: Icons.credit_card,
                 isNumber: true,
+                maxLength: 11,
+                isCuitCuil: true,
               ),
               _buildInputField(
                 label: "CUIL",
                 controller: cuilController,
-                hint: "Ej. 20123456789",
+                hint: "Ej. 20123456789 (11 dígitos)",
                 icon: Icons.credit_card_outlined,
                 isNumber: true,
+                maxLength: 11,
+                isCuitCuil: true,
               ),
               _buildInputField(
                 label: "Dirección",
@@ -90,9 +94,10 @@ class CreateCustomerPage extends StatelessWidget {
               _buildInputField(
                 label: "Contraseña",
                 controller: passwordController,
-                hint: "Ej. contraseña123",
+                hint: "Mín 8 chars, 1 mayúscula, 1 símbolo",
                 icon: Icons.lock,
                 isPassword: true,
+                isPasswordField: true,
               ),
               const SizedBox(height: 20),
               Center(
@@ -145,6 +150,9 @@ class CreateCustomerPage extends StatelessWidget {
     bool isNumber = false,
     bool isEmail = false,
     bool isPassword = false,
+    int? maxLength,
+    bool isCuitCuil = false,
+    bool isPasswordField = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
@@ -156,6 +164,7 @@ class CreateCustomerPage extends StatelessWidget {
                 ? TextInputType.emailAddress
                 : TextInputType.text,
         obscureText: isPassword,
+        maxLength: maxLength,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
@@ -165,6 +174,7 @@ class CreateCustomerPage extends StatelessWidget {
           prefixIcon: Icon(icon, color: Colors.white70),
           filled: true,
           fillColor: const Color(0xFF242038),
+          counterText: maxLength != null ? null : "",
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: Colors.grey),
@@ -180,6 +190,37 @@ class CreateCustomerPage extends StatelessWidget {
           }
           if (isEmail && !GetUtils.isEmail(value)) {
             return "Por favor, introduce un email válido";
+          }
+          if (isCuitCuil && value.length != 11) {
+            return "Debe tener exactamente 11 dígitos";
+          }
+          if (isCuitCuil && !RegExp(r'^\d+$').hasMatch(value)) {
+            return "Solo debe contener números";
+          }
+          if (isCuitCuil && label == "CUIT") {
+            final validPrefixes = ['20', '23', '24', '27', '30', '33', '34'];
+            final prefix = value.substring(0, 2);
+            if (!validPrefixes.contains(prefix)) {
+              return "Prefijo inválido. Use: 20, 23, 24, 27, 30, 33, 34";
+            }
+          }
+          if (isCuitCuil && label == "CUIL") {
+            final validPrefixes = ['20', '23', '24', '27'];
+            final prefix = value.substring(0, 2);
+            if (!validPrefixes.contains(prefix)) {
+              return "Prefijo inválido. Use: 20, 23, 24, 27";
+            }
+          }
+          if (isPasswordField) {
+            if (value.length < 8) {
+              return "Mínimo 8 caracteres";
+            }
+            if (!RegExp(r'[A-Z]').hasMatch(value)) {
+              return "Debe tener al menos 1 mayúscula";
+            }
+            if (!RegExp(r'[!@#$%^&*()_\-+={}[\]|:;"<>,.?/~`]').hasMatch(value)) {
+              return "Debe tener al menos 1 símbolo especial";
+            }
           }
           return null;
         },

@@ -38,7 +38,29 @@ class MeetingsRemoteDataSource {
       final data = resp['data'];
       final list = (data is Map && data['meetings'] is List) ? data['meetings'] as List : (data as List? ?? []);
       print('🔎 Fetch meetings by username -> ${list.length} items');
-      return list.map((e) => MeetingModel.fromJson(Map<String, dynamic>.from(e))).toList();
+      final meetings = list.map((e) {
+        final meetingData = Map<String, dynamic>.from(e);
+        print('🔍 Meeting data: ${meetingData.toString()}');
+        
+        // Enriquecer customer embebido con contactNumber desde endpoint customers
+        if (meetingData['customer'] is Map) {
+          final customer = meetingData['customer'] as Map;
+          final customerId = customer['_id']?.toString();
+          if (customerId != null && customerId.isNotEmpty) {
+            print('🔍 Customer embebido encontrado: $customerId');
+            // Por ahora usar datos embebidos tal como vienen
+          }
+        }
+        
+        return MeetingModel.fromJson(meetingData);
+      }).toList();
+      
+      // Log customer phone info for debugging
+      for (final meeting in meetings) {
+        print('📱 Meeting ${meeting.id}: customerId=${meeting.customerId}, customerPhone=${meeting.customerPhone}');
+      }
+      
+      return meetings;
     }
     return [];
   }

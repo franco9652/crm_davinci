@@ -37,7 +37,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      customerController.fetchCustomers();
+      customerController.fetchAllCustomers(); // Cargar TODOS los clientes para el dropdown
     });
   }
 
@@ -68,7 +68,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
         ),
       ),
       body: Obx(() {
-        if (customerController.isLoading.value) {
+        if (customerController.isLoadingAll.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -83,7 +83,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                   // 🔹 Dropdown para seleccionar el cliente
                   DropdownButtonFormField<CustomerModel>(
                     value: selectedCustomer,
-                    items: customerController.customers.map((customer) {
+                    items: customerController.allCustomers.map((customer) {
                       return DropdownMenuItem(
                         value: customer,
                         child: Text(

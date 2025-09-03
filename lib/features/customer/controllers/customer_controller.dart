@@ -9,7 +9,9 @@ class HomeController extends GetxController {
   HomeController({required this.repository});
 
   final customers = <CustomerModel>[].obs; // Clientes de la página actual
+  final allCustomers = <CustomerModel>[].obs; // TODOS los clientes (para dropdowns)
   final isLoading = false.obs; // Indicador de carga
+  final isLoadingAll = false.obs; // Indicador de carga para todos los clientes
   final currentPage = 1.obs; // Página actual
   final totalPages = 1.obs; // Total de páginas
   final noClientMessage = "No hay clientes disponibles".obs;
@@ -76,10 +78,52 @@ class HomeController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      // Aplicar filtro si hay una búsqueda activa
-      if (searchQuery.value.isNotEmpty) {
-        filterCustomers();
-      }
+    }
+  }
+
+  // Método para cargar TODOS los clientes de todas las páginas (para dropdowns)
+  Future<void> fetchAllCustomers() async {
+    if (isLoadingAll.value) return;
+
+    isLoadingAll.value = true;
+    List<CustomerModel> allCustomersList = [];
+
+    try {
+      int page = 1;
+      int totalPagesFromApi = 1;
+
+      do {
+        print(' Cargando página $page de clientes para dropdown...');
+        final response = await repository.fetchCustomers(page);
+        
+        if (response.containsKey('success') && response['success'] == false) {
+          print(' Error al cargar página $page: ${response['error']}');
+          break;
+        }
+        
+        final fetchedCustomers = response['customers'] as List<CustomerModel>;
+        totalPagesFromApi = response['totalPages'] as int;
+        
+        allCustomersList.addAll(fetchedCustomers);
+        print(' Página $page cargada: ${fetchedCustomers.length} clientes');
+        
+        page++;
+      } while (page <= totalPagesFromApi);
+
+      allCustomers.value = allCustomersList;
+      print(' Total clientes cargados para dropdown: ${allCustomersList.length}');
+      
+    } catch (e) {
+      print(' Error cargando todos los clientes: $e');
+      Get.snackbar(
+        'Error',
+        'No se pudieron cargar todos los clientes: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[400],
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingAll.value = false;
     }
   }
 
@@ -146,16 +190,17 @@ class HomeController extends GetxController {
         title: "Éxito",
         middleText: "El cliente ha sido creado exitosamente.",
         textConfirm: "Aceptar",
-        onConfirm: () {
+        onConfirm: () async {
           Get.back(); // Cerrar el diálogo
           Get.back(); // Volver al HomePageCustomer
+          
+          // Resetear a la primera página y refrescar
+          currentPage.value = 1;
+          await fetchCustomers();
         },
         confirmTextColor: Colors.white,
         buttonColor: const Color(0xFFFF8329),
       );
-
-      // Refrescar la lista de clientes
-      fetchCustomers();
     } catch (e) {
       // Manejar errores del backend
       if (e.toString().contains("El email ya está registrado")) {
