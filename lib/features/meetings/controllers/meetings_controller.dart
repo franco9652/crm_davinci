@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:crm_app_dv/features/meetings/data/meetings_remote_data_source.dart';
 import 'package:crm_app_dv/models/meeting_model.dart';
@@ -25,35 +26,109 @@ class MeetingsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchMeetings();
+    print('🔧 MeetingsController.onInit() called');
+    fetchMeetings(forCurrentUser: true);
   }
 
   Future<void> fetchMeetings({bool forCurrentUser = false}) async {
+    print('🔧 fetchMeetings() called with forCurrentUser=$forCurrentUser');
     isLoading.value = true;
     error.value = '';
     try {
       List<MeetingModel> data;
-      if (forCurrentUser) {
-        final prefs = await SharedPreferences.getInstance();
-        final email = prefs.getString('user_email');
-        if (email == null || email.isEmpty) {
-          data = await remote.getAllMeetings();
-        } else {
+      final prefs = await SharedPreferences.getInstance();
+      final role = (prefs.getString('user_role') ?? '').trim();
+      final email = prefs.getString('user_email');
+      print('🔧 Current role: "$role", email: "$email"');
+
+      final isAdmin = role == 'Admin';
+      final isEmployee = role == 'Employee';
+      print('🔧 isAdmin=$isAdmin, isEmployee=$isEmployee');
+
+      if (isAdmin) {
+        // Admin ve todo
+        print('🔧 Admin: calling getAllMeetings()');
+        data = await remote.getAllMeetings();
+      } else if (isEmployee) {
+        // Employee: solo GET /meetings (según pedido)
+        print('🔧 Employee: calling getAllMeetings()');
+        data = await remote.getAllMeetings();
+      } else {
+        // Para Customer: usar por username si lo tenemos
+        print('🔧 Customer: calling getMeetingsByUsername()');
+        if (email != null && email.isNotEmpty) {
           data = await remote.getMeetingsByUsername(email);
-          // Fallback: si no hay resultados para el usuario, intentar obtener todas (útil para roles admin/employee)
-          if (data.isEmpty) {
-            data = await remote.getAllMeetings();
+        } else {
+          // Si no hay email en prefs, último recurso: pedir todas
+          data = await remote.getAllMeetings();
+        }
+      }
+      print('🔧 Backend returned ${data.length} meetings');
+      // Si Employee y el backend devuelve vacío, intentar cargar desde caché local
+      final prev = List<MeetingModel>.from(meetings);
+      print('🔧 Previous meetings in memory: ${prev.length}');
+      if (isEmployee && data.isEmpty) {
+        // Intentar cargar cache para este usuario
+        if (email != null && email.isNotEmpty) {
+          final cached = await _loadCachedMeetings(email);
+          if (cached.isNotEmpty) {
+            print('💾 Cargando ${cached.length} meetings desde caché local para $email');
+            meetings.assignAll(cached);
+          } else if (prev.isNotEmpty) {
+            print('ℹ️ Backend vacío y sin cache. Conservando ${prev.length} meetings locales en memoria.');
+            // mantener prev en memoria
+          } else {
+            print('🔧 No cache, no prev meetings. Setting empty list.');
+            meetings.assignAll([]);
           }
+        } else if (prev.isNotEmpty) {
+          print('ℹ️ Backend vacío y sin email. Conservando ${prev.length} meetings locales en memoria.');
+        } else {
+          print('🔧 No email, no prev meetings. Setting empty list.');
+          meetings.assignAll([]);
         }
       } else {
-        data = await remote.getAllMeetings();
+        print('🔧 Assigning ${data.length} meetings from backend');
+        meetings.assignAll(data);
+        // Guardar cache si es employee y hay datos
+        if (isEmployee && email != null && email.isNotEmpty && data.isNotEmpty) {
+          await _saveCachedMeetings(email, data);
+        }
       }
-      meetings.assignAll(data);
+      print('🔧 Final meetings count: ${meetings.length}');
       _applyFilters(); // Aplicar filtros después de cargar
     } catch (e) {
+      print('❌ Error in fetchMeetings: $e');
       error.value = e.toString();
     } finally {
       isLoading.value = false;
+      print('🔧 fetchMeetings() completed. Final meetings: ${meetings.length}');
+    }
+  }
+
+  Future<void> _saveCachedMeetings(String email, List<MeetingModel> items) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'meetings_cache_employee_' + email;
+      final jsonList = items.map((m) => m.toJson()).toList();
+      await prefs.setString(key, jsonEncode(jsonList));
+      print('💾 Cache guardado (${items.length}) para $email');
+    } catch (e) {
+      print('❌ Error guardando cache: $e');
+    }
+  }
+
+  Future<List<MeetingModel>> _loadCachedMeetings(String email) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'meetings_cache_employee_' + email;
+      final str = prefs.getString(key);
+      if (str == null || str.isEmpty) return [];
+      final List list = jsonDecode(str) as List;
+      return list.map((e) => MeetingModel.fromJson(Map<String, dynamic>.from(e))).toList();
+    } catch (e) {
+      print('❌ Error cargando cache: $e');
+      return [];
     }
   }
 
@@ -107,23 +182,57 @@ class MeetingsController extends GetxController {
       isFilterActive.value ? filteredMeetings : meetings;
 
   Future<bool> create(MeetingModel meeting) async {
+    print('🔧 create() called with meeting: title="${meeting.title}", date=${meeting.date}');
     isLoading.value = true;
     error.value = '';
     try {
       final created = await remote.createMeeting(meeting);
+      print('🔧 Backend createMeeting returned: ${created != null ? "SUCCESS" : "NULL"}');
       if (created != null) {
-        // Tras crear, refrescar desde backend para garantizar datos completos y consistentes
-        await fetchMeetings(forCurrentUser: true);
+        print('🔧 Created meeting details: id="${created.id}", title="${created.title}", date=${created.date}');
+        // Optimistic update: insertar/actualizar en memoria para que aparezca de inmediato
+        final idx = meetings.indexWhere((m) => m.id == created.id);
+        print('🔧 Looking for existing meeting with id="${created.id}": found at index $idx');
+        if (idx >= 0) {
+          print('🔧 Updating existing meeting at index $idx');
+          meetings[idx] = created;
+        } else {
+          print('🔧 Inserting new meeting at position 0');
+          meetings.insert(0, created);
+        }
+        print('🔧 Meetings list now has ${meetings.length} items');
+        // Enfocar filtro por fecha en la reunión creada, para asegurar visibilidad
+        try {
+          print('✅ Reunión creada localmente: id=${created.id}, title=${created.title}, date=${created.date}');
+          print('🔧 Setting selectedDate filter to ${created.date}');
+          selectedDate.value = created.date;
+        } catch (_) {}
+        _applyFilters();
+        print('🔧 After _applyFilters(), displayMeetings count: ${displayMeetings.length}');
+        // Persistir en caché si es Employee
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final role = (prefs.getString('user_role') ?? '').trim();
+          final email = prefs.getString('user_email');
+          print('🔧 Checking cache save: role="$role", email="$email"');
+          if (role == 'Employee' && email != null && email.isNotEmpty) {
+            print('🔧 Saving to cache for Employee');
+            await _saveCachedMeetings(email, meetings);
+          }
+        } catch (_) {}
         return true;
       } else {
+        print('❌ Backend returned null for createMeeting');
         error.value = 'No se pudo crear la reunión';
         return false;
       }
     } catch (e) {
+      print('❌ Error in create(): $e');
       error.value = e.toString();
       return false;
     } finally {
       isLoading.value = false;
+      print('🔧 create() completed');
     }
   }
 

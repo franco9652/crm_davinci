@@ -68,7 +68,7 @@ class MeetingModel {
     }
 
     return MeetingModel(
-      id: (json['_id'] ?? '').toString(),
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
       date: DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now(),
       time: (json['time'] ?? '').toString(),
@@ -83,6 +83,25 @@ class MeetingModel {
       projectId: pId,
       projectTitle: pTitle,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'title': title,
+      'date': date.toIso8601String(),
+      'time': time,
+      'duration': duration,
+      'meetingType': meetingType,
+      'meetingLink': meetingLink,
+      'address': address,
+      'description': description,
+      'customer': customerId,
+      'customerName': customerName,
+      'customerPhone': customerPhone,
+      'project': projectId,
+      'projectTitle': projectTitle,
+    };
   }
 
   Map<String, dynamic> toCreateJson() {

@@ -36,14 +36,38 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     try {
-      final token = await authRepository.login(email.value, password.value);
+      final result = await authRepository.login(email.value, password.value);
+      final token = result['token'] as String?;
+      final roleRaw = (result['role'] as String? ?? '').trim();
+      final roleLower = roleRaw.toLowerCase();
+      // Normalizar a valores canónicos
+      String canonicalRole = '';
+      if (['admin','administrator','administrador'].contains(roleLower)) {
+        canonicalRole = 'Admin';
+      } else if (['customer','cliente','user','usuario'].contains(roleLower)) {
+        canonicalRole = 'Customer';
+      } else if (['employee','empleado','staff'].contains(roleLower)) {
+        canonicalRole = 'Employee';
+      }
 
-      // Guardar el token y email en SharedPreferences
+      if (token == null || token.isEmpty) {
+        throw Exception('Token inválido');
+      }
+
+      // Validar rol permitido
+      const allowedRoles = {'Admin', 'Customer', 'Employee'};
+      if (!allowedRoles.contains(canonicalRole)) {
+        Get.snackbar('Acceso denegado', 'Tu rol ("$roleRaw") no tiene acceso a la app.');
+        return; // No navegar ni guardar token si el rol no es válido
+      }
+
+      // Guardar el token, email y rol en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
-      await prefs.setString('user_email', email.value); // Guardar el email
+      await prefs.setString('user_email', email.value);
+      await prefs.setString('user_role', canonicalRole);
 
-      Get.offAllNamed(AppRoutes.mainNavigation); // Redirigir al listado de clientes
+      Get.offAllNamed(AppRoutes.mainNavigation);
     } catch (e) {
       Get.snackbar('Error', 'Credenciales incorrectas');
     } finally {
@@ -53,12 +77,17 @@ class LoginController extends GetxController {
 
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('auth_token'); // Verifica si existe un token guardado
+    final hasToken = prefs.containsKey('auth_token');
+    final role = (prefs.getString('user_role') ?? '').trim();
+    const allowedRoles = {'Admin', 'Customer', 'Employee'};
+    return hasToken && allowedRoles.contains(role);
   }
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token'); // Elimina el token guardado
+    await prefs.remove('user_role');
+    await prefs.remove('user_email');
     Get.offAllNamed('/login'); // Redirige al login
   }
 

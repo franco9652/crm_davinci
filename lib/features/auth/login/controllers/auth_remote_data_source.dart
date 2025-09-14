@@ -9,7 +9,7 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource(this.client);
 
-  Future<String> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await client.post(
       Uri.parse(AppConstants.loginEndpoint),
       headers: {'Content-Type': 'application/json'},
@@ -18,7 +18,22 @@ class AuthRemoteDataSource {
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
-      return body['token'];
+      final token = body['token'];
+      // Intentar obtener role en diferentes formatos de respuesta
+      dynamic role = body['role'];
+      role ??= body['user'] != null ? body['user']['role'] : null;
+      role ??= (body['roles'] is List && body['roles'].isNotEmpty) ? body['roles'][0] : null;
+      role ??= (body['user'] != null && body['user']['roles'] is List && body['user']['roles'].isNotEmpty)
+          ? body['user']['roles'][0]
+          : null;
+      role ??= body['data'] != null ? body['data']['role'] : null;
+      final roleStr = (role ?? '').toString();
+      // Debug
+      print('🔐 Login OK. token present=${token != null && token.toString().isNotEmpty}, roleRaw=$roleStr');
+      return {
+        'token': token,
+        'role': roleStr,
+      };
     } else {
       throw Exception('Error al iniciar sesión');
     }

@@ -66,11 +66,13 @@ class MeetingsRemoteDataSource {
   }
 
   Future<MeetingModel?> createMeeting(MeetingModel meeting) async {
-    final headers = await _authHeaders();
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('user_email');
     final token = prefs.getString('auth_token');
     final body = meeting.toCreateJson();
+    
+    print('🔧 createMeeting() - Original body: $body');
+    
     // Normalize keys to match backend expectations
     if (body.containsKey('customerId') && !body.containsKey('customer')) {
       body['customer'] = body['customerId'];
@@ -83,6 +85,7 @@ class MeetingsRemoteDataSource {
     if (username != null && username.isNotEmpty) {
       body['username'] = username;
     }
+    
     // Try to decode JWT to get userId
     if (token != null && token.split('.').length == 3) {
       try {
@@ -95,20 +98,50 @@ class MeetingsRemoteDataSource {
         }
       } catch (_) {}
     }
-    final resp = await HttpHelper.post(AppConstants.meetingCreateEndpoint, body, headers: headers);
+    
+    print('🔧 createMeeting() - Final body: $body');
+    
+    // POST /meetings doesn't require auth according to API docs
+    final resp = await HttpHelper.post(AppConstants.meetingCreateEndpoint, body);
+    
+    print('🔧 createMeeting() - Response success: ${resp['success']}');
+    print('🔧 createMeeting() - Response data: ${resp['data']}');
+    
     if (resp['success'] == true) {
       final data = resp['data'];
-      // Backend returns { message, newMeeting: { ... } }
-      Map<String, dynamic> m;
-      if (data is Map && data['newMeeting'] is Map) {
-        m = Map<String, dynamic>.from(data['newMeeting']);
-      } else if (data is Map && data['meeting'] is Map) {
-        m = Map<String, dynamic>.from(data['meeting']);
+      
+      // According to API docs, backend should return the created meeting directly
+      Map<String, dynamic> meetingData;
+      if (data is Map) {
+        // Try different possible response structures
+        if (data.containsKey('meeting')) {
+          meetingData = Map<String, dynamic>.from(data['meeting']);
+        } else if (data.containsKey('newMeeting')) {
+          meetingData = Map<String, dynamic>.from(data['newMeeting']);
+        } else {
+          // Assume the data itself is the meeting
+          meetingData = Map<String, dynamic>.from(data);
+        }
       } else {
-        m = Map<String, dynamic>.from(data);
+        print('❌ Unexpected response format: data is not a Map');
+        return null;
       }
-      return MeetingModel.fromJson(m);
+      
+      print('🔧 createMeeting() - Parsed meeting data: $meetingData');
+      
+      // Ensure we have an ID
+      if (!meetingData.containsKey('_id') && !meetingData.containsKey('id')) {
+        print('❌ No ID found in response, generating temporary one');
+        meetingData['_id'] = DateTime.now().millisecondsSinceEpoch.toString();
+      }
+      
+      final createdMeeting = MeetingModel.fromJson(meetingData);
+      print('🔧 createMeeting() - Created MeetingModel: id=${createdMeeting.id}, title=${createdMeeting.title}');
+      
+      return createdMeeting;
     }
+    
+    print('❌ createMeeting() - Failed with response: $resp');
     return null;
   }
 

@@ -53,33 +53,40 @@ class WorkListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 // Filtro de estado
-                DropdownButtonFormField<String>(
-                  value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
-                  items: [
-                    DropdownMenuItem<String>(
-                      value: '',
-                      child: Text('Todos los estados', style: TextStyle(color: Colors.white)),
-                    ),
-                    ...controller.workStatuses.map((status) => DropdownMenuItem<String>(
-                      value: status,
-                      child: Text(status, style: TextStyle(color: Colors.white)),
-                    )).toList(),
-                  ],
-                  onChanged: controller.updateSelectedStatus,
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar por estado',
-                    hintStyle: TextStyle(color: Colors.white),
-                    prefixIcon: Icon(Icons.filter_list, color: Colors.grey),
-                    filled: true,
-                    fillColor: Color(0xFF1B1926),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF1B1926),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  dropdownColor: Color(0xFF1B1926),
-                  style: TextStyle(color: Colors.white),
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list, color: Colors.white),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
+                            hint: Text('Filtrar por estado', style: TextStyle(color: Colors.white)),
+                            style: TextStyle(color: Colors.white),
+                            dropdownColor: Color(0xFF1B1926),
+                            isExpanded: true,
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('Todos los estados', style: TextStyle(color: Colors.white)),
+                              ),
+                              ...controller.workStatuses.map((status) => DropdownMenuItem<String>(
+                                value: status,
+                                child: Text(status, style: TextStyle(color: Colors.white)),
+                              )).toList(),
+                            ],
+                            onChanged: controller.updateSelectedStatus,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -183,7 +190,7 @@ class WorkListPage extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.info, color: Colors.white),
-                label: const Text("Ver detalles"),
+                label: const Text("Ver detalles", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                 ),
@@ -191,7 +198,7 @@ class WorkListPage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => _sendEmail(context, work.emailCustomer),
                 icon: const Icon(Icons.email, color: Colors.white),
-                label: const Text("Email"),
+                label: const Text("Email", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orangeAccent,
                 ),

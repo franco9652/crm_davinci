@@ -56,7 +56,10 @@ void main() async {
   Get.put(LoginController(authRepository));
 
   final prefs = await SharedPreferences.getInstance();
-  final bool isLoggedIn = prefs.containsKey('auth_token');
+  final bool hasToken = prefs.containsKey('auth_token');
+  final role = (prefs.getString('user_role') ?? '').trim();
+  const allowedRoles = {'Admin', 'Customer', 'Employee'};
+  final bool isLoggedIn = hasToken && allowedRoles.contains(role);
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
