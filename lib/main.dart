@@ -1,27 +1,25 @@
-import 'package:crm_app_dv/app_routes.dart';
-import 'package:crm_app_dv/core/domain/repositories/budget_repository.dart';
-import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
-import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
-import 'package:crm_app_dv/features/auth/login/controllers/auth_remote_data_source.dart';
-import 'package:crm_app_dv/features/auth/login/controllers/auth_repository_impl.dart';
-import 'package:crm_app_dv/features/auth/login/controllers/login_controller.dart';
-import 'package:crm_app_dv/features/budgets/controllers/budget_controller.dart';
-import 'package:crm_app_dv/features/budgets/data/budget_data_source.dart';
-import 'package:crm_app_dv/features/customer/controllers/customer_remote_data_source.dart';
-import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
-import 'package:crm_app_dv/features/projects/data/works_remote_data_source.dart';
-import 'package:crm_app_dv/navigation/main_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:crm_app_dv/app_routes.dart';
+import 'package:crm_app_dv/core/services/notification_service.dart';
+import 'package:crm_app_dv/features/customer/controllers/customer_remote_data_source.dart';
+import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
+import 'package:crm_app_dv/features/projects/data/works_remote_data_source.dart';
+import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
+import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
+import 'package:crm_app_dv/features/budgets/data/budget_data_source.dart';
+import 'package:crm_app_dv/core/domain/repositories/budget_repository.dart';
+import 'package:crm_app_dv/features/budgets/controllers/budget_controller.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/auth_remote_data_source.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/auth_repository_impl.dart';
+import 'package:crm_app_dv/features/auth/login/controllers/login_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializamos las dependencias
   final client = http.Client();
   final customerRemoteDataSource = CustomerRemoteDataSource(client);
   final customerRepository = CustomerRepository(customerRemoteDataSource);
@@ -29,17 +27,17 @@ void main() async {
   final workRemoteDataSource = WorkRemoteDataSource(client);
   final workRepository = WorkRepository(workRemoteDataSource);
 
-  final budgetRemoteDataSource = BudgetRemoteDataSource(client); // ✅ Instancia correcta
-  final budgetRepository = BudgetRepository(budgetRemoteDataSource); // ✅ Repositorio
+  final budgetRemoteDataSource = BudgetRemoteDataSource(client); 
+  final budgetRepository = BudgetRepository(budgetRemoteDataSource); 
 
   // Auth Repositories
   final authRemoteDataSource = AuthRemoteDataSource(client);
   final authRepository = AuthRepositoryImpl(authRemoteDataSource);
 
   // 🔹 Primero, registramos `BudgetRemoteDataSource` en GetX
-  Get.put(budgetRemoteDataSource); // ✅ Ahora está registrado antes de usarlo
-  Get.put(budgetRepository); // ✅ Registro del repositorio
-  Get.put(BudgetController(budgetRemoteDataSource: Get.find())); // ✅ Ahora sí funciona
+  Get.put(budgetRemoteDataSource); 
+  Get.put(budgetRepository); 
+  Get.put(BudgetController(budgetRemoteDataSource: Get.find())); 
 
   // Registramos las demás dependencias en el orden correcto
   Get.put(customerRemoteDataSource);
@@ -61,6 +59,9 @@ void main() async {
   const allowedRoles = {'Admin', 'Customer', 'Employee'};
   final bool isLoggedIn = hasToken && allowedRoles.contains(role);
 
+  // Inicializar servicio de notificaciones
+  await NotificationService.initialize();
+
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
@@ -78,10 +79,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.openSansTextTheme(),
       ),
       initialRoute: isLoggedIn ? AppRoutes.mainNavigation : AppRoutes.login,
-      getPages: [
-        GetPage(name: '/', page: () => MainNavigationScreen()),
-        ...AppRoutes.pages,
-      ],
+      getPages: AppRoutes.pages,
     );
   }
 }

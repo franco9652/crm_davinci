@@ -17,13 +17,21 @@ class MeetingsRemoteDataSource {
     final headers = await _authHeaders();
     final url = AppConstants.meetingsEndpoint;
     print('🔎 Fetch all meetings -> GET $url');
+    print('🔎 Headers being sent: $headers');
     final resp = await HttpHelper.get(url, headers: headers, suppressErrors: true);
+    print('🔎 Response received: ${resp}');
     if (resp['success'] == true) {
       final data = resp['data'];
+      print('🔎 Response data: $data');
       final list = (data is Map && data['meetings'] is List) ? data['meetings'] as List : (data as List? ?? []);
+      print('🔎 Meetings list extracted: $list');
       print('🔎 Fetch all meetings -> ${list.length} items');
+      if (list.isNotEmpty) {
+        print('🔎 First meeting example: ${list.first}');
+      }
       return list.map((e) => MeetingModel.fromJson(Map<String, dynamic>.from(e))).toList();
     }
+    print('🔎 Request failed or no success flag');
     return [];
   }
 
@@ -95,14 +103,16 @@ class MeetingsRemoteDataSource {
         final uid = payload['userId']?.toString();
         if (uid != null && uid.isNotEmpty) {
           body['userId'] = uid;
+          print('🔧 Setting userId: $uid (backend will handle auto-assignment)');
         }
       } catch (_) {}
     }
     
     print('🔧 createMeeting() - Final body: $body');
     
-    // POST /meetings doesn't require auth according to API docs
-    final resp = await HttpHelper.post(AppConstants.meetingCreateEndpoint, body);
+    // POST /meetingsCreate requires auth token
+    final headers = await _authHeaders();
+    final resp = await HttpHelper.post(AppConstants.meetingCreateEndpoint, body, headers: headers);
     
     print('🔧 createMeeting() - Response success: ${resp['success']}');
     print('🔧 createMeeting() - Response data: ${resp['data']}');

@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-/// Helper class para manejar peticiones HTTP con gestión de errores consistente
+
 class HttpHelper {
-  /// Realizar una petición GET con manejo de errores
+  
   static Future<Map<String, dynamic>> get(String url, {Map<String, String>? headers, bool suppressErrors = false}) async {
     try {
       final completeHeaders = {
@@ -29,7 +29,7 @@ class HttpHelper {
     }
   }
 
-  /// Realizar una petición POST con manejo de errores
+  
   static Future<Map<String, dynamic>> post(
     String url, 
     dynamic body, 
@@ -60,14 +60,31 @@ class HttpHelper {
     }
   }
 
-  /// Procesar la respuesta HTTP
+  
   static Map<String, dynamic> _processResponse(http.Response response, {bool suppressErrors = false}) {
     print('🔷 Response Status: ${response.statusCode}');
     print('🔷 Response Body: ${response.body}');
+    print('🔷 Response Headers: ${response.headers}');
+    print('🔷 Response Body Length: ${response.body.length}');
+    print('🔷 Response Body Type: ${response.body.runtimeType}');
     
     try {
-      final Map<String, dynamic> responseBody = 
-          response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      // Verificar si el body está vacío
+      if (response.body.isEmpty) {
+        print('⚠️ Response body is empty');
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return {
+            'success': true,
+            'data': {},
+            'statusCode': response.statusCode
+          };
+        }
+      }
+      
+      // Intentar decodificar JSON
+      print('🔧 Attempting to decode JSON...');
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      print('✅ JSON decoded successfully: $responseBody');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {
@@ -79,23 +96,10 @@ class HttpHelper {
         String errorMessage = responseBody['message'] ?? 
                              'Error (Código: ${response.statusCode})';
         
-        // Manejar errores comunes
-        if (response.statusCode == 401) {
-          errorMessage = 'Sesión expirada o credenciales inválidas';
-          // Podría añadirse aquí lógica para redirigir al login
-        } else if (response.statusCode == 403) {
-          errorMessage = 'No tienes permisos para realizar esta acción';
-        } else if (response.statusCode == 404) {
-          errorMessage = 'Recurso no encontrado';
-        } else if (response.statusCode == 409) {
-          errorMessage = responseBody['message'] ?? 'Conflicto con datos existentes';
-        } else if (response.statusCode == 429) {
-          errorMessage = 'Demasiadas solicitudes, intenta más tarde';
-        } else if (response.statusCode >= 500) {
-          errorMessage = 'Error del servidor, intente más tarde';
-        }
         
-        // Evitar snackbar en ciertos casos (por ejemplo, 404 en listados vacíos)
+        errorMessage = _getErrorMessage(response.statusCode, responseBody);
+        
+        
         if (!suppressErrors && response.statusCode != 404) {
           _showErrorSnackbar('Error', errorMessage);
         }
@@ -109,25 +113,50 @@ class HttpHelper {
       }
     } catch (e) {
       print('❌ Error procesando respuesta: $e');
-      _showErrorSnackbar('Error', 'Error al procesar la respuesta');
+      print('❌ Response body that failed to parse: "${response.body}"');
+      print('❌ Response body bytes: ${response.bodyBytes}');
+      
+      
+      String detailedError = 'Error al procesar la respuesta';
+      if (e.toString().contains('FormatException')) {
+        detailedError = 'Respuesta del servidor no es JSON válido';
+      } else if (e.toString().contains('type')) {
+        detailedError = 'Formato de respuesta inesperado';
+      }
+      
+      _showErrorSnackbar('Error', detailedError);
       return {
         'success': false,
         'error': 'Error procesando respuesta: ${e.toString()}',
-        'statusCode': response.statusCode
+        'statusCode': response.statusCode,
+        'rawBody': response.body
       };
     }
   }
 
-  /// Mostrar snackbar de error
+  
   static void _showErrorSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      backgroundColor: Colors.red[400],
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(10),
-      duration: const Duration(seconds: 3),
-    );
+    if (Get.context != null) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        SnackBar(
+          content: Text('$title: $message'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  
+  static String _getErrorMessage(int statusCode, Map<String, dynamic> responseBody) {
+    return switch (statusCode) {
+      401 => 'Sesión expirada o credenciales inválidas',
+      403 => 'No tienes permisos para realizar esta acción',
+      404 => 'Recurso no encontrado',
+      409 => responseBody['message'] ?? 'Conflicto con datos existentes',
+      429 => 'Demasiadas solicitudes, intenta más tarde',
+      >= 500 => 'Error del servidor, intente más tarde',
+      _ => responseBody['message'] ?? 'Error (Código: $statusCode)',
+    };
   }
 }

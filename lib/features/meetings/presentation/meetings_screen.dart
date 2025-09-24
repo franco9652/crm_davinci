@@ -4,6 +4,8 @@ import 'package:crm_app_dv/features/meetings/controllers/meetings_controller.dar
 import 'package:crm_app_dv/features/meetings/presentation/create_meeting_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:crm_app_dv/features/meetings/presentation/meeting_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crm_app_dv/core/services/notification_service.dart';
 
 class MeetingsScreen extends StatelessWidget {
   const MeetingsScreen({super.key});
@@ -14,7 +16,15 @@ class MeetingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text('Calendario / Reuniones', style: TextStyle(color: Colors.white)),
+        title: FutureBuilder<String>(
+          future: _getPageTitle(),
+          builder: (context, snapshot) {
+            return Text(
+              snapshot.data ?? 'Calendario / Reuniones',
+              style: const TextStyle(color: Colors.white),
+            );
+          },
+        ),
         backgroundColor: const Color(0xFF1E293B),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -31,89 +41,47 @@ class MeetingsScreen extends StatelessWidget {
             onPressed: () => controller.fetchMeetings(forCurrentUser: true),
             icon: const Icon(Icons.refresh, color: Colors.white),
           ),
-        ],
-      ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (controller.error.isNotEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Error: ${controller.error.value}',
-                style: const TextStyle(color: Colors.redAccent),
-              ),
-            ),
-          );
-        }
-        final displayMeetings = controller.displayMeetings;
-        if (displayMeetings.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: const Text(
-                'Aún no hay reuniones programadas. Usa el botón + para crear una.',
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => controller.fetchMeetings(forCurrentUser: true),
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: displayMeetings.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (ctx, i) {
-              final m = displayMeetings[i];
-              final dateFmt = DateFormat('dd/MM/yyyy');
-              return Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    m.title,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(
-                        '${dateFmt.format(m.date)} • ${m.time} • ${m.duration} min',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      if (m.customerName != null)
-                        Text('Cliente: ${m.customerName}', style: const TextStyle(color: Colors.white60)),
-                      if (m.projectTitle != null)
-                        Text('Proyecto: ${m.projectTitle}', style: const TextStyle(color: Colors.white60)),
-                      Text('Tipo: ${m.meetingType}', style: const TextStyle(color: Colors.white60)),
-                    ],
-                  ),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.white70),
-                  onTap: () {
-                    Get.to(() => MeetingDetailScreen(meeting: m));
-                  },
+          // Botón temporal para probar notificaciones
+          IconButton(
+            tooltip: 'Probar notificación',
+            onPressed: () async {
+              await NotificationService.sendTestNotification();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('🧪 Notificación de prueba programada para 10 segundos'),
+                  duration: Duration(seconds: 3),
                 ),
               );
             },
+            icon: const Icon(Icons.notifications_active, color: Colors.yellow),
           ),
-        );
-      }),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Info banner para Employee
+          _buildInfoBanner(),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (controller.error.isNotEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error: ${controller.error.value}',
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                );
+              }
+              return _buildMeetingsList(controller);
+            }),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'createMeeting',
         backgroundColor: Colors.orange,
@@ -121,6 +89,127 @@ class MeetingsScreen extends StatelessWidget {
           Get.to(() => const CreateMeetingScreen());
         },
         child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Future<String> _getPageTitle() async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = (prefs.getString('user_role') ?? '').trim();
+    
+    switch (role) {
+      case 'Admin':
+        return 'Todas las Reuniones';
+      case 'Employee':
+        return 'Mis Reuniones Asignadas';
+      default:
+        return 'Calendario / Reuniones';
+    }
+  }
+
+  Widget _buildInfoBanner() {
+    return FutureBuilder<bool>(
+      future: _shouldShowEmployeeBanner(),
+      builder: (context, snapshot) {
+        if (snapshot.data == true) {
+          return Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '📋 Mostrando solo las reuniones asignadas a ti',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Future<bool> _shouldShowEmployeeBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = (prefs.getString('user_role') ?? '').trim();
+    return role == 'Employee';
+  }
+
+  Widget _buildMeetingsList(MeetingsController controller) {
+    final displayMeetings = controller.displayMeetings;
+    
+    if (displayMeetings.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: const Text(
+            'Aún no hay reuniones programadas. Usa el botón + para crear una.',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => controller.fetchMeetings(forCurrentUser: true),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: displayMeetings.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (ctx, i) {
+          final m = displayMeetings[i];
+          final dateFmt = DateFormat('dd/MM/yyyy');
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              title: Text(
+                m.title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    '${dateFmt.format(m.date)} • ${m.time} • ${m.duration} min',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  if (m.customerName != null)
+                    Text('Cliente: ${m.customerName}', style: const TextStyle(color: Colors.white60)),
+                  if (m.projectTitle != null)
+                    Text('Proyecto: ${m.projectTitle}', style: const TextStyle(color: Colors.white60)),
+                  Text('Tipo: ${m.meetingType}', style: const TextStyle(color: Colors.white60)),
+                ],
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white70),
+              onTap: () {
+                Get.to(() => MeetingDetailScreen(meeting: m));
+              },
+            ),
+          );
+        },
       ),
     );
   }
