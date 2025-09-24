@@ -1,5 +1,6 @@
 import 'package:crm_app_dv/app_routes.dart';
 import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
+import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
 import 'package:crm_app_dv/features/projects/data/works_remote_data_source.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:get/get.dart';
@@ -8,10 +9,12 @@ import 'package:crm_app_dv/models/work_model.dart';
 class WorkController extends GetxController {
   final CustomerRepository customerRepository;
   final WorkRemoteDataSource workRemoteDataSource;
+  final WorkRepository workRepository;
 
   WorkController({
     required this.customerRepository,
     required this.workRemoteDataSource,
+    required this.workRepository,
   });
 
   final works = <WorkModel>[].obs;
@@ -48,12 +51,11 @@ class WorkController extends GetxController {
     if (isLoading.value) return;
 
     isLoading(true);
-
     try {
       final response = await workRemoteDataSource.getAllWorks(currentPage.value, limit);
       
-      if (response.isEmpty && currentPage.value == 1) {
-        noWorkMessage.value = "No hay proyectos disponibles en este momento.";
+      if (response.isEmpty) {
+        noWorkMessage.value = "No hay proyectos disponibles.";
         works.clear();
         hasNextPage.value = false;
       } else {
@@ -70,20 +72,22 @@ class WorkController extends GetxController {
   }
 
   void filterWorks() {
-    String norm(String s) {
-      final t = s.toLowerCase().trim();
-      if (t == 'en proceso') return 'en progreso';
-      return t;
+    if (searchQuery.value.isEmpty && selectedStatus.value.isEmpty) {
+      filteredWorks.assignAll(works);
+    } else {
+      filteredWorks.assignAll(
+        works.where((work) {
+          final matchesSearch = searchQuery.value.isEmpty ||
+              work.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+              work.customerName.toLowerCase().contains(searchQuery.value.toLowerCase());
+          
+          final matchesStatus = selectedStatus.value.isEmpty ||
+              work.statusWork == selectedStatus.value;
+          
+          return matchesSearch && matchesStatus;
+        }).toList(),
+      );
     }
-
-    filteredWorks.value = works.where((work) {
-      final matchesSearch = searchQuery.isEmpty ||
-          work.name.toLowerCase().contains(searchQuery.value.toLowerCase());
-      final selected = norm(selectedStatus.value);
-      final workStatus = norm(work.statusWork);
-      final matchesStatus = selectedStatus.isEmpty || workStatus == selected;
-      return matchesSearch && matchesStatus;
-    }).toList();
   }
 
   void updateSearchQuery(String query) {
@@ -94,10 +98,17 @@ class WorkController extends GetxController {
     selectedStatus.value = status ?? '';
   }
 
+  void goToPage(int page) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchWorks();
+    }
+  }
+
   Future<void> fetchCustomers() async {
     isLoading.value = true;
     try {
-      final response = await customerRepository.fetchCustomers(1); // Página 1
+      final response = await customerRepository.fetchCustomers(1);
       customers.value = response['customers'];
     } catch (e) {
       Get.snackbar("Error", "No se pudo cargar la lista de clientes: $e");
@@ -107,10 +118,7 @@ class WorkController extends GetxController {
   }
 
   Future<void> fetchWorksByCustomer(String customerId) async {
-    if (isLoadingWorks.value) return;
-
     isLoadingWorks.value = true;
-
     try {
       final fetchedWorks = await workRemoteDataSource.getWorksByUserId(customerId);
       worksByCustomer.value = fetchedWorks;
@@ -121,20 +129,12 @@ class WorkController extends GetxController {
     }
   }
 
-  void goToPage(int page) {
-    if (page < 1 || page > totalPages.value) return;
-    currentPage.value = page;
-    fetchWorks();
-  }
-
   Future<void> createWork(WorkModel work) async {
     try {
       isLoading(true);
       await workRemoteDataSource.createWork(work);
-      print(" Trabajo creado correctamente");
-
-      // 
-      await fetchWorks();
+      print("✅ Trabajo creado correctamente");
+      await fetchWorks(); // Refrescar lista de obras después de crear una nueva
 
       // Mostrar mensaje de éxito y volver al listado
       Get.defaultDialog(
@@ -156,5 +156,180 @@ class WorkController extends GetxController {
     } finally {
       isLoading(false);
     }
+  }
+
+  /// Actualizar obra usando PATCH (actualización parcial) - Senior approach
+  Future<bool> updateWork({
+    required String workId, // Usar _id de MongoDB
+    required Map<String, dynamic> updateData,
+  }) async {
+    try {
+      isLoading.value = true;
+      
+      final updatedWork = await workRepository.updateWork(
+        workId: workId,
+        updateData: updateData,
+      );
+      
+      // Actualizar la lista local (optimistic update)
+      final index = works.indexWhere((w) => w.id == workId);
+      if (index != -1) {
+        works[index] = updatedWork;
+        filterWorks(); // Refrescar filtros
+      }
+      
+      // También actualizar en worksByCustomer si existe
+      final customerIndex = worksByCustomer.indexWhere((w) => w.id == workId);
+      if (customerIndex != -1) {
+        worksByCustomer[customerIndex] = updatedWork;
+      }
+      
+      Get.snackbar(
+        'Éxito',
+        'Obra actualizada correctamente',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.primaryColor,
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
+      
+      return true;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error al actualizar obra: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Actualizar obra completa usando PUT - Senior approach
+  Future<bool> updateWorkComplete({
+    required String workId, // Usar _id de MongoDB
+    required WorkModel work,
+  }) async {
+    try {
+      isLoading.value = true;
+      
+      final workData = workRepository.workModelToUpdateMap(work);
+      final updatedWork = await workRepository.updateWorkComplete(
+        workId: workId,
+        workData: workData,
+      );
+      
+      // Actualizar la lista local (optimistic update)
+      final index = works.indexWhere((w) => w.id == workId);
+      if (index != -1) {
+        works[index] = updatedWork;
+        filterWorks(); // Refrescar filtros
+      }
+      
+      // También actualizar en worksByCustomer si existe
+      final customerIndex = worksByCustomer.indexWhere((w) => w.id == workId);
+      if (customerIndex != -1) {
+        worksByCustomer[customerIndex] = updatedWork;
+      }
+      
+      Get.snackbar(
+        'Éxito',
+        'Obra actualizada completamente',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.primaryColor,
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
+      
+      return true;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error al actualizar obra: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Eliminar obra - Senior approach
+  Future<bool> deleteWork({
+    required String workAutoIncrementId, // Usar ID auto-increment
+    required String workMongoId, // Para remover de listas locales
+  }) async {
+    try {
+      isLoading.value = true;
+      print('🎮 Controller: Iniciando eliminación de obra');
+      print('   - ID auto-increment: $workAutoIncrementId');
+      print('   - ID MongoDB: $workMongoId');
+      
+      // Agregar timeout para evitar carga infinita
+      await workRepository.deleteWork(workAutoIncrementId).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Timeout: La operación tardó demasiado tiempo');
+        },
+      );
+      
+      print('🎮 Controller: Eliminación exitosa, actualizando listas locales');
+      
+      // Remover de las listas locales (optimistic update)
+      works.removeWhere((w) => w.id == workMongoId);
+      worksByCustomer.removeWhere((w) => w.id == workMongoId);
+      filterWorks(); // Refrescar filtros
+      
+      Get.snackbar(
+        'Éxito',
+        'Obra eliminada correctamente',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.primaryColor,
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
+      
+      return true;
+    } catch (e) {
+      print('🎮 Controller: Error al eliminar obra: $e');
+      Get.snackbar(
+        'Error',
+        'Error al eliminar obra: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Helper para obtener el ID auto-increment de una obra (Senior approach)
+  /// Nota: Este método maneja la inconsistencia entre MongoDB _id y auto-increment ID
+  String? getWorkAutoIncrementId(WorkModel work) {
+    // Primero intentar usar el campo number si existe y no está vacío
+    if (work.number != null && work.number!.isNotEmpty && work.number != 'T000') {
+      print('🆔 Usando number como ID auto-increment: ${work.number}');
+      return work.number;
+    }
+    
+    // Si no hay number válido, usar el _id de MongoDB como fallback
+    // Nota: Esto puede no funcionar si el backend espera específicamente un ID numérico
+    if (work.id != null && work.id!.isNotEmpty) {
+      print('⚠️ Usando MongoDB _id como fallback: ${work.id}');
+      return work.id;
+    }
+    
+    print('❌ No se encontró ID válido para la obra: ${work.name}');
+    return null;
+  }
+
+  /// Refrescar lista de obras después de cambios
+  Future<void> refreshWorks() async {
+    currentPage.value = 1;
+    await fetchWorks();
   }
 }

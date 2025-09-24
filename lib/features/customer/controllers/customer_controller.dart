@@ -129,24 +129,80 @@ class HomeController extends GetxController {
 
   void filterCustomers() {
     if (searchQuery.value.isEmpty) {
-      filteredCustomers.value = customers;
+      filteredCustomers.assignAll(customers);
     } else {
-      filteredCustomers.value = customers.where((customer) =>
-        customer.name.toLowerCase().contains(searchQuery.value.toLowerCase())
-      ).toList();
+      filteredCustomers.assignAll(
+        customers.where((customer) =>
+          customer.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+          customer.email.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+          customer.contactNumber.contains(searchQuery.value)
+        ).toList(),
+      );
     }
   }
 
-  void updateSearchQuery(String query) {
-    searchQuery.value = query;
+  /// Actualizar cliente (Senior approach)
+  Future<bool> updateCustomer({
+    required String customerId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    try {
+      isLoading.value = true;
+      
+      final updatedCustomer = await repository.updateCustomer(
+        customerId: customerId,
+        updateData: updateData,
+      );
+      
+      // Actualizar la lista local (optimistic update)
+      final index = customers.indexWhere((c) => c.id == customerId);
+      if (index != -1) {
+        customers[index] = updatedCustomer;
+        filterCustomers(); // Refrescar filtros
+      }
+      
+      return true;
+    } catch (e) {
+      final errorMsg = 'Error al actualizar cliente: ${e.toString()}';
+      noClientMessage.value = errorMsg;
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  void goToPage(int page) {
-    if (page < 1 || page > totalPages.value) return;
-    currentPage.value = page;
-    fetchCustomers();
+  /// Eliminar cliente (Senior approach)
+  Future<bool> deleteCustomer(String customerId) async {
+    try {
+      isLoading.value = true;
+      print('🎮 Controller: Iniciando eliminación de cliente ID: $customerId');
+      
+      await repository.deleteCustomer(customerId);
+      print('🎮 Controller: Repository completó eliminación exitosamente');
+      
+      // Remover de la lista local (optimistic update)
+      final removedCount = customers.length;
+      customers.removeWhere((c) => c.id == customerId);
+      print('🎮 Controller: Removidos ${removedCount - customers.length} clientes de la lista local');
+      
+      filterCustomers(); // Refrescar filtros
+      print('🎮 Controller: Filtros actualizados');
+      
+      print('🎮 Controller: Retornando TRUE - eliminación exitosa');
+      return true;
+    } catch (e) {
+      print('🎮 Controller: ERROR en eliminación: $e');
+      final errorMsg = 'Error al eliminar cliente: ${e.toString()}';
+      noClientMessage.value = errorMsg;
+      print('🎮 Controller: Retornando FALSE - eliminación falló');
+      return false;
+    } finally {
+      isLoading.value = false;
+      print('🎮 Controller: isLoading = false');
+    }
   }
 
+  /// Crear cliente (método existente)
   Future<void> createCustomer({
     required String name,
     required String secondName,
@@ -225,6 +281,18 @@ class HomeController extends GetxController {
       }
     } finally {
       isCreating.value = false;
+    }
+  }
+
+  /// Métodos de navegación y búsqueda (para compatibilidad)
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+  }
+
+  void goToPage(int page) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchCustomers();
     }
   }
 }

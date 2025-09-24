@@ -29,7 +29,38 @@ Future<WorkModel> getWorkById(String? workId) async {
 
 
   Future<List<WorkModel>> getWorksByUserId(String userId) async {
-  return await remoteDataSource.getWorksByUserId(userId);
-}
+    return await remoteDataSource.getWorksByUserId(userId);
+  }
 
+  /// Actualizar obra usando PATCH (actualización parcial) - Senior approach
+  Future<WorkModel> updateWork({
+    required String workId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    return await remoteDataSource.updateWork(
+      workId: workId,
+      updateData: updateData,
+    );
+  }
+
+  /// Actualizar obra usando PUT (actualización completa) - Senior approach
+  Future<WorkModel> updateWorkComplete({
+    required String workId,
+    required Map<String, dynamic> workData,
+  }) async {
+    return await remoteDataSource.updateWorkComplete(
+      workId: workId,
+      workData: workData,
+    );
+  }
+
+  /// Eliminar obra - Senior approach
+  Future<void> deleteWork(String workAutoIncrementId) async {
+    return await remoteDataSource.deleteWork(workAutoIncrementId);
+  }
+
+  /// Helper para convertir WorkModel a Map para actualización
+  Map<String, dynamic> workModelToUpdateMap(WorkModel work) {
+    return remoteDataSource.workModelToUpdateMap(work);
+  }
 }

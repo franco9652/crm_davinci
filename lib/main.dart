@@ -47,6 +47,7 @@ void main() async {
   Get.put(WorkController(
     customerRepository: customerRepository,
     workRemoteDataSource: workRemoteDataSource,
+    workRepository: workRepository,
   ));
 
   Get.put(authRemoteDataSource);

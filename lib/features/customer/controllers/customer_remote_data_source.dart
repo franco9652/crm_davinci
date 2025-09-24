@@ -251,4 +251,60 @@ class CustomerRemoteDataSource {
       throw Exception('Error al obtener el cliente: ${e.toString().split('\n').first}');
     }
   }
+
+  /// Actualizar cliente existente (Senior approach)
+  Future<CustomerModel> updateCustomer({
+    required String customerId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    try {
+      debugPrint('🔄 Actualizando cliente: $customerId');
+      
+      final response = await HttpHelper.put(
+        '${AppConstants.baseUrl}/updateCustomer/$customerId',
+        updateData,
+      );
+      
+      if (response['success'] == true) {
+        final customerData = response['data'] as Map<String, dynamic>;
+        final updatedCustomer = CustomerModel.fromJson(customerData);
+        debugPrint('✅ Cliente actualizado: ${updatedCustomer.name}');
+        return updatedCustomer;
+      } else {
+        final errorMsg = response['error'] ?? 'Error desconocido al actualizar cliente';
+        debugPrint('❌ Error actualizando cliente: $errorMsg');
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      debugPrint('❌ Excepción al actualizar cliente: $e');
+      throw Exception('Error al actualizar el cliente: ${e.toString()}');
+    }
+  }
+
+  /// Eliminar cliente (Senior approach)
+  Future<void> deleteCustomer(String customerId) async {
+    try {
+      debugPrint('🗑️ Eliminando cliente: $customerId');
+      
+      final response = await HttpHelper.delete(
+        '${AppConstants.baseUrl}/deleteCustomer/$customerId',
+      );
+      
+      debugPrint('📡 Respuesta del servidor: $response');
+      
+      // Verificar diferentes formatos de respuesta exitosa
+      if (response['success'] == true || 
+          response.containsKey('message') && response['message'].toString().contains('eliminado correctamente')) {
+        debugPrint('✅ Cliente eliminado correctamente');
+        return;
+      } else {
+        final errorMsg = response['error'] ?? response['message'] ?? 'Error desconocido al eliminar cliente';
+        debugPrint('❌ Error eliminando cliente: $errorMsg');
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      debugPrint('❌ Excepción al eliminar cliente: $e');
+      throw Exception('Error al eliminar el cliente: ${e.toString()}');
+    }
+  }
 }

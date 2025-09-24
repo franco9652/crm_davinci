@@ -5,34 +5,48 @@ import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 
 class CustomerRepository {
-  final CustomerRemoteDataSource remoteDataSource;
+  final CustomerRemoteDataSource dataSource;
   
-  CustomerRepository(this.remoteDataSource);
+  CustomerRepository(this.dataSource);
 
-  // Crear un cliente
+  /// Crear nuevo cliente
   Future<void> createCustomer(CustomerModel customer) async {
-    await remoteDataSource.createCustomer(customer);
+    await dataSource.createCustomer(customer);
   }
 
-  // Obtener todos los clientes con paginación
+  /// Obtener todos los clientes con paginación
   Future<Map<String, dynamic>> fetchCustomers(int page) async {
-    return await remoteDataSource.getAllCustomers(page);
+    return await dataSource.getAllCustomers(page);
   }
 
-Future<CustomerModel> getCustomerById(String userId) async {
-  final response = await remoteDataSource.getCustomerById(userId);
-  return CustomerModel.fromJson(response); // Convierte el JSON al modelo
-}
+  /// Obtener cliente por ID
+  Future<Map<String, dynamic>> getCustomerById(String userId) async {
+    return await dataSource.getCustomerById(userId);
+  }
 
-Future<List<WorkModel>> getWorksByCustomer(String customerId) async {
-   print("🟢 cutomer repo Llamando a getWorksByUserId en WorkRepository con customerId: $customerId");
-  return await remoteDataSource.getWorksByUserId(customerId);
-}
+  /// Obtener trabajos por cliente
+  Future<List<WorkModel>> getWorksByUserId(String customerId) async {
+    return await dataSource.getWorksByUserId(customerId);
+  }
 
-Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
-  return await remoteDataSource.getBudgetsByCustomerId(customerId);
-}
+  /// Obtener presupuestos por cliente
+  Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
+    return await dataSource.getBudgetsByCustomerId(customerId);
+  }
 
+  /// Actualizar cliente (Senior approach)
+  Future<CustomerModel> updateCustomer({
+    required String customerId,
+    required Map<String, dynamic> updateData,
+  }) async {
+    return await dataSource.updateCustomer(
+      customerId: customerId,
+      updateData: updateData,
+    );
+  }
 
-
+  /// Eliminar cliente (Senior approach)
+  Future<void> deleteCustomer(String customerId) async {
+    return await dataSource.deleteCustomer(customerId);
+  }
 }

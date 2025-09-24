@@ -29,6 +29,7 @@ class CustomerInfoScreen extends StatelessWidget {
       WorkController(
         customerRepository: Get.find(),
         workRemoteDataSource: Get.find(),
+        workRepository: Get.find(),
       ),
     );
 

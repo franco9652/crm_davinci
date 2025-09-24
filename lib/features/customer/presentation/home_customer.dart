@@ -1,18 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_controller.dart';
 import 'package:crm_app_dv/features/customer/presentation/create_customer_page.dart';
 import 'package:crm_app_dv/features/customer/presentation/customer_info_screen.dart';
-import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
+import 'package:crm_app_dv/features/customer/presentation/widgets/customer_actions_widget.dart';
+import 'package:crm_app_dv/features/customer/presentation/widgets/delete_customer_dialog.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:iconsax/iconsax.dart';
 
 class HomePageCustomer extends StatelessWidget {
   final HomeController controller = Get.put(HomeController(
     repository: Get.find(),
   ));
-  final WorkController workController = Get.find<WorkController>();
 
   HomePageCustomer({super.key});
 
@@ -96,62 +96,134 @@ class HomePageCustomer extends StatelessWidget {
   }
 
   Widget _buildCustomerCard(CustomerModel customer) {
-    return GestureDetector(
-      onTap: () {
-        if (customer.userId != null && customer.userId!.isNotEmpty) {
-          Get.to(() => CustomerInfoScreen(userId: customer.userId!));
-        } else {
-          Get.snackbar('Error', 'El cliente no tiene un User ID válido');
-        }
-      },
-      child: Card(
-        color: const Color(0xFF242038),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+    return Card(
+      color: const Color(0xFF242038),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () {
+          if (customer.userId != null && customer.userId!.isNotEmpty) {
+            Get.to(() => CustomerInfoScreen(userId: customer.userId!));
+          } else {
+            CustomerDialogs.showCustomerInfo(customer);
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "${customer.name} ${customer.secondName}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
               Row(
                 children: [
+                  // Avatar del cliente
+                  CircleAvatar(
+                    backgroundColor: Colors.blue.shade700,
+                    radius: 20,
+                    child: Text(
+                      customer.name.isNotEmpty 
+                        ? customer.name[0].toUpperCase()
+                        : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Información del cliente
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${customer.name} ${customer.secondName ?? ''}".trim(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          customer.email,
+                          style: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Menú de acciones
+                  CustomerActionsWidget(
+                    customer: customer,
+                    onCustomerUpdated: () => controller.fetchCustomers(),
+                    onCustomerDeleted: () => controller.fetchCustomers(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Información adicional
+              Row(
+                children: [
+                  Icon(Icons.phone_outlined, 
+                    color: Colors.grey.shade400, size: 16),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      customer.address,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      customer.contactNumber,
+                      style: TextStyle(
+                        color: Colors.grey.shade300,
                         fontSize: 14,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    fit: FlexFit.loose,
+                  const SizedBox(width: 16),
+                  // Estado del cliente
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (customer.active ?? true) 
+                        ? Colors.green.shade700 
+                        : Colors.red.shade700,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Text(
-                      "Tel: ${customer.contactNumber}",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      (customer.active ?? true) ? 'Activo' : 'Inactivo',
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ],
               ),
+              if (customer.address?.isNotEmpty == true) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, 
+                      color: Colors.grey.shade400, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        customer.address!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.grey.shade300,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

@@ -29,6 +29,94 @@ class HttpHelper {
     }
   }
 
+  /// Realizar una petición PUT con manejo de errores
+  static Future<Map<String, dynamic>> put(
+    String url, 
+    dynamic body, 
+    {Map<String, String>? headers, bool suppressErrors = false}
+  ) async {
+    try {
+      final completeHeaders = {
+        'Content-Type': 'application/json',
+        ...?headers,
+      };
+
+      final response = await http.put(
+        Uri.parse(url),
+        headers: completeHeaders,
+        body: jsonEncode(body),
+      );
+
+      return _processResponse(response, suppressErrors: suppressErrors);
+    } catch (e) {
+      if (!suppressErrors) {
+        _showErrorSnackbar('Error de conexión', 'No se pudo conectar al servidor');
+      }
+      return {
+        'success': false,
+        'error': 'Error de conexión: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Realizar una petición DELETE con manejo de errores
+  static Future<Map<String, dynamic>> delete(
+    String url, 
+    {Map<String, String>? headers, bool suppressErrors = false}
+  ) async {
+    try {
+      final completeHeaders = {
+        'Content-Type': 'application/json',
+        ...?headers,
+      };
+
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: completeHeaders,
+      );
+
+      return _processResponse(response, suppressErrors: suppressErrors);
+    } catch (e) {
+      if (!suppressErrors) {
+        _showErrorSnackbar('Error de conexión', 'No se pudo conectar al servidor');
+      }
+      return {
+        'success': false,
+        'error': 'Error de conexión: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Realizar una petición PATCH con manejo de errores
+  static Future<Map<String, dynamic>> patch(
+    String url, 
+    dynamic body, 
+    {Map<String, String>? headers, bool suppressErrors = false}
+  ) async {
+    try {
+      final completeHeaders = {
+        'Content-Type': 'application/json',
+        ...?headers,
+      };
+
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: completeHeaders,
+        body: jsonEncode(body),
+      );
+
+      return _processResponse(response, suppressErrors: suppressErrors);
+    } catch (e) {
+      if (!suppressErrors) {
+        _showErrorSnackbar('Error de conexión', 'No se pudo conectar al servidor');
+      }
+      return {
+        'success': false,
+        'error': 'Error de conexión: ${e.toString()}',
+      };
+    }
+  }
+
   
   static Future<Map<String, dynamic>> post(
     String url, 

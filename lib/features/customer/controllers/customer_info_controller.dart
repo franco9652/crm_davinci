@@ -1,5 +1,4 @@
 import 'package:crm_app_dv/core/domain/repositories/customer_repository.dart';
-import 'package:crm_app_dv/core/domain/repositories/works_repository.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 import 'package:crm_app_dv/models/budget_model.dart';
@@ -34,12 +33,18 @@ class CustomerInfoController extends GetxController {
       print("UserId recibido: $userId");
 
       // 🔹 Obtener el cliente usando su `userId`
-      final fetchedCustomer = await customerRepository.getCustomerById(userId);
-      customer.value = fetchedCustomer;
-
-      // 🔹 Ahora usamos el `_id` del cliente para obtener sus trabajos
-      if (fetchedCustomer != null && fetchedCustomer.userId != null) {
-        fetchWorksByCustomer(fetchedCustomer.userId!);
+      final customerData = await customerRepository.getCustomerById(userId);
+      
+      // Convertir Map a CustomerModel
+      if (customerData.isNotEmpty) {
+        customer.value = CustomerModel.fromJson(customerData);
+        
+        // 🔹 Usar el ID del cliente para obtener sus trabajos y presupuestos
+        final customerId = customerData['_id'] ?? customerData['id'] ?? userId;
+        if (customerId != null && customerId.toString().isNotEmpty) {
+          fetchWorksByCustomer(customerId.toString());
+          fetchBudgetsByCustomer(customerId.toString());
+        }
       }
     } catch (e) {
       Get.snackbar("Error", "No se pudo cargar la información del cliente: $e");
@@ -50,44 +55,47 @@ class CustomerInfoController extends GetxController {
     }
   }
 
-  Future<void> fetchWorksByCustomer(String userId) async {
-  try {
-    isLoadingWorks(true);
-    
-    // Obtener el customer primero para acceder al _id
-    final fetchedCustomer = await customerRepository.getCustomerById(userId);
+  Future<void> fetchWorksByCustomer(String customerId) async {
+    try {
+      isLoadingWorks(true);
+      
+      print("Obteniendo trabajos para customerId: $customerId");
 
-    if (fetchedCustomer != null) {
-      final customerId = fetchedCustomer.id ?? fetchedCustomer.userId; // Asegurarnos de usar _id
-      print("Customer ID correcto (_id en MongoDB): $customerId");
-
-      if (customerId != null && customerId.isNotEmpty) {
-        final fetchedWorks = await Get.find<WorkRepository>().getWorksByUserId(customerId);
-         print("Trabajos obtenidos: $fetchedWorks");
+      if (customerId.isNotEmpty) {
+        final fetchedWorks = await customerRepository.getWorksByUserId(customerId);
+        print("Trabajos obtenidos: ${fetchedWorks.length}");
         userWorks.assignAll(fetchedWorks);
       } else {
-        print("Error: El customerId es nulo o vacío.");
+        print("Error: El customerId está vacío.");
       }
-    } else {
-      print("Error: No se encontró el cliente.");
-    }
-  } catch (e) {
-    Get.snackbar("Error", "No se pudieron cargar los trabajos del cliente: $e");
-    print(e);
-  } finally {
-    isLoadingWorks(false);
-  }
-}
-
-
-  Future<void> fetchWorksByUser(String userId) async {
-    try {
-      final fetchedWorks =
-          await Get.find<WorkRepository>().getWorksByUserId(userId);
-      userWorks.value = fetchedWorks;
     } catch (e) {
-      Get.snackbar(
-          "Error", "No se pudieron cargar los trabajos del cliente: $e");
+      Get.snackbar("Error", "No se pudieron cargar los trabajos del cliente: $e");
+      print("Error fetchWorksByCustomer: $e");
+    } finally {
+      isLoadingWorks(false);
+    }
+  }
+
+
+  /// Obtener presupuestos del cliente
+  Future<void> fetchBudgetsByCustomer(String customerId) async {
+    try {
+      isLoadingBudgets(true);
+      
+      print("Obteniendo presupuestos para customerId: $customerId");
+
+      if (customerId.isNotEmpty) {
+        final fetchedBudgets = await customerRepository.getBudgetsByCustomer(customerId);
+        print("Presupuestos obtenidos: ${fetchedBudgets.length}");
+        budgets.assignAll(fetchedBudgets);
+      } else {
+        print("Error: El customerId está vacío.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "No se pudieron cargar los presupuestos del cliente: $e");
+      print("Error fetchBudgetsByCustomer: $e");
+    } finally {
+      isLoadingBudgets(false);
     }
   }
 }
