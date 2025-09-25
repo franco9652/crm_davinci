@@ -40,80 +40,414 @@ class MeetingDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = <_DetailItem>[
-      _DetailItem('Título', meeting.title),
-      _DetailItem('Fecha', _fmtDate(meeting.date)),
-      _DetailItem('Hora', meeting.time),
-      _DetailItem('Duración', '${meeting.duration} min'),
-      _DetailItem('Tipo', meeting.meetingType),
-      if (meeting.customerName != null && meeting.customerName!.isNotEmpty)
-        _DetailItem('Cliente', meeting.customerName!),
-      if (meeting.projectTitle != null && meeting.projectTitle!.isNotEmpty)
-        _DetailItem('Proyecto', meeting.projectTitle!),
-      if (meeting.meetingType == 'virtual' && (meeting.meetingLink ?? '').isNotEmpty)
-        _DetailItem('Link de reunión', meeting.meetingLink!, isLink: true, onTap: () => _openLink(context, meeting.meetingLink!)),
-      if (meeting.meetingType == 'presencial' && (meeting.address ?? '').isNotEmpty)
-        _DetailItem('Dirección', meeting.address!, isLink: true, onTap: () => _openMaps(context, meeting.address!)),
-      if ((meeting.description ?? '').isNotEmpty)
-        _DetailItem('Descripción', meeting.description!),
-      _DetailItem('ID', meeting.id),
-    ];
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        title: const Text('Detalle de reunión', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF1E293B),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            tooltip: 'Enviar resumen al cliente',
-            onPressed: _sendSummaryToCustomer,
-            icon: const Icon(Icons.send, color: Colors.white),
+      body: CustomScrollView(
+        slivers: [
+          // 🎨 **SliverAppBar Moderno con Gradiente**
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF1E293B),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF6366F1), // Azul primario
+                      Color(0xFF8B5CF6), // Púrpura secundario
+                    ],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.event_note,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Detalle de Reunión',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    meeting.title,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              // 📤 **Botón de Enviar Resumen Moderno**
+              Container(
+                margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _sendSummaryToCustomer,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          // 📋 **Contenido Principal**
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 📅 **Sección: Información Básica**
+                  _buildModernSection(
+                    title: 'Información Básica',
+                    icon: Icons.info_outline,
+                    color: const Color(0xFF6366F1),
+                    children: [
+                      _buildModernInfoRow(
+                        icon: Icons.title,
+                        label: 'Título',
+                        value: meeting.title,
+                        color: const Color(0xFF8B5CF6),
+                      ),
+                      _buildModernInfoRow(
+                        icon: Icons.calendar_today,
+                        label: 'Fecha',
+                        value: _fmtDate(meeting.date),
+                        color: const Color(0xFF8B5CF6),
+                      ),
+                      _buildModernInfoRow(
+                        icon: Icons.access_time,
+                        label: 'Hora',
+                        value: meeting.time,
+                        color: const Color(0xFFF59E0B),
+                      ),
+                      _buildModernInfoRow(
+                        icon: Icons.timer,
+                        label: 'Duración',
+                        value: '${meeting.duration} min',
+                        color: const Color(0xFFF59E0B),
+                      ),
+                      _buildModernInfoRow(
+                        icon: meeting.meetingType == 'virtual' ? Icons.videocam : Icons.location_on,
+                        label: 'Tipo',
+                        value: meeting.meetingType,
+                        color: meeting.meetingType == 'virtual' ? const Color(0xFF06B6D4) : const Color(0xFF10B981),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // 👥 **Sección: Participantes**
+                  if (meeting.customerName != null && meeting.customerName!.isNotEmpty)
+                    _buildModernSection(
+                      title: 'Participantes',
+                      icon: Icons.people_outline,
+                      color: const Color(0xFF10B981),
+                      children: [
+                        _buildModernInfoRow(
+                          icon: Icons.person,
+                          label: 'Cliente',
+                          value: meeting.customerName!,
+                          color: const Color(0xFF10B981),
+                        ),
+                        if (meeting.projectTitle != null && meeting.projectTitle!.isNotEmpty)
+                          _buildModernInfoRow(
+                            icon: Icons.work_outline,
+                            label: 'Proyecto',
+                            value: meeting.projectTitle!,
+                            color: const Color(0xFF06B6D4),
+                          ),
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // 🔗 **Sección: Ubicación/Link**
+                  if ((meeting.meetingType == 'virtual' && (meeting.meetingLink ?? '').isNotEmpty) ||
+                      (meeting.meetingType == 'presencial' && (meeting.address ?? '').isNotEmpty))
+                    _buildModernSection(
+                      title: meeting.meetingType == 'virtual' ? 'Link de Reunión' : 'Ubicación',
+                      icon: meeting.meetingType == 'virtual' ? Icons.link : Icons.location_on,
+                      color: meeting.meetingType == 'virtual' ? const Color(0xFF06B6D4) : const Color(0xFF10B981),
+                      children: [
+                        if (meeting.meetingType == 'virtual' && (meeting.meetingLink ?? '').isNotEmpty)
+                          _buildModernInfoRow(
+                            icon: Icons.videocam,
+                            label: 'Link de reunión',
+                            value: meeting.meetingLink!,
+                            color: const Color(0xFF06B6D4),
+                            isLink: true,
+                            onTap: () => _openLink(context, meeting.meetingLink!),
+                          ),
+                        if (meeting.meetingType == 'presencial' && (meeting.address ?? '').isNotEmpty)
+                          _buildModernInfoRow(
+                            icon: Icons.location_on,
+                            label: 'Dirección',
+                            value: meeting.address!,
+                            color: const Color(0xFF10B981),
+                            isLink: true,
+                            onTap: () => _openMaps(context, meeting.address!),
+                          ),
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // 📝 **Sección: Descripción**
+                  if ((meeting.description ?? '').isNotEmpty)
+                    _buildModernSection(
+                      title: 'Descripción',
+                      icon: Icons.description_outlined,
+                      color: const Color(0xFFF59E0B),
+                      children: [
+                        _buildModernInfoRow(
+                          icon: Icons.notes,
+                          label: 'Descripción',
+                          value: meeting.description!,
+                          color: const Color(0xFFF59E0B),
+                          isMultiline: true,
+                        ),
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // 🔧 **Sección: Información Técnica**
+                  _buildModernSection(
+                    title: 'Información Técnica',
+                    icon: Icons.settings_outlined,
+                    color: const Color(0xFF6B7280),
+                    children: [
+                      _buildModernInfoRow(
+                        icon: Icons.fingerprint,
+                        label: 'ID',
+                        value: meeting.id,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 40), // Espacio final
+                ],
+              ),
+            ),
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (ctx, i) {
-          final it = items[i];
-          return Container(
+    );
+  }
+
+  // 🎨 **Sección Moderna**
+  Widget _buildModernSection({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header de la sección
+          Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white24),
+              color: color.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(it.label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                const SizedBox(height: 6),
-                if (it.onTap != null || it.isLink)
-                  InkWell(
-                    onTap: it.onTap,
-                    child: Text(
-                      it.value,
-                      style: const TextStyle(color: Colors.lightBlueAccent, decoration: TextDecoration.underline),
-                    ),
-                  )
-                else
-                  Text(it.value, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-          );
-        },
+          ),
+          // Contenido de la sección
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: children,
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class _DetailItem {
-  final String label;
-  final String value;
-  final bool isLink;
-  final VoidCallback? onTap;
-  _DetailItem(this.label, this.value, {this.isLink = false, this.onTap});
+  // 📋 **Fila de Información Moderna**
+  Widget _buildModernInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    bool isLink = false,
+    bool isMultiline = false,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (isLink && onTap != null)
+                  InkWell(
+                    onTap: onTap,
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                      ),
+                      maxLines: isMultiline ? null : 2,
+                      overflow: isMultiline ? null : TextOverflow.ellipsis,
+                    ),
+                  )
+                else
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: isMultiline ? null : 2,
+                    overflow: isMultiline ? null : TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          if (isLink && onTap != null)
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                Icons.open_in_new,
+                color: color,
+                size: 14,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

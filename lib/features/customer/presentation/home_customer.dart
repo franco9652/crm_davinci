@@ -86,14 +86,35 @@ class HomePageCustomer extends StatelessWidget {
         ],
       ),
       backgroundColor: const Color(0xFF1B1926),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.to(() => CreateCustomerPage());
-        },
-        backgroundColor: const Color(0xFFFF8329),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: _buildModernFAB(),
       
+    );
+  }
+
+  Widget _buildModernFAB() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        heroTag: 'createCustomer',
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        onPressed: () => Get.to(() =>  CreateCustomerPage()),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
     );
   }
 

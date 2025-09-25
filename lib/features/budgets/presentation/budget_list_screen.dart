@@ -226,7 +226,10 @@ class CreateBudgetScreen extends StatelessWidget {
                             .map<DropdownMenuItem<String>>((customer) {
                           return DropdownMenuItem<String>(
                             value: customer['_id'].toString(),
-                            child: Text(customer['name'].toString()),
+                            child: Text(
+                              customer['name'].toString(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           );
                         }).toList(),
                         (value) {
@@ -495,15 +498,7 @@ class CreateBudgetScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
         value: value,
-        items: items.map((item) {
-          return DropdownMenuItem<String>(
-            value: item.value,
-            child: Text(
-              item.child.toString().replaceAll('Text("', '').replaceAll('")', ''),
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
-        }).toList(),
+        items: items,
         onChanged: onChanged,
         isExpanded: true,
         dropdownColor: const Color(0xFF1E293B),

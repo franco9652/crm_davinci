@@ -27,70 +27,147 @@ class WorkListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
+          // 🔍 **Filtros Compactos Modernos**
           Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A2937),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.all(16.0),
-            child: Column(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
               children: [
-                // Buscador
-                TextField(
-                  onChanged: controller.updateSearchQuery,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar proyecto...',
-                    hintStyle: TextStyle(color: Colors.white),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    filled: true,
-                    fillColor: Color(0xFF1B1926),
-                    border: OutlineInputBorder(
+                // 🔍 **Buscador Compacto**
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
-                  style: TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF1B1926),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.filter_list, color: Colors.white),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Obx(() => DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
-                            hint: Text('Filtrar por estado', style: TextStyle(color: Colors.white)),
-                            style: TextStyle(color: Colors.white),
-                            dropdownColor: Color(0xFF1B1926),
-                            isExpanded: true,
-                            items: [
-                              DropdownMenuItem<String>(
-                                value: '',
-                                child: Text('Todos los estados', style: TextStyle(color: Colors.white)),
-                              ),
-                              ...controller.workStatuses.map((status) => DropdownMenuItem<String>(
-                                value: status,
-                                child: Text(status, style: TextStyle(color: Colors.white)),
-                              )).toList(),
-                            ],
-                            onChanged: controller.updateSelectedStatus,
+                    child: TextField(
+                      onChanged: controller.updateSearchQuery,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar proyecto...',
+                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
+                        prefixIcon: Container(
+                          margin: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                        )),
+                          child: const Icon(Icons.search, color: Color(0xFF6366F1), size: 16),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
-                    ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(width: 12),
+                
+                // 📋 **Filtro de Estado Mejorado**
+                Expanded(
+                  flex: 2, // Espacio equilibrado para el dropdown
+                  child: Container(
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(Icons.filter_list, color: Color(0xFF10B981), size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Obx(() => DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
+                              hint: Text(
+                                'Estado',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              dropdownColor: const Color(0xFF1E293B),
+                              isExpanded: true,
+                              menuMaxHeight: 300, // Altura máxima del menú
+                              icon: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Colors.white.withOpacity(0.7),
+                                size: 18,
+                              ),
+                              items: [
+                                DropdownMenuItem<String>(
+                                  value: '',
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 10,
+                                          height: 10,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF6B7280),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Text(
+                                          'Todos',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                ...controller.workStatuses.map((status) => DropdownMenuItem<String>(
+                                  value: status,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 10,
+                                          height: 10,
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(status),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Flexible(
+                                          child: Text(
+                                            status,
+                                            style: const TextStyle(fontSize: 14),
+                                            overflow: TextOverflow.visible,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )).toList(),
+                              ],
+                              onChanged: controller.updateSelectedStatus,
+                            ),
+                          )),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
-            
             ),
           ),
           Expanded(
@@ -122,17 +199,38 @@ class WorkListPage extends StatelessWidget {
           _buildPagination(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'createWork', 
-        onPressed: () {
-          Get.to(() => const CreateWorkPage());
-        },
-        backgroundColor: const Color(0xFFFF8329),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: _buildModernFAB(),
     );
   }
+
+  // 🎨 **FAB Moderno**
+  Widget _buildModernFAB() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        heroTag: 'createWork',
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        onPressed: () => Get.to(() => const CreateWorkPage()),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+    );
+  }
+
 
   Widget _buildWorkCard(BuildContext context, WorkModel work) {
     return Card(
@@ -349,18 +447,24 @@ class WorkListPage extends StatelessWidget {
     );
   }
 
-  /// Obtener color según el estado (Senior approach)
+  /// 🎨 **Colores Modernos por Estado**
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
+      case 'pendiente':
+        return const Color(0xFFF59E0B); // Amarillo
       case 'activo':
       case 'en progreso':
-        return Colors.green.shade700;
-      case 'pausado':
-        return Colors.orange.shade700;
+      case 'en_progreso':
+        return const Color(0xFF06B6D4); // Cyan
+      case 'completado':
+        return const Color(0xFF10B981); // Verde
+      case 'cancelado':
       case 'inactivo':
-        return Colors.red.shade700;
+        return const Color(0xFFEF4444); // Rojo
+      case 'pausado':
+        return const Color(0xFF8B5CF6); // Púrpura
       default:
-        return Colors.grey.shade700;
+        return const Color(0xFF6B7280); // Gris
     }
   }
 

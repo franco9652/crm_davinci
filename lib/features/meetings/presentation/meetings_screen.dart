@@ -500,7 +500,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 🔍 **Diálogo de Filtros Moderno**
+  
   void _showModernFilterDialog(BuildContext context, MeetingsController controller) {
     Get.dialog(
       AlertDialog(
