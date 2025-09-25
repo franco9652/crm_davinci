@@ -529,55 +529,58 @@ class MeetingsScreen extends StatelessWidget {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Filtro por fecha específica
-            _buildModernFilterOption(
-              Icons.calendar_today,
-              'Fecha específica',
-              controller.selectedDate.value != null 
-                  ? DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!)
-                  : 'Seleccionar fecha',
-              const Color(0xFF8B5CF6),
-              () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: controller.selectedDate.value ?? DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2030),
-                  builder: (context, child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: const ColorScheme.dark(
-                          primary: const Color(0xFF6366F1),
-                          surface: const Color(0xFF1E293B),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Filtro por fecha específica
+              Obx(() => _buildModernFilterOption(
+                Icons.calendar_today,
+                'Fecha específica',
+                controller.selectedDate.value != null 
+                    ? DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!)
+                    : 'Seleccionar fecha',
+                const Color(0xFF8B5CF6),
+                () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: controller.selectedDate.value ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.dark(
+                            primary: const Color(0xFF6366F1),
+                            surface: const Color(0xFF1E293B),
+                          ),
                         ),
-                      ),
-                      child: child!,
-                    );
-                  },
-                );
-                if (date != null) {
-                  controller.filterByDate(date);
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            Container(
-              height: 1,
-              color: const Color(0xFF334155),
-            ),
-            const SizedBox(height: 12),
-            // Filtro por día de la semana
-            _buildModernFilterOption(
-              Icons.today,
-              'Día de la semana',
-              controller.selectedDay.value ?? 'Seleccionar día',
-              const Color(0xFF10B981),
-              () => _showModernDayPicker(context, controller),
-            ),
-          ],
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (date != null) {
+                    controller.filterByDate(date);
+                  }
+                },
+              )),
+              const SizedBox(height: 12),
+              Container(
+                height: 1,
+                color: const Color(0xFF334155),
+              ),
+              const SizedBox(height: 12),
+              // Filtro por día de la semana
+              Obx(() => _buildModernFilterOption(
+                Icons.today,
+                'Día de la semana',
+                controller.selectedDay.value ?? 'Seleccionar día',
+                const Color(0xFF10B981),
+                () => _showModernDayPicker(context, controller),
+              )),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -659,13 +662,13 @@ class MeetingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Obx(() => Text(
+                    Text(
                       subtitle,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
                         fontSize: 14,
                       ),
-                    )),
+                    ),
                   ],
                 ),
               ),
@@ -719,51 +722,57 @@ class MeetingsScreen extends StatelessWidget {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: days.map((day) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  controller.filterByDay(day);
-                  Get.back(); // Cerrar selector de día
-                  Get.back(); // Cerrar diálogo de filtros
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300, // Altura fija para evitar overflow
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: days.map((day) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      controller.filterByDay(day);
+                      Get.back(); // Cerrar selector de día
+                      Get.back(); // Cerrar diálogo de filtros
+                    },
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(Icons.calendar_today, color: Color(0xFF10B981), size: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        day,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(Icons.calendar_today, color: Color(0xFF10B981), size: 16),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            day,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              )).toList(),
             ),
-          )).toList(),
+          ),
         ),
         actions: [
           TextButton(
