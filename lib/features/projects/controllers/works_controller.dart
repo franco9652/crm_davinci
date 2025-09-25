@@ -72,21 +72,34 @@ class WorkController extends GetxController {
   }
 
   void filterWorks() {
+    print('🔍 Filtrando obras:');
+    print('   - Total obras: ${works.length}');
+    print('   - Búsqueda: "${searchQuery.value}"');
+    print('   - Estado seleccionado: "${selectedStatus.value}"');
+    
     if (searchQuery.value.isEmpty && selectedStatus.value.isEmpty) {
       filteredWorks.assignAll(works);
+      print('   - Sin filtros, mostrando todas: ${filteredWorks.length}');
     } else {
-      filteredWorks.assignAll(
-        works.where((work) {
-          final matchesSearch = searchQuery.value.isEmpty ||
-              work.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-              work.customerName.toLowerCase().contains(searchQuery.value.toLowerCase());
-          
-          final matchesStatus = selectedStatus.value.isEmpty ||
-              work.statusWork == selectedStatus.value;
-          
-          return matchesSearch && matchesStatus;
-        }).toList(),
-      );
+      final filtered = works.where((work) {
+        final matchesSearch = searchQuery.value.isEmpty ||
+            work.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+            work.customerName.toLowerCase().contains(searchQuery.value.toLowerCase());
+        
+        final matchesStatus = selectedStatus.value.isEmpty ||
+            work.statusWork.toLowerCase() == selectedStatus.value.toLowerCase();
+        
+        print('   - Obra: ${work.name}');
+        print('     Estado obra: "${work.statusWork}"');
+        print('     Coincide búsqueda: $matchesSearch');
+        print('     Coincide estado: $matchesStatus');
+        print('     Incluir: ${matchesSearch && matchesStatus}');
+        
+        return matchesSearch && matchesStatus;
+      }).toList();
+      
+      filteredWorks.assignAll(filtered);
+      print('   - Obras filtradas: ${filteredWorks.length}');
     }
   }
 
@@ -95,7 +108,10 @@ class WorkController extends GetxController {
   }
 
   void updateSelectedStatus(String? status) {
+    print('📋 Actualizando estado seleccionado: "$status"');
     selectedStatus.value = status ?? '';
+    print('📋 Estado guardado: "${selectedStatus.value}"');
+    filterWorks(); // Aplicar filtro inmediatamente
   }
 
   void goToPage(int page) {

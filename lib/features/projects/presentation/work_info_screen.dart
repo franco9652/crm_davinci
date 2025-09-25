@@ -5,6 +5,7 @@ import 'package:crm_app_dv/features/projects/controllers/work_info_controller.da
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:crm_app_dv/features/projects/presentation/widgets/work_actions_widget.dart';
 
 class WorkInfoScreen extends StatelessWidget {
   final String workId;
@@ -17,17 +18,14 @@ class WorkInfoScreen extends StatelessWidget {
     controller.fetchWorkInfo(workId);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        title: const Text("Detalles del Proyecto",
-            style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF1E1E1E),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      backgroundColor: const Color(0xFF0F0F23),
       body: Obx(() {
         if (controller.isLoadingWork.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            ),
+          );
         }
 
         if (controller.work.value == null) {
@@ -40,118 +38,151 @@ class WorkInfoScreen extends StatelessWidget {
         }
 
         final work = controller.work.value!;
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black26, blurRadius: 8, offset: Offset(2, 4)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.apartment, color: Colors.white, size: 30),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          work.name,
-                          style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+        return CustomScrollView(
+          slivers: [
+            // App Bar moderno con gradiente
+            SliverAppBar(
+              expandedHeight: 200,
+              floating: false,
+              pinned: true,
+              backgroundColor: const Color(0xFF1E293B),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF6366F1),
+                        Color(0xFF8B5CF6),
+                        Color(0xFF1E293B),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  const Divider(color: Colors.white24, thickness: 1),
-
-                  // 🔹 **Información Detallada**
-                  _buildInfoRow(Icons.numbers, "Número de Proyecto",
-                      work.number ?? "No disponible"),
-                  _buildInfoRow(
-                      Icons.person, "Cliente", work.customerName),
-                  _buildInfoRow(Icons.email, "Email del Cliente",
-                      work.emailCustomer ?? "No disponible"),
-                  _buildInfoRow(Icons.location_on, "Ubicación",
-                      work.workUbication),
-
-                  const SizedBox(height: 12),
-                  _buildMapSection(context, work.workUbication),
-                  _buildInfoRow(Icons.attach_money, "Presupuesto",
-                      "\$${work.budget.toStringAsFixed(2)}"),
-                  _buildInfoRow(Icons.assignment, "Estado", work.statusWork),
-                  _buildInfoRow(Icons.category, "Tipo de Proyecto",
-                      work.projectType),
-
-                  // 📅 Fechas Formateadas
-                  _buildInfoRow(Icons.calendar_today, "Fecha de Inicio",
-                      _formatDate(work.startDate)),
-                  if (work.endDate != null)
-                    _buildInfoRow(
-                        Icons.calendar_today, "Fecha de Finalización", _formatDate(work.endDate!)),
-
-                  if (work.description != null)
-                    _buildInfoRow(Icons.description, "Descripción",
-                        work.description!),
-
-                  const SizedBox(height: 10),
-                  const Divider(color: Colors.white24, thickness: 1),
-
-                  // 🔹 **Documentos Adjuntos**
-                  if (work.documents.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    const Text("📄 Documentos Adjuntos",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: work.documents
-                          .map((doc) =>
-                              _buildDocumentItem(doc))
-                          .toList(),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.apartment,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      work.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      work.customerName,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              WorkActionsWidget(
+                                work: work,
+                                onWorkUpdated: () => controller.fetchWorkInfo(workId),
+                                onWorkDeleted: () => Get.back(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ] else ...[
-                    _buildInfoRow(Icons.insert_drive_file, "Documentos",
-                        "No hay documentos disponibles"),
-                  ],
-
-                  // 🔹 **Empleados en la Obra**
-                  if (work.employeeInWork.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    const Text("👷‍♂️ Empleados Asignados",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: work.employeeInWork
-                          .map((emp) =>
-                              _buildEmployeeItem(emp))
-                          .toList(),
-                    ),
-                  ] else ...[
-                    _buildInfoRow(Icons.person, "Empleados Asignados",
-                        "No hay empleados en esta obra"),
-                  ],
-                ],
+                  ),
+                ),
               ),
             ),
-          ),
+            
+            // Contenido principal
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Estado y información básica
+                    _buildStatusCard(work),
+                    const SizedBox(height: 20),
+                    
+                    // Información del proyecto
+                    _buildInfoSection('Información del Proyecto', [
+                      _buildModernInfoRow(Icons.numbers, 'Número', work.number ?? 'No disponible'),
+                      _buildModernInfoRow(Icons.location_on, 'Ubicación', work.workUbication),
+                      _buildModernInfoRow(Icons.category, 'Tipo', work.projectType),
+                      _buildModernInfoRow(Icons.attach_money, 'Presupuesto', '\$${work.budget.toStringAsFixed(2)}'),
+                    ]),
+                    const SizedBox(height: 20),
+                    
+                    // Fechas
+                    _buildInfoSection('Cronograma', [
+                      _buildModernInfoRow(Icons.calendar_today, 'Inicio', _formatDate(work.startDate)),
+                      if (work.endDate != null)
+                        _buildModernInfoRow(Icons.event_available, 'Finalización', _formatDate(work.endDate!)),
+                    ]),
+                    const SizedBox(height: 20),
+                    
+                    // Contacto
+                    _buildInfoSection('Contacto', [
+                      _buildModernInfoRow(Icons.person, 'Cliente', work.customerName),
+                      if (work.emailCustomer != null)
+                        _buildModernInfoRow(Icons.email, 'Email', work.emailCustomer!),
+                    ]),
+                    const SizedBox(height: 20),
+                    
+                    // Descripción
+                    if (work.description != null && work.description!.isNotEmpty)
+                      _buildDescriptionSection(work.description!),
+                    
+                    // Documentos
+                    if (work.documents.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      _buildDocumentsSection(work.documents),
+                    ],
+                    
+                    // Empleados
+                    if (work.employeeInWork.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      _buildEmployeesSection(work.employeeInWork),
+                    ],
+                    
+                    // Mapa
+                    const SizedBox(height: 20),
+                    _buildMapSection(context, work.workUbication),
+                    
+                    const SizedBox(height: 100), // Espacio extra al final
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       }),
     );
@@ -167,37 +198,259 @@ class WorkInfoScreen extends StatelessWidget {
     }
   }
 
-  // 🔹 **Widget para Información General**
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+  // 🎨 **Tarjeta de Estado Moderna**
+  Widget _buildStatusCard(work) {
+    Color statusColor;
+    IconData statusIcon;
+    
+    switch (work.statusWork.toLowerCase()) {
+      case 'activo':
+      case 'en progreso':
+        statusColor = const Color(0xFF10B981);
+        statusIcon = Icons.play_circle_filled;
+        break;
+      case 'pausado':
+        statusColor = const Color(0xFFF59E0B);
+        statusIcon = Icons.pause_circle_filled;
+        break;
+      case 'inactivo':
+        statusColor = const Color(0xFFEF4444);
+        statusIcon = Icons.stop_circle;
+        break;
+      default:
+        statusColor = const Color(0xFF6B7280);
+        statusIcon = Icons.help_outline;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [statusColor.withOpacity(0.1), statusColor.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueAccent, size: 22),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(statusIcon, color: statusColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Estado del Proyecto',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  work.statusWork,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🏗️ **Sección de Información Moderna**
+  Widget _buildInfoSection(String title, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // 📋 **Fila de Información Moderna**
+  Widget _buildModernInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: const Color(0xFF6366F1), size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 📝 **Sección de Descripción**
+  Widget _buildDescriptionSection(String description) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.description, color: Color(0xFF8B5CF6), size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Descripción',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            description,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 📄 **Sección de Documentos**
+  Widget _buildDocumentsSection(List<String> documents) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.folder, color: Color(0xFFF59E0B), size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Documentos',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...documents.map((doc) => _buildDocumentItem(doc)).toList(),
+        ],
+      ),
+    );
+  }
+
+  // 📄 **Item de Documento**
+  Widget _buildDocumentItem(String docName) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.insert_drive_file, color: Color(0xFFF59E0B), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              "$label: $value",
-              style: const TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 🔹 **Widget para Documentos**
-  Widget _buildDocumentItem(String docName) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          const Icon(Icons.insert_drive_file, color: Colors.orangeAccent, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
               docName,
-              style: const TextStyle(color: Colors.white70, fontSize: 16),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -206,18 +459,74 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🔹 **Widget para Empleados**
+  // 👥 **Sección de Empleados**
+  Widget _buildEmployeesSection(List<String> employees) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.group, color: Color(0xFF10B981), size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Equipo Asignado',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...employees.map((emp) => _buildEmployeeItem(emp)).toList(),
+        ],
+      ),
+    );
+  }
+
+  // 👤 **Item de Empleado**
   Widget _buildEmployeeItem(String employee) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+      ),
       child: Row(
         children: [
-          const Icon(Icons.person, color: Colors.greenAccent, size: 20),
-          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(Icons.person, color: Color(0xFF10B981), size: 16),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               employee,
-              style: const TextStyle(color: Colors.white70, fontSize: 16),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -226,108 +535,147 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🔹 Sección de mapa con fallback a Google Maps
+  // 🗺️ **Sección de Mapa Moderna**
   Widget _buildMapSection(BuildContext context, String ubicacion) {
     final latLng = _parseLatLng(ubicacion);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 360;
-            final title = const Text(
-              'Mapa de ubicación',
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-            );
-            final btn = TextButton.icon(
-              onPressed: () {
-                if (latLng != null) {
-                  _openGoogleMaps(context, lat: latLng.latitude, lng: latLng.longitude);
-                } else {
-                  _openGoogleMaps(context, query: ubicacion);
-                }
-              },
-              icon: const Icon(Icons.map, color: Colors.orangeAccent, size: 18),
-              label: const Text('Google Maps',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.orangeAccent)),
-            );
-            if (isNarrow) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [title, const SizedBox(height: 6), btn],
-              );
-            } else {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
                 children: [
-                  Flexible(child: title),
-                  btn,
-                ],
-              );
-            }
-          },
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 220,
-          decoration: BoxDecoration(
-            color: const Color(0xFF151515),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF4380FF).withOpacity(0.5)),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: latLng != null
-                ? FlutterMap(
-                    options: MapOptions(
-                      initialCenter: latLng,
-                      initialZoom: 15,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF06B6D4).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: const ['a', 'b', 'c'],
-                        userAgentPackageName: 'crm_app_dv',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: latLng,
-                            width: 40,
-                            height: 40,
-                            child: const Icon(Icons.location_on, color: Colors.redAccent, size: 36),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                : _mapErrorPlaceholder(context, ubicacion),
+                    child: const Icon(Icons.location_on, color: Color(0xFF06B6D4), size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Ubicación',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  if (latLng != null) {
+                    _openGoogleMaps(context, lat: latLng.latitude, lng: latLng.longitude);
+                  } else {
+                    _openGoogleMaps(context, query: ubicacion);
+                  }
+                },
+                icon: const Icon(Icons.open_in_new, color: Color(0xFF06B6D4), size: 14),
+                label: const Text(
+                  'Maps',
+                  style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: latLng != null
+                  ? FlutterMap(
+                      options: MapOptions(
+                        initialCenter: latLng,
+                        initialZoom: 15,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          subdomains: const ['a', 'b', 'c'],
+                          userAgentPackageName: 'crm_app_dv',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: latLng,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(Icons.location_on, color: Color(0xFF06B6D4), size: 36),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : _mapErrorPlaceholder(context, ubicacion),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _mapErrorPlaceholder(BuildContext context, String ubicacion) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.map_outlined, color: Colors.white54, size: 36),
-            const SizedBox(height: 8),
-            const Text(
-              'No se pudo mostrar el mapa',
-              style: TextStyle(color: Colors.white60),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF06B6D4).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.map_outlined, color: Color(0xFF06B6D4), size: 32),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Text(
+              'No se pudo mostrar el mapa',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => _openGoogleMaps(context, query: ubicacion),
-              icon: const Icon(Icons.open_in_new, color: Colors.white),
-              label: const Text('Abrir en Google Maps'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              icon: const Icon(Icons.open_in_new, size: 14),
+              label: const Text(
+                'Google Maps',
+                style: TextStyle(fontSize: 12),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF06B6D4),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ],
         ),

@@ -13,81 +13,176 @@ class ProfileScreen extends StatelessWidget {
     final LoginController loginController = Get.find<LoginController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1926),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Perfil',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Email Card - FIXED VERSION
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF323438),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blueAccent, width: 2),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Usuario actual:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+      backgroundColor: const Color(0xFF0F0F23),
+      body: CustomScrollView(
+        slivers: [
+          // App Bar moderno con gradiente
+          SliverAppBar(
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF1E293B),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color(0xFF8B5CF6),
+                      Color(0xFF1E293B),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Obx(() => Text(
-                  loginController.email.value.isNotEmpty 
-                      ? loginController.email.value 
-                      : 'usuario@example.com',
-                  style: const TextStyle(
-                    color: Colors.amber,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Obx(() => Text(
+                                loginController.email.value.isNotEmpty 
+                                    ? loginController.email.value[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Configuración',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Obx(() => Text(
+                                    loginController.email.value.isNotEmpty 
+                                        ? loginController.email.value 
+                                        : 'usuario@example.com',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 14,
+                                    ),
+                                  )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                )),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    Get.to(() => const ChangePasswordScreen());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                  ),
-                  child: const Text('Cambiar contraseña', style: TextStyle(color: Colors.white)),
                 ),
-              ],
+              ),
             ),
           ),
-
-          // Settings - FIXED TITLES
-          const SizedBox(height: 24),
-          _buildSectionHeader('SOPORTE'),
-          _buildSimpleItem('Ayuda', 'Contactar', onTap: () => _launchWhatsApp(context)),
-
-          const SizedBox(height: 32),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                loginController.logout();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                textStyle: const TextStyle(fontSize: 16),
+          
+          // Contenido principal
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Sección Cuenta
+                  _buildModernSection(
+                    'Cuenta',
+                    Icons.account_circle,
+                    const Color(0xFF6366F1),
+                    [
+                      _buildModernSettingItem(
+                        'Cambiar Contraseña',
+                        'Actualiza tu contraseña de acceso',
+                        Icons.lock_outline,
+                        const Color(0xFF6366F1),
+                        onTap: () => Get.to(() => const ChangePasswordScreen()),
+                      ),
+                      _buildModernSettingItem(
+                        'Email',
+                        loginController.email.value.isNotEmpty 
+                            ? loginController.email.value 
+                            : 'usuario@example.com',
+                        Icons.email_outlined,
+                        const Color(0xFF8B5CF6),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Sección Soporte
+                  _buildModernSection(
+                    'Soporte',
+                    Icons.help_outline,
+                    const Color(0xFF10B981),
+                    [
+                      _buildModernSettingItem(
+                        'Ayuda',
+                        'Contacta con nuestro equipo de soporte',
+                        Icons.support_agent,
+                        const Color(0xFF10B981),
+                        onTap: () => _launchWhatsApp(context),
+                        showArrow: true,
+                      ),
+                      _buildModernSettingItem(
+                        'WhatsApp',
+                        '+54 9 11 5880-0708',
+                        Icons.chat,
+                        const Color(0xFF22C55E),
+                        onTap: () => _launchWhatsApp(context),
+                        showArrow: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Sección Aplicación
+                  _buildModernSection(
+                    'Aplicación',
+                    Icons.settings,
+                    const Color(0xFFF59E0B),
+                    [
+                      _buildModernSettingItem(
+                        'Versión',
+                        '1.0.0',
+                        Icons.info_outline,
+                        const Color(0xFFF59E0B),
+                      ),
+                      _buildModernSettingItem(
+                        'Desarrollado por',
+                        'Da Vinci CRM Team',
+                        Icons.code,
+                        const Color(0xFF06B6D4),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // Botón de cerrar sesión
+                  _buildLogoutButton(loginController),
+                  
+                  const SizedBox(height: 100), // Espacio extra al final
+                ],
               ),
-              child: const Text('CERRAR SESIÓN', style: TextStyle(color: Colors.white)),
             ),
           ),
         ],
@@ -95,50 +190,238 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  // 🏗️ **Sección Moderna**
+  Widget _buildModernSection(String title, IconData icon, Color color, List<Widget> children) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // ⚙️ **Item de Configuración Moderno**
+  Widget _buildModernSettingItem(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+    bool showArrow = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (showArrow)
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      color: color,
+                      size: 14,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSimpleItem(String title, String value, {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF323438),
-          borderRadius: BorderRadius.circular(8),
+  // 🚪 **Botón de Cerrar Sesión Moderno**
+  Widget _buildLogoutButton(LoginController loginController) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          _showLogoutDialog(loginController);
+        },
+        icon: const Icon(Icons.logout, color: Colors.white, size: 20),
+        label: const Text(
+          'Cerrar Sesión',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔔 **Diálogo de Confirmación de Logout**
+  void _showLogoutDialog(LoginController loginController) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: const Icon(Icons.logout, color: Color(0xFFEF4444), size: 20),
             ),
-            Text(
-              value,
+            const SizedBox(width: 12),
+            const Text(
+              'Cerrar Sesión',
               style: TextStyle(
-                color: Colors.blueAccent[200],
-                fontSize: 14,
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
+        content: Text(
+          '¿Estás seguro de que quieres cerrar sesión?',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.8),
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              loginController.logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Cerrar Sesión',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

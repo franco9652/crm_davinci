@@ -14,82 +14,152 @@ class MeetingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final MeetingsController controller = Get.put(MeetingsController());
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        title: FutureBuilder<String>(
-          future: _getPageTitle(),
-          builder: (context, snapshot) {
-            return Text(
-              snapshot.data ?? 'Calendario / Reuniones',
-              style: const TextStyle(color: Colors.white),
-            );
-          },
-        ),
-        backgroundColor: const Color(0xFF1E293B),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            tooltip: 'Filtros',
-            onPressed: () => _showFilterDialog(context, controller),
-            icon: Obx(() => Icon(
-              controller.isFilterActive.value ? Icons.filter_alt : Icons.filter_alt_outlined,
-              color: controller.isFilterActive.value ? Colors.orange : Colors.white,
-            )),
-          ),
-          IconButton(
-            tooltip: 'Refrescar',
-            onPressed: () => controller.fetchMeetings(forCurrentUser: true),
-            icon: const Icon(Icons.refresh, color: Colors.white),
-          ),
-          // Botón temporal para probar notificaciones
-          IconButton(
-            tooltip: 'Probar notificación',
-            onPressed: () async {
-              await NotificationService.sendTestNotification();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🧪 Notificación de prueba programada para 10 segundos'),
-                  duration: Duration(seconds: 3),
+      backgroundColor: const Color(0xFF0F0F23),
+      body: CustomScrollView(
+        slivers: [
+          // App Bar moderno con gradiente
+          SliverAppBar(
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF1E293B),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color(0xFF8B5CF6),
+                      Color(0xFF1E293B),
+                    ],
+                  ),
                 ),
-              );
-            },
-            icon: const Icon(Icons.notifications_active, color: Colors.yellow),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Info banner para Employee
-          _buildInfoBanner(),
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (controller.error.isNotEmpty) {
-                return Center(
+                child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Error: ${controller.error.value}',
-                      style: const TextStyle(color: Colors.redAccent),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.calendar_month,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  FutureBuilder<String>(
+                                    future: _getPageTitle(),
+                                    builder: (context, snapshot) {
+                                      return Text(
+                                        snapshot.data ?? 'Calendario',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Obx(() => Text(
+                                    controller.isFilterActive.value 
+                                        ? 'Filtros aplicados'
+                                        : 'Gestiona tus reuniones',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 14,
+                                    ),
+                                  )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }
-              return _buildMeetingsList(controller);
-            }),
+                ),
+              ),
+            ),
+            actions: [
+              _buildModernActionButton(
+                Icons.filter_alt,
+                'Filtros',
+                () => _showModernFilterDialog(context, controller),
+                controller.isFilterActive.value ? const Color(0xFFF59E0B) : Colors.white,
+              ),
+              _buildModernActionButton(
+                Icons.refresh,
+                'Refrescar',
+                () => controller.fetchMeetings(forCurrentUser: true),
+                Colors.white,
+              ),
+              _buildModernActionButton(
+                Icons.notifications_active,
+                'Test',
+                () async {
+                  await NotificationService.sendTestNotification();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('🧪 Notificación de prueba programada'),
+                      backgroundColor: const Color(0xFF10B981),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  );
+                },
+                const Color(0xFFF59E0B),
+              ),
+            ],
+          ),
+          
+          // Contenido principal
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                // Info banner para Employee
+                _buildModernInfoBanner(),
+                
+                // Lista de reuniones
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return Container(
+                      height: 200,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                        ),
+                      ),
+                    );
+                  }
+                  if (controller.error.isNotEmpty) {
+                    return _buildErrorState(controller.error.value);
+                  }
+                  return _buildModernMeetingsList(controller);
+                }),
+              ],
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'createMeeting',
-        backgroundColor: Colors.orange,
-        onPressed: () {
-          Get.to(() => const CreateMeetingScreen());
-        },
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: _buildModernFAB(),
     );
   }
 
@@ -107,27 +177,62 @@ class MeetingsScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildInfoBanner() {
+  // 🎨 **Botón de Acción Moderno**
+  Widget _buildModernActionButton(IconData icon, String tooltip, VoidCallback onPressed, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 📋 **Banner de Información Moderno**
+  Widget _buildModernInfoBanner() {
     return FutureBuilder<bool>(
       future: _shouldShowEmployeeBanner(),
       builder: (context, snapshot) {
         if (snapshot.data == true) {
           return Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                SizedBox(width: 8),
-                Expanded(
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.info_outline, color: Color(0xFFF59E0B), size: 18),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
                   child: Text(
-                    '📋 Mostrando solo las reuniones asignadas a ti',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    'Mostrando solo las reuniones asignadas a ti',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -145,177 +250,534 @@ class MeetingsScreen extends StatelessWidget {
     return role == 'Employee';
   }
 
-  Widget _buildMeetingsList(MeetingsController controller) {
+  // ❌ **Estado de Error Moderno**
+  Widget _buildErrorState(String error) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 32),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Error al cargar reuniones',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 📅 **Lista de Reuniones Moderna**
+  Widget _buildModernMeetingsList(MeetingsController controller) {
     final displayMeetings = controller.displayMeetings;
     
     if (displayMeetings.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white24),
-          ),
-          child: const Text(
-            'Aún no hay reuniones programadas. Usa el botón + para crear una.',
-            style: TextStyle(color: Colors.white70),
-          ),
+      return Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155), width: 1),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.calendar_today, color: Color(0xFF6366F1), size: 48),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No hay reuniones',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aún no hay reuniones programadas.\nUsa el botón + para crear una.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }
 
     return RefreshIndicator(
       onRefresh: () => controller.fetchMeetings(forCurrentUser: true),
+      color: const Color(0xFF6366F1),
+      backgroundColor: const Color(0xFF1E293B),
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
         itemCount: displayMeetings.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (ctx, i) {
           final m = displayMeetings[i];
           final dateFmt = DateFormat('dd/MM/yyyy');
-          return Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              title: Text(
-                m.title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 4),
-                  Text(
-                    '${dateFmt.format(m.date)} • ${m.time} • ${m.duration} min',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  if (m.customerName != null)
-                    Text('Cliente: ${m.customerName}', style: const TextStyle(color: Colors.white60)),
-                  if (m.projectTitle != null)
-                    Text('Proyecto: ${m.projectTitle}', style: const TextStyle(color: Colors.white60)),
-                  Text('Tipo: ${m.meetingType}', style: const TextStyle(color: Colors.white60)),
-                ],
-              ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.white70),
-              onTap: () {
-                Get.to(() => MeetingDetailScreen(meeting: m));
-              },
-            ),
-          );
+          return _buildModernMeetingCard(m, dateFmt);
         },
       ),
     );
   }
 
-  void _showFilterDialog(BuildContext context, MeetingsController controller) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1E293B),
-          title: const Text('Filtrar Reuniones', style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Filtro por fecha específica
-              ListTile(
-                leading: const Icon(Icons.calendar_today, color: Colors.white70),
-                title: const Text('Fecha específica', style: TextStyle(color: Colors.white)),
-                subtitle: Obx(() => Text(
-                  controller.selectedDate.value != null 
-                    ? DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!)
-                    : 'Seleccionar fecha',
-                  style: const TextStyle(color: Colors.white60),
-                )),
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: controller.selectedDate.value ?? DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.dark(
-                            primary: Colors.orange,
-                            surface: Color(0xFF1E293B),
-                          ),
+  // 🗓️ **Tarjeta de Reunión Moderna**
+  Widget _buildModernMeetingCard(dynamic meeting, DateFormat dateFmt) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Get.to(() => MeetingDetailScreen(meeting: meeting)),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.event, color: Color(0xFF6366F1), size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        meeting.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (date != null) {
-                    controller.filterByDate(date);
-                  }
-                },
-              ),
-              const Divider(color: Colors.white24),
-              // Filtro por día de la semana
-              ListTile(
-                leading: const Icon(Icons.today, color: Colors.white70),
-                title: const Text('Día de la semana', style: TextStyle(color: Colors.white)),
-                subtitle: Obx(() => Text(
-                  controller.selectedDay.value ?? 'Seleccionar día',
-                  style: const TextStyle(color: Colors.white60),
-                )),
-                onTap: () => _showDayPicker(context, controller),
-              ),
-            ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Color(0xFF10B981),
+                        size: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildMeetingInfoRow(
+                  Icons.calendar_today,
+                  '${dateFmt.format(meeting.date)} • ${meeting.time}',
+                  const Color(0xFF8B5CF6),
+                ),
+                const SizedBox(height: 8),
+                _buildMeetingInfoRow(
+                  Icons.schedule,
+                  '${meeting.duration} minutos',
+                  const Color(0xFFF59E0B),
+                ),
+                if (meeting.customerName != null) ...[
+                  const SizedBox(height: 8),
+                  _buildMeetingInfoRow(
+                    Icons.person,
+                    'Cliente: ${meeting.customerName}',
+                    const Color(0xFF10B981),
+                  ),
+                ],
+                if (meeting.projectTitle != null) ...[
+                  const SizedBox(height: 8),
+                  _buildMeetingInfoRow(
+                    Icons.business,
+                    'Proyecto: ${meeting.projectTitle}',
+                    const Color(0xFF06B6D4),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                _buildMeetingInfoRow(
+                  Icons.category,
+                  'Tipo: ${meeting.meetingType}',
+                  const Color(0xFFEF4444),
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                controller.clearFilters();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Limpiar', style: TextStyle(color: Colors.white70)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar', style: TextStyle(color: Colors.orange)),
-            ),
-          ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  void _showDayPicker(BuildContext context, MeetingsController controller) {
-    final days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1E293B),
-          title: const Text('Seleccionar Día', style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: days.map((day) => ListTile(
-              title: Text(day, style: const TextStyle(color: Colors.white)),
-              onTap: () {
-                controller.filterByDay(day);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Cerrar también el diálogo de filtros
-              },
-            )).toList(),
+  // 📝 **Fila de Información de Reunión**
+  Widget _buildMeetingInfoRow(IconData icon, String text, Color color) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
+        ),
+      ],
+    );
+  }
+
+  // ➕ **FAB Moderno**
+  Widget _buildModernFAB() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        heroTag: 'createMeeting',
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        onPressed: () => Get.to(() => const CreateMeetingScreen()),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+    );
+  }
+
+  // 🔍 **Diálogo de Filtros Moderno**
+  void _showModernFilterDialog(BuildContext context, MeetingsController controller) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.filter_alt, color: Color(0xFF6366F1), size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Filtrar Reuniones',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
-        );
-      },
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Filtro por fecha específica
+            _buildModernFilterOption(
+              Icons.calendar_today,
+              'Fecha específica',
+              controller.selectedDate.value != null 
+                  ? DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!)
+                  : 'Seleccionar fecha',
+              const Color(0xFF8B5CF6),
+              () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: controller.selectedDate.value ?? DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.dark(
+                          primary: const Color(0xFF6366F1),
+                          surface: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (date != null) {
+                  controller.filterByDate(date);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            Container(
+              height: 1,
+              color: const Color(0xFF334155),
+            ),
+            const SizedBox(height: 12),
+            // Filtro por día de la semana
+            _buildModernFilterOption(
+              Icons.today,
+              'Día de la semana',
+              controller.selectedDay.value ?? 'Seleccionar día',
+              const Color(0xFF10B981),
+              () => _showModernDayPicker(context, controller),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              controller.clearFilters();
+              Get.back();
+            },
+            child: Text(
+              'Limpiar',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Cerrar',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🎛️ **Opción de Filtro Moderna**
+  Widget _buildModernFilterOption(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Obx(() => Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                    )),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  color: color,
+                  size: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 📅 **Selector de Día Moderno**
+  void _showModernDayPicker(BuildContext context, MeetingsController controller) {
+    final days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.today, color: Color(0xFF10B981), size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Seleccionar Día',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: days.map((day) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  controller.filterByDay(day);
+                  Get.back(); // Cerrar selector de día
+                  Get.back(); // Cerrar diálogo de filtros
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Icon(Icons.calendar_today, color: Color(0xFF10B981), size: 16),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        day,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

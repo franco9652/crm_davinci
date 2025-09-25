@@ -53,7 +53,6 @@ class WorkListPage extends StatelessWidget {
                   style: TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 16),
-                // Filtro de estado
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
@@ -65,7 +64,7 @@ class WorkListPage extends StatelessWidget {
                       Icon(Icons.filter_list, color: Colors.white),
                       SizedBox(width: 12),
                       Expanded(
-                        child: DropdownButtonHideUnderline(
+                        child: Obx(() => DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: controller.selectedStatus.value.isEmpty ? null : controller.selectedStatus.value,
                             hint: Text('Filtrar por estado', style: TextStyle(color: Colors.white)),
@@ -84,12 +83,13 @@ class WorkListPage extends StatelessWidget {
                             ],
                             onChanged: controller.updateSelectedStatus,
                           ),
-                        ),
+                        )),
                       ),
                     ],
                   ),
                 ),
               ],
+            
             ),
           ),
           Expanded(
@@ -98,9 +98,7 @@ class WorkListPage extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final displayedWorks = controller.searchQuery.isEmpty && controller.selectedStatus.isEmpty
-                  ? controller.works
-                  : controller.filteredWorks;
+              final displayedWorks = controller.filteredWorks;
 
               if (displayedWorks.isEmpty) {
                 return Center(
@@ -182,17 +180,21 @@ class WorkListPage extends StatelessWidget {
                           work.name,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           work.customerName,
                           style: TextStyle(
                             color: Colors.grey.shade400,
-                            fontSize: 14,
+                            fontSize: 13,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -233,22 +235,33 @@ class WorkListPage extends StatelessWidget {
                   Icon(Icons.attach_money_outlined, 
                     color: Colors.grey.shade400, size: 16),
                   const SizedBox(width: 8),
-                  Text(
-                    "Presupuesto: \$${work.budget.toStringAsFixed(2)}",
-                    style: TextStyle(
-                      color: Colors.grey.shade300,
-                      fontSize: 14,
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Presupuesto: \$${work.budget.toStringAsFixed(2)}",
+                      style: TextStyle(
+                        color: Colors.grey.shade300,
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   Icon(Icons.category_outlined, 
                     color: Colors.grey.shade400, size: 16),
                   const SizedBox(width: 4),
-                  Text(
-                    work.projectType,
-                    style: TextStyle(
-                      color: Colors.grey.shade300,
-                      fontSize: 14,
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      work.projectType,
+                      style: TextStyle(
+                        color: Colors.grey.shade300,
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ],
@@ -258,20 +271,26 @@ class WorkListPage extends StatelessWidget {
               // Estado y fechas
               Row(
                 children: [
-                  WorkStatusChip(
-                    work: work,
-                    onWorkUpdated: () => controller.refreshWorks(),
+                  Flexible(
+                    child: WorkStatusChip(
+                      work: work,
+                      onWorkUpdated: () => controller.refreshWorks(),
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   if (work.startDate.isNotEmpty) ...[
                     Icon(Icons.calendar_today_outlined, 
                       color: Colors.grey.shade400, size: 14),
                     const SizedBox(width: 4),
-                    Text(
-                      work.startDate,
-                      style: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 12,
+                    Flexible(
+                      child: Text(
+                        work.startDate,
+                        style: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -291,25 +310,31 @@ class WorkListPage extends StatelessWidget {
                           Get.snackbar("Error", "El ID del trabajo no es válido");
                         }
                       },
-                      icon: const Icon(Icons.info_outline, size: 16),
-                      label: const Text("Ver detalles"),
+                      icon: const Icon(Icons.info_outline, size: 14),
+                      label: const Text(
+                        "Detalles",
+                        style: TextStyle(fontSize: 12),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.blue.shade400,
                         side: BorderSide(color: Colors.blue.shade400),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _sendEmail(context, work.emailCustomer),
-                      icon: const Icon(Icons.email_outlined, size: 16),
-                      label: const Text("Email"),
+                      icon: const Icon(Icons.email_outlined, size: 14),
+                      label: const Text(
+                        "Email",
+                        style: TextStyle(fontSize: 12),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.orange.shade400,
                         side: BorderSide(color: Colors.orange.shade400),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                       ),
                     ),
                   ),

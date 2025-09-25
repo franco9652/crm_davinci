@@ -1,5 +1,6 @@
 import 'package:crm_app_dv/features/customer/controllers/customer_info_controller.dart';
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
+import 'package:crm_app_dv/features/customer/presentation/widgets/customer_actions_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -42,17 +43,14 @@ class CustomerInfoScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Información del Cliente',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF1B1926),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      backgroundColor: const Color(0xFF0F0F23),
       body: Obx(() {
         if (customerController.isLoadingCustomer.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            ),
+          );
         }
 
         final customer = customerController.customer.value;
@@ -61,177 +59,476 @@ class CustomerInfoScreen extends StatelessWidget {
           return const Center(
             child: Text(
               'No se encontró información para este cliente',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white70, fontSize: 18),
             ),
           );
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              Container(
-                color: const Color(0xFF1B1926),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey.shade800,
-                      child: const Icon(Icons.person, size: 50, color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      customer.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Se registró el: ${_formatDateTime(customer.createdAt.toString())}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildActionButton(
-                            Icons.email, 'Email', () => _sendEmail(context, customer.email)),
-                        _buildActionButton(Icons.phone, 'Teléfono',
-                            () => _makeCall(context, customer.contactNumber)),
-                        _buildActionButton(
-                            Icons.message, 'WhatsApp',
-                            () => _launchWhatsApp(context, customer.contactNumber, customer.name)),
+        return CustomScrollView(
+          slivers: [
+            // App Bar moderno con gradiente
+            SliverAppBar(
+              expandedHeight: 220,
+              floating: false,
+              pinned: true,
+              backgroundColor: const Color(0xFF1E293B),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF6366F1),
+                        Color(0xFF8B5CF6),
+                        Color(0xFF1E293B),
                       ],
                     ),
+                  ),
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  customer.name.isNotEmpty ? customer.name[0].toUpperCase() : 'C',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      customer.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Cliente desde ${_formatDateTime(customer.createdAt.toString())}',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              CustomerActionsWidget(
+                                customer: customer,
+                                onCustomerUpdated: () => customerController.fetchCustomerInfo(userId),
+                                onCustomerDeleted: () => Get.back(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            
+            // Contenido principal
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Acciones rápidas
+                    _buildQuickActionsCard(context, customer),
+                    const SizedBox(height: 20),
+                    
+                    // Información de contacto
+                    _buildInfoSection('Información de Contacto', [
+                      _buildModernInfoRow(Icons.phone, 'Teléfono', customer.contactNumber),
+                      _buildModernInfoRow(Icons.email, 'Email', customer.email),
+                      _buildModernInfoRow(Icons.location_on, 'Dirección', customer.address),
+                    ]),
+                    const SizedBox(height: 20),
+                    
+                    // Información personal
+                    _buildInfoSection('Información Personal', [
+                      _buildModernInfoRow(Icons.badge, 'DNI', customer.dni),
+                      _buildModernInfoRow(Icons.business, 'CUIT', customer.cuit),
+                      _buildModernInfoRow(Icons.account_box, 'CUIL', customer.cuil),
+                      if (customer.workDirection.isNotEmpty)
+                        _buildModernInfoRow(Icons.work, 'Dirección de Trabajo', customer.workDirection),
+                    ]),
+                    const SizedBox(height: 20),
+                    
+                    // Proyectos del cliente
+                    _buildProjectsSection(workController),
+                    
+                    const SizedBox(height: 100), // Espacio extra al final
                   ],
                 ),
               ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
 
-              // Contact Info Section
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF323438),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF323438)),
-                  ),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Información de Contacto',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xffBDBEC0),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ListTile(
-                        leading: const Icon(Icons.phone, color: Color(0xffBDBEC0)),
-                        title: Text(customer.contactNumber,
-                            style: const TextStyle(color: Color(0xffBDBEC0))),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.email, color: Color(0xffBDBEC0)),
-                        title: Text(customer.email,
-                            style: const TextStyle(color: Color(0xffBDBEC0))),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.location_on, color: Color(0xffBDBEC0)),
-                        title: Text(customer.address,
-                            style: const TextStyle(color: Color(0xffBDBEC0))),
-                      ),
-                    ],
-                  ),
+  // 🚀 **Tarjeta de Acciones Rápidas**
+  Widget _buildQuickActionsCard(BuildContext context, customer) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.flash_on, color: Color(0xFF6366F1), size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Acciones Rápidas',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildQuickActionButton(
+                Icons.email,
+                'Email',
+                const Color(0xFF06B6D4),
+                () => _sendEmail(context, customer.email),
+              ),
+              _buildQuickActionButton(
+                Icons.phone,
+                'Llamar',
+                const Color(0xFF10B981),
+                () => _makeCall(context, customer.contactNumber),
+              ),
+              _buildQuickActionButton(
+                Icons.message,
+                'WhatsApp',
+                const Color(0xFF22C55E),
+                () => _launchWhatsApp(context, customer.contactNumber, customer.name),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-              // Active Projects Section
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF242038),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF4380FF)),
+  // 🎯 **Botón de Acción Rápida**
+  Widget _buildQuickActionButton(IconData icon, String label, Color color, VoidCallback onPressed) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🏗️ **Sección de Información Moderna**
+  Widget _buildInfoSection(String title, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // 📋 **Fila de Información Moderna**
+  Widget _buildModernInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: const Color(0xFF6366F1), size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Proyectos Activos',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🏢 **Sección de Proyectos**
+  Widget _buildProjectsSection(WorkController workController) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF334155), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.business, color: Color(0xFFF59E0B), size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Proyectos del Cliente',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            if (workController.isLoadingWorks.value) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                  ),
+                ),
+              );
+            }
+
+            if (workController.worksByCustomer.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6B7280).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 8),
-                      Obx(() {
-                        if (workController.isLoadingWorks.value) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
+                      child: const Icon(Icons.work_off, color: Color(0xFF6B7280), size: 24),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No hay proyectos disponibles',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-                        if (workController.worksByCustomer.isEmpty) {
-                          return const Text(
-                            'No hay proyectos activos disponibles en este momento.',
-                            style: TextStyle(color: Colors.white70),
-                          );
-                        }
+            return Column(
+              children: workController.worksByCustomer.map((work) => _buildProjectItem(work)).toList(),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: workController.worksByCustomer.length,
-                          itemBuilder: (context, index) {
-                            final work = workController.worksByCustomer[index];
-                            return ListTile(
-                              title: Text(work.name,
-                                  style: const TextStyle(color: Colors.white)),
-                              subtitle: Text(work.address,
-                                  style: const TextStyle(color: Colors.white70)),
-                            );
-                          },
-                        );
-                      }),
-                    ],
+  // 🏗️ **Item de Proyecto**
+  Widget _buildProjectItem(work) {
+    Color statusColor;
+    switch (work.statusWork.toLowerCase()) {
+      case 'activo':
+      case 'en progreso':
+        statusColor = const Color(0xFF10B981);
+        break;
+      case 'pausado':
+        statusColor = const Color(0xFFF59E0B);
+        break;
+      case 'inactivo':
+        statusColor = const Color(0xFFEF4444);
+        break;
+      default:
+        statusColor = const Color(0xFF6B7280);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  work.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  work.statusWork,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-        );
-      }),
-      backgroundColor: const Color(0xFF1B1926),
-    );
-  }
-
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: const Color(0xFF323438),
-            child: Icon(icon, color: const Color(0xffBDBEC0)),
-          ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+          Row(
+            children: [
+              Icon(Icons.location_on, color: Colors.white.withOpacity(0.5), size: 14),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  work.address,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ],
       ),
