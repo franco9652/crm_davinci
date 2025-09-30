@@ -18,10 +18,18 @@ class MeetingsController extends GetxController {
   final filteredMeetings = <MeetingModel>[].obs;
   final error = ''.obs;
   
-  // Filtros
+  // 🔍 **Filtros Mejorados**
   final selectedDate = Rxn<DateTime>();
   final selectedDay = RxnString();
+  final searchQuery = ''.obs;
+  final selectedType = ''.obs; // virtual, presencial
+  final selectedStatus = ''.obs; // próxima, en curso, finalizada
   final isFilterActive = false.obs;
+
+  // 📄 **Paginación**
+  final currentPage = 1.obs;
+  final itemsPerPage = 10;
+  final paginatedMeetings = <MeetingModel>[].obs;
 
   @override
   void onInit() {
@@ -39,7 +47,6 @@ class MeetingsController extends GetxController {
     }
     
     try {
-      List<MeetingModel> data;
       final prefs = await SharedPreferences.getInstance();
       final role = (prefs.getString('user_role') ?? '').trim();
       final email = prefs.getString('user_email');
@@ -49,6 +56,8 @@ class MeetingsController extends GetxController {
       final isAdmin = role == 'Admin';
       final isEmployee = role == 'Employee';
       print('🔧 isAdmin=$isAdmin, isEmployee=$isEmployee');
+
+      List<MeetingModel> data = [];
 
       if (isAdmin || isEmployee) {
         // Admin ve todas las meetings, Employee ve solo las asignadas
@@ -64,29 +73,34 @@ class MeetingsController extends GetxController {
           data = await remote.getAllMeetings();
         }
       }
+      
       print('🔧 Backend returned ${data.length} meetings');
       if (data.isNotEmpty) {
         print('🔧 Backend meetings details:');
         for (var meeting in data) {
           print('  - ID: ${meeting.id}, Title: ${meeting.title}, Customer: ${meeting.customerName}, Date: ${meeting.date}');
         }
-      } else {
-        print('❌ Backend returned EMPTY meetings list for Employee!');
-        print('🔧 This suggests the backend filtering is not working correctly');
-        print('🔧 Employee should see meetings where they are assigned OR that they created');
       }
       
-      // Asignar datos directamente - el backend ya filtra según el rol
+      // Actualizar la lista de meetings
       final previousCount = meetings.length;
       meetings.assignAll(data);
       print('🔧 Meetings updated: $previousCount → ${meetings.length}');
+      
+      if (meetings.isNotEmpty) {
+        print('🔧 Sample meetings: ${meetings.take(3).map((m) => "${m.id}: ${m.title}").join(", ")}');
+      } else {
+        print('❌ Backend returned EMPTY meetings list!');
+      }
+      
+      // Resetear página y aplicar filtros
+      currentPage.value = 1;
+      _applyFilters();
       
       // Programar notificaciones para todas las meetings (no-bloqueante)
       _scheduleNotificationsForMeetings().catchError((e) {
         print('⚠️ Error scheduling notifications (non-blocking): $e');
       });
-      
-      _applyFilters(); // Aplicar filtros después de cargar
     } catch (e) {
       print('❌ Error in fetchMeetings: $e');
       error.value = e.toString();
@@ -97,10 +111,21 @@ class MeetingsController extends GetxController {
   }
 
 
+  // 🔍 **Sistema de Filtros Mejorado**
   void _applyFilters() {
     List<MeetingModel> filtered = List.from(meetings);
     
-    // Filtro por fecha específica
+    // 🔍 Filtro por búsqueda de texto
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      filtered = filtered.where((meeting) {
+        return meeting.title.toLowerCase().contains(query) ||
+               (meeting.description?.toLowerCase().contains(query) ?? false) ||
+               (meeting.customerName?.toLowerCase().contains(query) ?? false);
+      }).toList();
+    }
+    
+    // 📅 Filtro por fecha específica
     if (selectedDate.value != null) {
       filtered = filtered.where((meeting) {
         return meeting.date.year == selectedDate.value!.year &&
@@ -109,7 +134,7 @@ class MeetingsController extends GetxController {
       }).toList();
     }
     
-    // Filtro por día de la semana
+    // 📆 Filtro por día de la semana
     if (selectedDay.value != null && selectedDay.value!.isNotEmpty) {
       filtered = filtered.where((meeting) {
         final weekday = _getWeekdayName(meeting.date.weekday);
@@ -117,9 +142,64 @@ class MeetingsController extends GetxController {
       }).toList();
     }
     
+    // 💻 Filtro por tipo (virtual/presencial)
+    if (selectedType.value.isNotEmpty) {
+      filtered = filtered.where((meeting) {
+        return meeting.meetingType.toLowerCase() == selectedType.value.toLowerCase();
+      }).toList();
+    }
+    
+    // ⏰ Filtro por estado (próxima/en curso/finalizada)
+    if (selectedStatus.value.isNotEmpty) {
+      final now = DateTime.now();
+      filtered = filtered.where((meeting) {
+        try {
+          // Parsear la hora desde string "HH:MM"
+          final timeParts = meeting.time.split(':');
+          final hour = int.parse(timeParts[0]);
+          final minute = int.parse(timeParts[1]);
+          
+          final meetingDateTime = DateTime(
+            meeting.date.year,
+            meeting.date.month,
+            meeting.date.day,
+            hour,
+            minute,
+          );
+          
+          // Parsear duración desde string
+          final durationMinutes = int.tryParse(meeting.duration) ?? 60;
+          
+          switch (selectedStatus.value.toLowerCase()) {
+            case 'próxima':
+              return meetingDateTime.isAfter(now);
+            case 'en curso':
+              final endTime = meetingDateTime.add(Duration(minutes: durationMinutes));
+              return meetingDateTime.isBefore(now) && endTime.isAfter(now);
+            case 'finalizada':
+              final endTime = meetingDateTime.add(Duration(minutes: durationMinutes));
+              return endTime.isBefore(now);
+            default:
+              return true;
+          }
+        } catch (e) {
+          print('❌ Error parsing meeting time/duration: $e');
+          return true; // En caso de error, incluir la reunión
+        }
+      }).toList();
+    }
+    
     filteredMeetings.assignAll(filtered);
-    isFilterActive.value = selectedDate.value != null || 
-                          (selectedDay.value != null && selectedDay.value!.isNotEmpty);
+    
+    // Actualizar estado de filtros activos
+    isFilterActive.value = searchQuery.value.isNotEmpty ||
+                          selectedDate.value != null || 
+                          (selectedDay.value != null && selectedDay.value!.isNotEmpty) ||
+                          selectedType.value.isNotEmpty ||
+                          selectedStatus.value.isNotEmpty;
+    
+    // 📄 **Aplicar paginación**
+    _applyPagination();
   }
 
   String _getWeekdayName(int weekday) {
@@ -137,14 +217,65 @@ class MeetingsController extends GetxController {
     _applyFilters();
   }
 
-  void clearFilters() {
-    selectedDate.value = null;
-    selectedDay.value = null;
+  // 🔍 **Nuevos Métodos de Filtrado**
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+    currentPage.value = 1; // Resetear a página 1
     _applyFilters();
   }
 
-  List<MeetingModel> get displayMeetings => 
-      isFilterActive.value ? filteredMeetings : meetings;
+  void filterByType(String? type) {
+    selectedType.value = type ?? '';
+    currentPage.value = 1; // Resetear a página 1
+    _applyFilters();
+  }
+
+  void filterByStatus(String? status) {
+    selectedStatus.value = status ?? '';
+    currentPage.value = 1; // Resetear a página 1
+    _applyFilters();
+  }
+
+  void clearFilters() {
+    selectedDate.value = null;
+    selectedDay.value = null;
+    searchQuery.value = '';
+    selectedType.value = '';
+    selectedStatus.value = '';
+    currentPage.value = 1; // Resetear a página 1
+    _applyFilters();
+  }
+
+  // 📊 **Obtener listas para dropdowns**
+  List<String> get meetingTypes => ['virtual', 'presencial'];
+  List<String> get meetingStatuses => ['próxima', 'en curso', 'finalizada'];
+
+  // 📄 **Métodos de Paginación**
+  void _applyPagination() {
+    final sourceList = isFilterActive.value ? filteredMeetings : meetings;
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    final endIndex = (startIndex + itemsPerPage).clamp(0, sourceList.length);
+    
+    if (startIndex < sourceList.length) {
+      paginatedMeetings.assignAll(sourceList.sublist(startIndex, endIndex));
+    } else {
+      paginatedMeetings.clear();
+    }
+  }
+
+  void goToPage(int page) {
+    if (page >= 1 && page <= totalPages) {
+      currentPage.value = page;
+      _applyPagination();
+    }
+  }
+
+  int get totalPages {
+    final sourceList = isFilterActive.value ? filteredMeetings : meetings;
+    return (sourceList.length / itemsPerPage).ceil().clamp(1, double.infinity).toInt();
+  }
+
+  List<MeetingModel> get displayMeetings => paginatedMeetings;
 
   Future<bool> create(MeetingModel meeting) async {
     print('🔧 create() called with meeting: title="${meeting.title}", date=${meeting.date}');
