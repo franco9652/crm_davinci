@@ -9,6 +9,43 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource(this.client);
 
+  /// 🔧 **Procesa respuestas HTTP incluyendo rate limiting**
+  Future<Map<String, dynamic>> _processResponse(http.Response response) async {
+    switch (response.statusCode) {
+      case 200:
+      case 201:
+        return {'success': true, 'data': jsonDecode(response.body)};
+      
+      case 429: // Rate Limit
+        final body = jsonDecode(response.body);
+        final retryAfter = response.headers['retry-after'];
+        
+        print('🚫 Rate limited - Retry after: ${retryAfter}s');
+        
+        return {
+          'success': false,
+          'rateLimited': true,
+          'error': body['error'] ?? 'Demasiadas solicitudes',
+          'retryAfter': retryAfter != null ? int.parse(retryAfter) : 300,
+        };
+      
+      case 400:
+      case 401:
+      case 404:
+        final body = jsonDecode(response.body);
+        return {
+          'success': false,
+          'error': body['message'] ?? body['error'] ?? 'Error en la solicitud',
+        };
+      
+      default:
+        return {
+          'success': false,
+          'error': 'Error del servidor (${response.statusCode})',
+        };
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await client.post(
       Uri.parse(AppConstants.loginEndpoint),
@@ -16,8 +53,21 @@ class AuthRemoteDataSource {
       body: jsonEncode({'email': email, 'password': password}),
     );
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
+    final result = await _processResponse(response);
+    
+    // 🚫 **Manejo específico de rate limit en login**
+    if (result['rateLimited'] == true) {
+      return {
+        'success': false,
+        'error': 'Demasiados intentos de login. Espera ${result['retryAfter']} segundos.',
+        'rateLimited': true,
+        'cooldownTime': result['retryAfter'],
+      };
+    }
+
+    // ✅ **Login exitoso**
+    if (result['success'] == true) {
+      final body = result['data'];
       final token = body['token'];
       // Intentar obtener role en diferentes formatos de respuesta
       dynamic role = body['role'];
@@ -31,12 +81,17 @@ class AuthRemoteDataSource {
       // Debug
       print('🔐 Login OK. token present=${token != null && token.toString().isNotEmpty}, roleRaw=$roleStr');
       return {
+        'success': true,
         'token': token,
         'role': roleStr,
       };
-    } else {
-      throw Exception('Error al iniciar sesión');
     }
+
+    // ❌ **Error en login**
+    return {
+      'success': false,
+      'error': result['error'] ?? 'Error al iniciar sesión',
+    };
   }
 
   Future<void> register(UserModel user) async {
@@ -64,20 +119,32 @@ class AuthRemoteDataSource {
       
       print('Respuesta: ${response.statusCode}, ${response.body}');
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
+      final result = await _processResponse(response);
+      
+      // 🚫 **Manejo específico de rate limit en emails**
+      if (result['rateLimited'] == true) {
+        return {
+          'success': false,
+          'message': 'Límite de emails alcanzado. Espera ${result['retryAfter']} segundos.',
+          'rateLimited': true,
+          'cooldownTime': result['retryAfter'],
+        };
+      }
+
+      // ✅ **Email enviado exitosamente**
+      if (result['success'] == true) {
+        final responseData = result['data'];
         return {
           'success': true,
           'message': responseData['message'] ?? 'Se ha enviado un correo de recuperación',
         };
-      } else {
-        final errorData = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': errorData['message'] ?? 'Error al enviar el correo de recuperación',
-          'statusCode': response.statusCode,
-        };
       }
+
+      // ❌ **Error al enviar email**
+      return {
+        'success': false,
+        'message': result['error'] ?? 'Error al enviar el correo de recuperación',
+      };
     } catch (e) {
       print('Error en la recuperación de contraseña: $e');
       return {

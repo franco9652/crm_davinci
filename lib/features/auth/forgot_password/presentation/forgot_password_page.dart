@@ -142,7 +142,7 @@ class ForgotPasswordPage extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             child: Obx(() => ElevatedButton(
-                              onPressed: controller.isLoading.value
+                              onPressed: (controller.isLoading.value || controller.isRateLimited.value)
                                   ? null
                                   : () {
                                       if (_formKey.currentState!.validate()) {
@@ -159,8 +159,10 @@ class ForgotPasswordPage extends StatelessWidget {
                               ),
                               child: Ink(
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFF13BD), Color(0xFFFF8329)],
+                                  gradient: LinearGradient(
+                                    colors: controller.isRateLimited.value
+                                        ? [const Color(0xFF6B7280), const Color(0xFF4B5563)]
+                                        : [const Color(0xFFFF13BD), const Color(0xFFFF8329)],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
@@ -178,19 +180,64 @@ class ForgotPasswordPage extends StatelessWidget {
                                               strokeWidth: 2,
                                             ),
                                           )
-                                        : const Text(
-                                            'Enviar Instrucciones',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                        : controller.isRateLimited.value
+                                            ? Text(
+                                                'Espera ${controller.cooldownSeconds.value}s',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              )
+                                            : const Text(
+                                                'Enviar Instrucciones',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                   ),
                                 ),
                               ),
                             )),
                           ),
+
+                          // 🚫 **Mensaje de Rate Limiting**
+                          Obx(() => controller.isRateLimited.value
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEF4444).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: const Color(0xFFEF4444).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Color(0xFFEF4444),
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Límite de emails alcanzado. Espera ${controller.cooldownSeconds.value} segundos.',
+                                            style: const TextStyle(
+                                              color: Color(0xFFEF4444),
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink()),
                         ],
                       ),
                     ),

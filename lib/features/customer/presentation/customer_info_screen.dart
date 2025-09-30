@@ -617,13 +617,17 @@ class CustomerInfoScreen extends StatelessWidget {
 
   Future<void> _launchWhatsApp(BuildContext context, String phoneNumber, String name) async {
     final message = 'Hola $name';
-    // Normalizamos número básico: quitamos espacios y caracteres no numéricos
-    final normalized = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    
+    // 📱 **Formatear número para WhatsApp argentino**
+    final formattedPhone = _formatPhoneForWhatsApp(phoneNumber);
+    
+    print('🔗 Número original: $phoneNumber');
+    print('🔗 Número formateado: $formattedPhone');
 
     final whatsappUri = Uri.parse(
-        'whatsapp://send?phone=$normalized&text=${Uri.encodeComponent(message)}');
+        'whatsapp://send?phone=$formattedPhone&text=${Uri.encodeComponent(message)}');
     final waMeUri = Uri.parse(
-        'https://wa.me/$normalized?text=${Uri.encodeComponent(message)}');
+        'https://wa.me/$formattedPhone?text=${Uri.encodeComponent(message)}');
 
     try {
       if (await canLaunchUrl(whatsappUri)) {
@@ -640,12 +644,57 @@ class CustomerInfoScreen extends StatelessWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('No se pudo abrir WhatsApp'),
-          content: Text('Número: $normalized\nError: $e'),
+          content: Text('Número original: $phoneNumber\nNúmero formateado: $formattedPhone\nError: $e'),
           actions: [
             TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cerrar')),
           ],
         ),
       );
     }
+  }
+
+  /// 📱 **Formatear teléfono para WhatsApp argentino**
+  String _formatPhoneForWhatsApp(String rawPhone) {
+    // Remover todos los caracteres no numéricos
+    String digits = rawPhone.replaceAll(RegExp(r'\D'), '');
+    
+    print('📱 Dígitos extraídos: $digits');
+    
+    // Para números argentinos de celular (11XXXXXXXX)
+    if (digits.length == 10 && digits.startsWith('11')) {
+      // Para WhatsApp argentino: 549 + 11 + número sin 15
+      // Ejemplo: 1158800708 -> 5491158800708
+      final formatted = '549$digits';
+      print('📱 Formato argentino aplicado: $formatted');
+      return formatted;
+    }
+    
+    // Para números que ya empiezan con 549 (formato WhatsApp argentino)
+    if (digits.startsWith('549')) {
+      print('📱 Ya tiene formato WhatsApp: $digits');
+      return digits;
+    }
+    
+    // Para números que empiezan con 54 (código país argentino)
+    if (digits.startsWith('54') && digits.length >= 12) {
+      // Agregar el 9 después del 54
+      final formatted = '549${digits.substring(2)}';
+      print('📱 Agregando 9 después de 54: $formatted');
+      return formatted;
+    }
+    
+    // Para números que empiezan con +54
+    if (digits.startsWith('54') && digits.length >= 10) {
+      final withoutCountryCode = digits.substring(2);
+      if (withoutCountryCode.startsWith('11')) {
+        final formatted = '549$withoutCountryCode';
+        print('📱 Formato +54 convertido: $formatted');
+        return formatted;
+      }
+    }
+    
+    // Fallback: usar el número tal como está
+    print('📱 Usando número sin modificar: $digits');
+    return digits;
   }
 }

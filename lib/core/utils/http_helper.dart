@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
 
 
 class HttpHelper {
@@ -237,8 +239,13 @@ class HttpHelper {
 
   
   static String _getErrorMessage(int statusCode, Map<String, dynamic> responseBody) {
+    // 🚨 **Manejo especial para token expirado**
+    if (statusCode == 401) {
+      _handleTokenExpired();
+      return 'Sesión expirada. Redirigiendo al login...';
+    }
+    
     return switch (statusCode) {
-      401 => 'Sesión expirada o credenciales inválidas',
       403 => 'No tienes permisos para realizar esta acción',
       404 => 'Recurso no encontrado',
       409 => responseBody['message'] ?? 'Conflicto con datos existentes',
@@ -246,5 +253,34 @@ class HttpHelper {
       >= 500 => 'Error del servidor, intente más tarde',
       _ => responseBody['message'] ?? 'Error (Código: $statusCode)',
     };
+  }
+
+  /// 🚨 **Maneja token expirado globalmente**
+  static Future<void> _handleTokenExpired() async {
+    try {
+      // Usar AuthService si está disponible, sino fallback manual
+      if (Get.isRegistered<AuthService>()) {
+        await AuthService.instance.handleTokenExpired();
+      } else {
+        // Fallback manual si AuthService no está registrado
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('auth_token');
+        await prefs.remove('user_role');
+        await prefs.remove('user_email');
+        
+        _showErrorSnackbar(
+          'Sesión Expirada', 
+          'Tu sesión ha expirado. Serás redirigido al login.'
+        );
+        
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.offAllNamed('/login');
+        });
+      }
+    } catch (e) {
+      print('❌ Error manejando token expirado: $e');
+      // Último recurso: redirigir inmediatamente
+      Get.offAllNamed('/login');
+    }
   }
 }

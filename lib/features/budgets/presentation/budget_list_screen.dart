@@ -219,24 +219,72 @@ class CreateBudgetScreen extends StatelessWidget {
                     Icons.person,
                     const Color(0xFF6366F1),
                     [
-                      Obx(() => _buildModernDropdownField(
-                        "Seleccionar Cliente",
-                        budgetController.selectedCustomerId.value,
-                        budgetController.customers
-                            .map<DropdownMenuItem<String>>((customer) {
-                          return DropdownMenuItem<String>(
-                            value: customer['_id'].toString(),
-                            child: Text(
-                              customer['name'].toString(),
-                              style: const TextStyle(color: Colors.white),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Obx(() => _buildModernDropdownField(
+                              "Seleccionar Cliente",
+                              budgetController.selectedCustomerId.value,
+                              budgetController.customers
+                                  .map<DropdownMenuItem<String>>((customer) {
+                                return DropdownMenuItem<String>(
+                                  value: customer['_id'].toString(),
+                                  child: Text(
+                                    customer['name'].toString(),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }).toList(),
+                              (value) {
+                                if (value != null)
+                                  budgetController.selectedCustomerId.value = value;
+                              },
+                              Icons.person_outline,
+                            )),
+                          ),
+                          const SizedBox(width: 12),
+                          // 🔄 **Botón de refresh para clientes**
+                          Obx(() => Container(
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF6366F1).withOpacity(0.3),
+                              ),
                             ),
-                          );
-                        }).toList(),
-                        (value) {
-                          if (value != null)
-                            budgetController.selectedCustomerId.value = value;
-                        },
-                        Icons.person_outline,
+                            child: IconButton(
+                              onPressed: budgetController.isLoading.value 
+                                  ? null 
+                                  : () => budgetController.fetchCustomers(),
+                              icon: budgetController.isLoading.value
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF6366F1),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.refresh,
+                                      color: Color(0xFF6366F1),
+                                    ),
+                              tooltip: 'Recargar clientes',
+                            ),
+                          )),
+                        ],
+                      ),
+                      // 📊 **Contador de clientes**
+                      Obx(() => Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          '${budgetController.customers.length} clientes disponibles',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                        ),
                       )),
                     ],
                   ),

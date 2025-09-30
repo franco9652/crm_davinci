@@ -267,11 +267,57 @@ class HomePageCustomer extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp(String contactNumber) async {
-    final url = "https://wa.me/$contactNumber";
-    if (await canLaunch(url)) {
-    } else {
-      Get.snackbar("Error", "No se puede abrir WhatsApp");
+    // 📱 **Formatear número para WhatsApp argentino**
+    final formattedPhone = _formatPhoneForWhatsApp(contactNumber);
+    
+    print('🔗 Número original: $contactNumber');
+    print('🔗 Número formateado: $formattedPhone');
+    
+    final url = "https://wa.me/$formattedPhone";
+    
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        Get.snackbar("Error", "No se puede abrir WhatsApp");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Error al abrir WhatsApp: $e");
     }
+  }
+
+  /// 📱 **Formatear teléfono para WhatsApp argentino**
+  String _formatPhoneForWhatsApp(String rawPhone) {
+    // Remover todos los caracteres no numéricos
+    String digits = rawPhone.replaceAll(RegExp(r'\D'), '');
+    
+    // Para números argentinos de celular (11XXXXXXXX)
+    if (digits.length == 10 && digits.startsWith('11')) {
+      // Para WhatsApp argentino: 549 + 11 + número sin 15
+      return '549$digits';
+    }
+    
+    // Para números que ya empiezan con 549 (formato WhatsApp argentino)
+    if (digits.startsWith('549')) {
+      return digits;
+    }
+    
+    // Para números que empiezan con 54 (código país argentino)
+    if (digits.startsWith('54') && digits.length >= 12) {
+      // Agregar el 9 después del 54
+      return '549${digits.substring(2)}';
+    }
+    
+    // Para números que empiezan con +54
+    if (digits.startsWith('54') && digits.length >= 10) {
+      final withoutCountryCode = digits.substring(2);
+      if (withoutCountryCode.startsWith('11')) {
+        return '549$withoutCountryCode';
+      }
+    }
+    
+    // Fallback: usar el número tal como está
+    return digits;
   }
 
   void _sendEmail(String email) async {

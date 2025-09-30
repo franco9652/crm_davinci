@@ -131,13 +131,14 @@ class LoginPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 20),
-
                     // Login Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: Obx(() => ElevatedButton(
-                        onPressed: controller.isLoading.value ? null : controller.login,
+                        onPressed: (controller.isLoading.value || controller.isRateLimited.value) 
+                            ? null 
+                            : controller.login,
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -146,8 +147,10 @@ class LoginPage extends StatelessWidget {
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFF13BD), Color(0xFFFF8329)],
+                            gradient: LinearGradient(
+                              colors: controller.isRateLimited.value
+                                  ? [const Color(0xFF6B7280), const Color(0xFF4B5563)]
+                                  : [const Color(0xFFFF13BD), const Color(0xFFFF8329)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
@@ -164,23 +167,68 @@ class LoginPage extends StatelessWidget {
                                       strokeWidth: 2.0,
                                     ),
                                   )
-                                : const Text(
-                                    'Login',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                : controller.isRateLimited.value
+                                    ? Text(
+                                        'Espera ${controller.cooldownSeconds.value}s',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                           ),
                         ),
                       )),
                     ),
+
+                    //  **Mensaje de Rate Limiting**
+                    Obx(() => controller.isRateLimited.value
+                        ? Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFEF4444).withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: Color(0xFFEF4444),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Demasiados intentos de login. Espera ${controller.cooldownSeconds.value} segundos.',
+                                      style: const TextStyle(
+                                        color: Color(0xFFEF4444),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink()),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 40),
 
               // Divider
               Row(

@@ -30,11 +30,21 @@ class BudgetController extends GetxController {
   Future<void> fetchCustomers() async {
     try {
       isLoading(true);
+      print('🔄 BudgetController: Iniciando carga de clientes...');
+      
       List<Map<String, dynamic>> fetchedCustomers =
           await budgetRemoteDataSource.getCustomers();
+      
+      print('✅ BudgetController: ${fetchedCustomers.length} clientes obtenidos');
+      if (fetchedCustomers.isNotEmpty) {
+        print('📋 Primeros clientes: ${fetchedCustomers.take(3).map((c) => '${c['name']} (${c['_id']})').join(', ')}');
+      }
+      
       customers.assignAll(fetchedCustomers);
+      print('🔄 BudgetController: Lista de clientes actualizada. Total en memoria: ${customers.length}');
     } catch (e) {
-      Get.snackbar("Error", "No se pudo obtener la lista de clientes");
+      print('❌ BudgetController: Error al obtener clientes: $e');
+      Get.snackbar("Error", "No se pudo obtener la lista de clientes: $e");
     } finally {
       isLoading(false);
     }
@@ -113,10 +123,7 @@ class BudgetController extends GetxController {
           errorTitle = "Cliente no válido";
           errorMsg = "El cliente seleccionado no es válido o no existe.";
         }
-        else if (result['statusCode'] == 401) {
-          errorTitle = "Sesión expirada";
-          errorMsg = "Su sesión ha expirado. Por favor, inicie sesión nuevamente.";
-        }
+        // HTTP 401 ahora se maneja globalmente en HttpHelper
         // Error genérico pero con mensaje
         else if (result['error'] != null) {
           errorMsg = result['error'].toString();

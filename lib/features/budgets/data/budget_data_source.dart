@@ -13,39 +13,53 @@ class BudgetRemoteDataSource {
 
   Future<List<Map<String, dynamic>>> getCustomers() async {
     try {
-      debugPrint('🔄 Solicitando lista de clientes desde BudgetRemoteDataSource');
-      final response = await HttpHelper.get('${AppConstants.baseUrl}/customers');
+      debugPrint('🔄 Solicitando TODOS los clientes desde BudgetRemoteDataSource');
       
-      if (response['success'] != true) {
-        debugPrint('❌ Error al obtener clientes: ${response['error']}');
-        throw Exception(response['error'] ?? 'Error al obtener la lista de clientes');
-      }
+      List<Map<String, dynamic>> allCustomers = [];
+      int page = 1;
+      int totalPages = 1;
       
-      final dynamic jsonResponse = response['data'];
-      List<dynamic> customersData = [];
-      
-      // Adaptamos la respuesta al formato esperado
-      if (jsonResponse is List) {
-        customersData = jsonResponse;
-      } else if (jsonResponse is Map) {
-        if (jsonResponse.containsKey('customers')) {
-          customersData = jsonResponse['customers'];
-        } else if (jsonResponse.containsKey('data')) {
-          final dataContent = jsonResponse['data'];
-          if (dataContent is List) {
-            customersData = dataContent;
-          } else if (dataContent is Map && dataContent.containsKey('customers')) {
-            customersData = dataContent['customers'];
-          }
+      // 📄 **Obtener TODAS las páginas de clientes**
+      do {
+        debugPrint('🔄 Solicitando página $page de clientes...');
+        final response = await HttpHelper.get('${AppConstants.baseUrl}/customers?page=$page');
+        
+        if (response['success'] != true) {
+          debugPrint('❌ Error al obtener clientes página $page: ${response['error']}');
+          throw Exception(response['error'] ?? 'Error al obtener la lista de clientes');
         }
+        
+        final dynamic jsonResponse = response['data'];
+        List<dynamic> customersData = [];
+        
+        // Adaptamos la respuesta al formato esperado
+        if (jsonResponse is Map && jsonResponse.containsKey('customers')) {
+          customersData = jsonResponse['customers'];
+          totalPages = jsonResponse['totalPages'] ?? 1;
+          debugPrint('📋 Página $page de $totalPages - ${customersData.length} clientes');
+        } else if (jsonResponse is List) {
+          customersData = jsonResponse;
+          debugPrint('📋 Página $page - ${customersData.length} clientes (formato lista)');
+        }
+        
+        // Agregar clientes de esta página
+        final pageCustomers = List<Map<String, dynamic>>.from(
+          customersData.map((item) => Map<String, dynamic>.from(item))
+        );
+        allCustomers.addAll(pageCustomers);
+        
+        page++;
+      } while (page <= totalPages);
+      
+      debugPrint('✅ Total de clientes obtenidos: ${allCustomers.length}');
+      
+      if (allCustomers.isEmpty) {
+        debugPrint('⚠️ No se encontraron clientes en ninguna página');
+      } else {
+        debugPrint('📋 Primeros 3 clientes: ${allCustomers.take(3).map((c) => c['name']).join(', ')}');
       }
       
-      if (customersData.isEmpty) {
-        debugPrint('⚠️ No se encontraron clientes');
-        return <Map<String, dynamic>>[];
-      }
-      
-      return List<Map<String, dynamic>>.from(customersData.map((item) => Map<String, dynamic>.from(item)));
+      return allCustomers;
     } catch (e) {
       debugPrint('❌ Error en getCustomers: $e');
       throw Exception('Error al obtener la lista de clientes: ${e.toString()}');
