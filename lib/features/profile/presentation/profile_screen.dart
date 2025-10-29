@@ -16,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
         slivers: [
-          // App Bar moderno con gradiente
+        
           SliverAppBar(
             expandedHeight: 200,
             floating: false,
@@ -97,14 +97,14 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           
-          // Contenido principal
+         
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Sección Cuenta
+                 
                   _buildModernSection(
                     'Cuenta',
                     Icons.account_circle,
@@ -129,7 +129,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Sección Soporte
+                 
                   _buildModernSection(
                     'Soporte',
                     Icons.help_outline,
@@ -155,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Sección Aplicación
+                  
                   _buildModernSection(
                     'Aplicación',
                     Icons.settings,
@@ -177,10 +177,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   
-                  // Botón de cerrar sesión
+                  
                   _buildLogoutButton(loginController),
                   
-                  const SizedBox(height: 100), // Espacio extra al final
+                  const SizedBox(height: 100), 
                 ],
               ),
             ),
@@ -190,7 +190,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Sección Moderna**
+  
   Widget _buildModernSection(String title, IconData icon, Color color, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -230,7 +230,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // ⚙️ **Item de Configuración Moderno**
+ 
   Widget _buildModernSettingItem(
     String title,
     String subtitle,
@@ -310,7 +310,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // 🚪 **Botón de Cerrar Sesión Moderno**
+  
   Widget _buildLogoutButton(LoginController loginController) {
     return Container(
       width: double.infinity,
@@ -354,7 +354,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // 🔔 **Diálogo de Confirmación de Logout**
+  
   void _showLogoutDialog(LoginController loginController) {
     Get.dialog(
       AlertDialog(
@@ -440,8 +440,7 @@ class ProfileScreen extends StatelessWidget {
         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
         return;
       }
-      // Para enlaces http/https, algunos dispositivos retornan false en canLaunchUrl,
-      // probamos directamente con launchUrl y capturamos errores.
+      
       if (await canLaunchUrl(waMeUri) || true) {
         final launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
         if (launched) return;

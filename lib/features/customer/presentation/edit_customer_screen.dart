@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_controller.dart';
 
-/// Pantalla de edición de cliente (Senior approach)
 class EditCustomerScreen extends StatefulWidget {
   final CustomerModel customer;
   
@@ -20,7 +19,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
   final _formKey = GlobalKey<FormState>();
   final _controller = Get.find<HomeController>();
   
-  // Controllers para los campos
+
   late final TextEditingController _nameController;
   late final TextEditingController _secondNameController;
   late final TextEditingController _dniController;
@@ -39,7 +38,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     _initializeControllers();
   }
 
-  /// Inicializar controllers con datos existentes (Senior approach)
+  
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.customer.name);
     _secondNameController = TextEditingController(text: widget.customer.secondName ?? '');
@@ -54,7 +53,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
 
   @override
   void dispose() {
-    // Limpiar controllers (Senior approach)
+    
     _nameController.dispose();
     _secondNameController.dispose();
     _dniController.dispose();
@@ -75,7 +74,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// AppBar con estilo consistente (Senior approach)
+  
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text(
@@ -103,7 +102,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Cuerpo principal con formulario (Senior approach)
+ 
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -129,7 +128,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Card de información del cliente (Senior approach)
+ 
   Widget _buildInfoCard() {
     return Card(
       color: const Color(0xFF1E293B),
@@ -197,7 +196,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Sección de información personal (Senior approach)
+  
   Widget _buildPersonalInfoSection() {
     return _buildSection(
       title: 'Información Personal',
@@ -249,7 +248,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Sección de información de contacto (Senior approach)
+  
   Widget _buildContactInfoSection() {
     return _buildSection(
       title: 'Información de Contacto',
@@ -278,7 +277,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Sección de direcciones (Senior approach)
+  
   Widget _buildAddressSection() {
     return _buildSection(
       title: 'Direcciones',
@@ -301,7 +300,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Sección de estado (Senior approach)
+ 
   Widget _buildStatusSection() {
     return _buildSection(
       title: 'Estado del Cliente',
@@ -325,7 +324,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Botones de acción (Senior approach)
+  
   Widget _buildActionButtons() {
     return Row(
       children: [
@@ -364,7 +363,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Constructor de secciones reutilizable (Senior approach)
+ 
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -399,7 +398,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Constructor de campos de texto reutilizable (Senior approach)
+  
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -440,14 +439,14 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     );
   }
 
-  /// Guardar cambios (Senior approach)
+  
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Preparar datos para actualización (solo campos modificados)
+     
       final updateData = <String, dynamic>{};
       
       if (_nameController.text != widget.customer.name) {
@@ -486,7 +485,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
         updateData['active'] = _isActive;
       }
 
-      // Solo actualizar si hay cambios
+      
       if (updateData.isEmpty) {
         _showMessage('No hay cambios para guardar', isError: false);
         return;
@@ -512,7 +511,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     }
   }
 
-  /// Mostrar mensaje al usuario (Senior approach)
+
   void _showMessage(String message, {required bool isError}) {
     Get.snackbar(
       isError ? 'Error' : 'Éxito',

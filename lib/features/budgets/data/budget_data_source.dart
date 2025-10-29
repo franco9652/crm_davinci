@@ -19,7 +19,7 @@ class BudgetRemoteDataSource {
       int page = 1;
       int totalPages = 1;
       
-      // 📄 **Obtener TODAS las páginas de clientes**
+      
       do {
         debugPrint('🔄 Solicitando página $page de clientes...');
         final response = await HttpHelper.get('${AppConstants.baseUrl}/customers?page=$page');
@@ -32,7 +32,7 @@ class BudgetRemoteDataSource {
         final dynamic jsonResponse = response['data'];
         List<dynamic> customersData = [];
         
-        // Adaptamos la respuesta al formato esperado
+       
         if (jsonResponse is Map && jsonResponse.containsKey('customers')) {
           customersData = jsonResponse['customers'];
           totalPages = jsonResponse['totalPages'] ?? 1;
@@ -42,7 +42,7 @@ class BudgetRemoteDataSource {
           debugPrint('📋 Página $page - ${customersData.length} clientes (formato lista)');
         }
         
-        // Agregar clientes de esta página
+      
         final pageCustomers = List<Map<String, dynamic>>.from(
           customersData.map((item) => Map<String, dynamic>.from(item))
         );
@@ -79,7 +79,7 @@ class BudgetRemoteDataSource {
       final dynamic jsonResponse = response['data'];
       debugPrint('✅ Respuesta recibida tipo: ${jsonResponse.runtimeType}');
       
-      // Verificamos si contiene la clave 'works'
+      
       if (jsonResponse is Map && jsonResponse.containsKey('works') && jsonResponse['works'] is List) {
         final works = jsonResponse['works'] as List;
         debugPrint('📋 Total de obras encontradas: ${works.length}');
@@ -107,12 +107,12 @@ class BudgetRemoteDataSource {
       final dynamic jsonResponse = response['data'];
       debugPrint('✅ Respuesta recibida tipo: ${jsonResponse.runtimeType}');
       
-      // Verificamos si contiene la clave 'budgets'
+      
       if (jsonResponse is Map && jsonResponse.containsKey('budgets') && jsonResponse['budgets'] is List) {
         final budgetsJson = jsonResponse['budgets'] as List;
         debugPrint('📋 Total de presupuestos encontrados: ${budgetsJson.length}');
         
-        // Convertimos a modelo
+        
         List<BudgetModel> budgets = [];
         int errorCount = 0;
         
@@ -142,7 +142,7 @@ class BudgetRemoteDataSource {
 
 Future<Map<String, dynamic>> createBudget(BudgetModel budget) async {
   try {
-    // Transformar el modelo a la estructura esperada por la API
+   
     Map<String, dynamic> requestBody = {
       "customerId": budget.customerId,
       "items": [
@@ -156,7 +156,7 @@ Future<Map<String, dynamic>> createBudget(BudgetModel budget) async {
       "estado": budget.status
     };
     
-    // Si tiene workId asociado, incluirlo
+   
     if (budget.workId != null && budget.workId!.isNotEmpty) {
       requestBody["workId"] = budget.workId;
     }
@@ -173,7 +173,7 @@ Future<Map<String, dynamic>> createBudget(BudgetModel budget) async {
       final errorMsg = response['error'] ?? 'Error desconocido al crear el presupuesto';
       debugPrint('❌ Error al crear presupuesto: $errorMsg');
       
-      // Verificamos si es un error de presupuesto duplicado
+      
       if (errorMsg.toLowerCase().contains('duplicado') || 
           errorMsg.toLowerCase().contains('duplicate') ||
           (response.containsKey('data') && 

@@ -31,7 +31,7 @@ class MeetingDetailScreen extends StatelessWidget {
     }
   }
 
-  // Lógica de negocio movida a MeetingsController
+  
 
   Future<void> _sendSummaryToCustomer() async {
     final controller = Get.find<MeetingsController>();
@@ -44,7 +44,7 @@ class MeetingDetailScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F172A),
       body: CustomScrollView(
         slivers: [
-          // 🎨 **SliverAppBar Moderno con Gradiente**
+         
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -57,8 +57,8 @@ class MeetingDetailScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF6366F1), // Azul primario
-                      Color(0xFF8B5CF6), // Púrpura secundario
+                      Color(0xFF6366F1), 
+                      Color(0xFF8B5CF6), 
                     ],
                   ),
                 ),
@@ -118,7 +118,7 @@ class MeetingDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              // 📤 **Botón de Enviar Resumen Moderno**
+              
               Container(
                 margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
                 child: Material(
@@ -153,14 +153,14 @@ class MeetingDetailScreen extends StatelessWidget {
             ],
           ),
           
-          // 📋 **Contenido Principal**
+         
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 📅 **Sección: Información Básica**
+                  
                   _buildModernSection(
                     title: 'Información Básica',
                     icon: Icons.info_outline,
@@ -201,7 +201,7 @@ class MeetingDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 👥 **Sección: Participantes**
+                 
                   if (meeting.customerName != null && meeting.customerName!.isNotEmpty)
                     _buildModernSection(
                       title: 'Participantes',
@@ -226,7 +226,7 @@ class MeetingDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 🔗 **Sección: Ubicación/Link**
+                 
                   if ((meeting.meetingType == 'virtual' && (meeting.meetingLink ?? '').isNotEmpty) ||
                       (meeting.meetingType == 'presencial' && (meeting.address ?? '').isNotEmpty))
                     _buildModernSection(
@@ -257,7 +257,7 @@ class MeetingDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 📝 **Sección: Descripción**
+                 
                   if ((meeting.description ?? '').isNotEmpty)
                     _buildModernSection(
                       title: 'Descripción',
@@ -276,7 +276,7 @@ class MeetingDetailScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 🔧 **Sección: Información Técnica**
+                 
                   _buildModernSection(
                     title: 'Información Técnica',
                     icon: Icons.settings_outlined,
@@ -291,7 +291,7 @@ class MeetingDetailScreen extends StatelessWidget {
                     ],
                   ),
                   
-                  const SizedBox(height: 40), // Espacio final
+                  const SizedBox(height: 40), 
                 ],
               ),
             ),
@@ -301,7 +301,7 @@ class MeetingDetailScreen extends StatelessWidget {
     );
   }
 
-  // 🎨 **Sección Moderna**
+
   Widget _buildModernSection({
     required String title,
     required IconData icon,
@@ -317,7 +317,7 @@ class MeetingDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header de la sección
+         
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -349,7 +349,7 @@ class MeetingDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Contenido de la sección
+          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -361,7 +361,7 @@ class MeetingDetailScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Fila de Información Moderna**
+  
   Widget _buildModernInfoRow({
     required IconData icon,
     required String label,

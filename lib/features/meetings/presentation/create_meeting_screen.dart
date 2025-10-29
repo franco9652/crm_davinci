@@ -26,9 +26,9 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
   DateTime? _date;
   TimeOfDay? _time;
-  String _meetingType = 'virtual'; // virtual | presencial
+  String _meetingType = 'virtual'; 
 
-  // Clientes y Proyectos
+
   final _customers = <CustomerModel>[];
   final _projects = <WorkModel>[];
   String? _selectedCustomerId;
@@ -65,7 +65,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         }
       });
     } catch (_) {
-      // Manejado por HttpHelper
+      
     } finally {
       if (mounted) setState(() => _loadingProjects = false);
     }
@@ -98,7 +98,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
           ..addAll(aggregated);
       });
     } catch (_) {
-      // ya hay Snackbar en HttpHelper
+      
     } finally {
       if (mounted) setState(() => _loadingCustomers = false);
     }
@@ -168,7 +168,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
       backgroundColor: const Color(0xFF0F172A),
       body: CustomScrollView(
         slivers: [
-          // 🎨 **SliverAppBar Moderno con Gradiente**
+         
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -181,8 +181,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF6366F1), // Azul primario
-                      Color(0xFF8B5CF6), // Púrpura secundario
+                      Color(0xFF6366F1), 
+                      Color(0xFF8B5CF6), 
                     ],
                   ),
                 ),
@@ -241,7 +241,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             ),
           ),
           
-          // 📋 **Formulario Principal**
+          
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -250,7 +250,6 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 👥 **Sección: Participantes**
                     _buildModernSection(
                       title: 'Participantes',
                       icon: Icons.people_outline,
@@ -328,7 +327,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     
                     const SizedBox(height: 20),
                     
-                    // 📅 **Sección: Información Básica**
+                    
                     _buildModernSection(
                       title: 'Información Básica',
                       icon: Icons.info_outline,
@@ -396,7 +395,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     
                     const SizedBox(height: 20),
                     
-                    // 🔗 **Sección: Ubicación/Link**
+                  
                     _buildModernSection(
                       title: _meetingType == 'virtual' ? 'Link de Reunión' : 'Ubicación',
                       icon: _meetingType == 'virtual' ? Icons.link : Icons.location_on,
@@ -431,7 +430,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     
                     const SizedBox(height: 20),
                     
-                    // 📝 **Sección: Descripción**
+               
                     _buildModernSection(
                       title: 'Descripción',
                       icon: Icons.description_outlined,
@@ -449,7 +448,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     
                     const SizedBox(height: 30),
                     
-                    // 🚀 **Botón de Crear Moderno**
+              
                     Container(
                       width: double.infinity,
                       height: 56,
@@ -492,7 +491,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 40), // Espacio final
+                    const SizedBox(height: 40), 
                   ],
                 ),
               ),
@@ -503,7 +502,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     );
   }
 
-  // 🎨 **Sección Moderna**
+  
   Widget _buildModernSection({
     required String title,
     required IconData icon,
@@ -519,7 +518,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header de la sección
+          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -551,7 +550,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
               ],
             ),
           ),
-          // Contenido de la sección
+          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -563,7 +562,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     );
   }
 
-  // 📝 **Campo de Texto Moderno**
+  
   Widget _buildModernTextField({
     required String label,
     required IconData icon,
@@ -640,7 +639,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     );
   }
 
-  // 📅 **Selector de Fecha/Hora Moderno**
+
   Widget _buildModernDateTimePicker({
     required String label,
     required IconData icon,
@@ -719,7 +718,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     );
   }
 
-  // 📋 **Dropdown Moderno**
+  
   Widget _buildModernDropdown({
     required String label,
     required IconData icon,

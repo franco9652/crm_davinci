@@ -7,8 +7,8 @@ class WorkInfoController extends GetxController {
   final WorkRepository workRepository;
   WorkInfoController({required this.workRepository});
 
-  var work = Rxn<WorkModel>(); // Modelo del trabajo
-  var isLoadingWork = false.obs; // Estado de carga
+  var work = Rxn<WorkModel>(); 
+  var isLoadingWork = false.obs; 
 
   Future<void> fetchWorkInfo(String workId) async {
     if (workId.isEmpty) {
@@ -41,7 +41,7 @@ class WorkInfoController extends GetxController {
     }
   }
 
-  // ✅ **Método para convertir y asignar el modelo**
+ 
   void _assignWorkModel(Map<String, dynamic> json) {
     if (json.containsKey("work")) {
       print("✅ JSON contiene 'work', extrayendo y convirtiendo...");
@@ -54,7 +54,7 @@ class WorkInfoController extends GetxController {
 
     print("🟢 Trabajo actualizado en GetX: ${work.value?.name}");
 
-    // 🔥 **Forzar actualización con delay para asegurar renderizado**
+    
     Future.delayed(Duration(milliseconds: 100), () {
       update();
     });

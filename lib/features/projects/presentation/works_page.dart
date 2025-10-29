@@ -27,12 +27,12 @@ class WorkListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // 🔍 **Filtros Compactos Modernos**
+         
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                // 🔍 **Buscador Compacto**
+               
                 Expanded(
                   flex: 2,
                   child: Container(
@@ -66,9 +66,9 @@ class WorkListPage extends StatelessWidget {
                 
                 const SizedBox(width: 12),
                 
-                // 📋 **Filtro de Estado Mejorado**
+                
                 Expanded(
-                  flex: 2, // Espacio equilibrado para el dropdown
+                  flex: 2, 
                   child: Container(
                     height: 44,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -102,7 +102,7 @@ class WorkListPage extends StatelessWidget {
                               style: const TextStyle(color: Colors.white, fontSize: 14),
                               dropdownColor: const Color(0xFF1E293B),
                               isExpanded: true,
-                              menuMaxHeight: 300, // Altura máxima del menú
+                              menuMaxHeight: 300, 
                               icon: Icon(
                                 Icons.keyboard_arrow_down,
                                 color: Colors.white.withOpacity(0.7),
@@ -203,7 +203,7 @@ class WorkListPage extends StatelessWidget {
     );
   }
 
-  // 🎨 **FAB Moderno**
+
   Widget _buildModernFAB() {
     return Container(
       decoration: BoxDecoration(
@@ -254,10 +254,10 @@ class WorkListPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header con título y acciones
+              
               Row(
                 children: [
-                  // Icono de la obra
+                  
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -271,7 +271,7 @@ class WorkListPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Información principal
+                 
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +299,7 @@ class WorkListPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Menú de acciones
+                  
                   WorkActionsWidget(
                     work: work,
                     onWorkUpdated: () => controller.refreshWorks(),
@@ -309,7 +309,7 @@ class WorkListPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              // Información de la obra
+              
               Row(
                 children: [
                   Icon(Icons.location_on_outlined, 
@@ -368,7 +368,7 @@ class WorkListPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               
-              // Estado y fechas
+              
               Row(
                 children: [
                   Flexible(
@@ -398,7 +398,7 @@ class WorkListPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               
-              // Acciones rápidas
+              
               Row(
                 children: [
                   Expanded(
@@ -447,30 +447,30 @@ class WorkListPage extends StatelessWidget {
     );
   }
 
-  /// 🎨 **Colores Modernos por Estado**
+  
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pendiente':
-        return const Color(0xFFF59E0B); // Amarillo
+        return const Color(0xFFF59E0B); 
       case 'activo':
       case 'en progreso':
       case 'en_progreso':
-        return const Color(0xFF06B6D4); // Cyan
+        return const Color(0xFF06B6D4); 
       case 'completado':
-        return const Color(0xFF10B981); // Verde
+        return const Color(0xFF10B981); 
       case 'cancelado':
       case 'inactivo':
-        return const Color(0xFFEF4444); // Rojo
+        return const Color(0xFFEF4444); 
       case 'pausado':
-        return const Color(0xFF8B5CF6); // Púrpura
+        return const Color(0xFF8B5CF6); 
       default:
-        return const Color(0xFF6B7280); // Gris
+        return const Color(0xFF6B7280); 
     }
   }
 
   Widget _buildPagination() {
     return Obx(() => Padding(
-      padding: const EdgeInsets.only(bottom: 20), // Espacio mínimo para el FAB
+      padding: const EdgeInsets.only(bottom: 20), 
       child: ModernPaginationWidget(
         currentPage: controller.currentPage.value,
         totalPages: controller.totalPages.value,

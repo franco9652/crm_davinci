@@ -13,7 +13,7 @@ class CreateBudgetScreen extends StatelessWidget {
   final startDateController = TextEditingController();
   final endDateController = TextEditingController();
 
-  // Listas de selección
+ 
   final List<String> materiales = [
     "Cemento",
     "Madera",
@@ -34,7 +34,7 @@ class CreateBudgetScreen extends StatelessWidget {
     "Albañil"
   ];
 
-  /// 📌 **Abrir DatePicker**
+
   Future<void> _selectDate(
       BuildContext context, TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
@@ -55,7 +55,7 @@ class CreateBudgetScreen extends StatelessWidget {
     }
   }
 
-  /// 📌 **Crear Presupuesto**
+
   void _createBudget() async {
     if (budgetController.selectedCustomerId.value == null) {
       Get.snackbar("Error", "Selecciona un cliente primero.");
@@ -132,7 +132,7 @@ class CreateBudgetScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
         slivers: [
-          // App Bar moderno con gradiente
+          
           SliverAppBar(
             expandedHeight: 180,
             floating: false,
@@ -206,14 +206,14 @@ class CreateBudgetScreen extends StatelessWidget {
             ),
           ),
           
-          // Contenido principal
+         
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Sección Cliente
+                  
                   _buildFormSection(
                     'Cliente',
                     Icons.person,
@@ -243,7 +243,7 @@ class CreateBudgetScreen extends StatelessWidget {
                             )),
                           ),
                           const SizedBox(width: 12),
-                          // 🔄 **Botón de refresh para clientes**
+                          
                           Obx(() => Container(
                             height: 56,
                             decoration: BoxDecoration(
@@ -275,7 +275,7 @@ class CreateBudgetScreen extends StatelessWidget {
                           )),
                         ],
                       ),
-                      // 📊 **Contador de clientes**
+                      
                       Obx(() => Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
@@ -290,7 +290,7 @@ class CreateBudgetScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Sección Proyecto
+                  
                   _buildFormSection(
                     'Información del Proyecto',
                     Icons.business,
@@ -316,7 +316,6 @@ class CreateBudgetScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Sección Presupuesto y Fechas
                   _buildFormSection(
                     'Presupuesto y Cronograma',
                     Icons.attach_money,
@@ -344,7 +343,7 @@ class CreateBudgetScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Sección Recursos
+                  
                   _buildFormSection(
                     'Recursos del Proyecto',
                     Icons.build,
@@ -375,10 +374,10 @@ class CreateBudgetScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   
-                  // Botón de crear
+                  
                   _buildCreateButton(),
                   
-                  const SizedBox(height: 100), // Espacio extra al final
+                  const SizedBox(height: 100), 
                 ],
               ),
             ),
@@ -388,7 +387,7 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Sección de Formulario Moderna**
+  
   Widget _buildFormSection(String title, IconData icon, Color color, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -428,7 +427,7 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 📝 **Campo de Texto Moderno**
+  
   Widget _buildModernTextField(
     TextEditingController controller,
     String label,
@@ -476,7 +475,6 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 📅 **Campo de Fecha Moderno**
   Widget _buildModernDateField(
     TextEditingController controller,
     String label,
@@ -534,7 +532,7 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Dropdown Moderno**
+  
   Widget _buildModernDropdownField(
     String label,
     String? value,
@@ -587,7 +585,7 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 🏷️ **Multi-Select Moderno**
+  
   Widget _buildModernMultiSelect(
     String label,
     List<String> options,
@@ -631,7 +629,7 @@ class CreateBudgetScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // Dropdown para agregar items
+                
                 DropdownButtonFormField<String>(
                   value: null,
                   hint: Text(
@@ -669,7 +667,7 @@ class CreateBudgetScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Items seleccionados
+                
                 Obx(() => selectedValues.isEmpty
                     ? Container(
                         padding: const EdgeInsets.all(12),
@@ -738,7 +736,7 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
-  // 🚀 **Botón de Crear Moderno**
+  
   Widget _buildCreateButton() {
     return Container(
       width: double.infinity,

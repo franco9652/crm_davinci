@@ -9,14 +9,14 @@ class AuthRemoteDataSource {
 
   AuthRemoteDataSource(this.client);
 
-  /// 🔧 **Procesa respuestas HTTP incluyendo rate limiting**
+
   Future<Map<String, dynamic>> _processResponse(http.Response response) async {
     switch (response.statusCode) {
       case 200:
       case 201:
         return {'success': true, 'data': jsonDecode(response.body)};
       
-      case 429: // Rate Limit
+      case 429: 
         final body = jsonDecode(response.body);
         final retryAfter = response.headers['retry-after'];
         
@@ -55,7 +55,7 @@ class AuthRemoteDataSource {
 
     final result = await _processResponse(response);
     
-    // 🚫 **Manejo específico de rate limit en login**
+    
     if (result['rateLimited'] == true) {
       return {
         'success': false,
@@ -65,11 +65,11 @@ class AuthRemoteDataSource {
       };
     }
 
-    // ✅ **Login exitoso**
+    
     if (result['success'] == true) {
       final body = result['data'];
       final token = body['token'];
-      // Intentar obtener role en diferentes formatos de respuesta
+      
       dynamic role = body['role'];
       role ??= body['user'] != null ? body['user']['role'] : null;
       role ??= (body['roles'] is List && body['roles'].isNotEmpty) ? body['roles'][0] : null;
@@ -78,7 +78,7 @@ class AuthRemoteDataSource {
           : null;
       role ??= body['data'] != null ? body['data']['role'] : null;
       final roleStr = (role ?? '').toString();
-      // Debug
+      
       print('🔐 Login OK. token present=${token != null && token.toString().isNotEmpty}, roleRaw=$roleStr');
       return {
         'success': true,
@@ -87,7 +87,7 @@ class AuthRemoteDataSource {
       };
     }
 
-    // ❌ **Error en login**
+  
     return {
       'success': false,
       'error': result['error'] ?? 'Error al iniciar sesión',
@@ -121,7 +121,7 @@ class AuthRemoteDataSource {
 
       final result = await _processResponse(response);
       
-      // 🚫 **Manejo específico de rate limit en emails**
+     
       if (result['rateLimited'] == true) {
         return {
           'success': false,
@@ -131,7 +131,7 @@ class AuthRemoteDataSource {
         };
       }
 
-      // ✅ **Email enviado exitosamente**
+      
       if (result['success'] == true) {
         final responseData = result['data'];
         return {
@@ -140,7 +140,7 @@ class AuthRemoteDataSource {
         };
       }
 
-      // ❌ **Error al enviar email**
+     
       return {
         'success': false,
         'message': result['error'] ?? 'Error al enviar el correo de recuperación',
@@ -169,13 +169,10 @@ class AuthRemoteDataSource {
     }
   }
 
-  /// Cambia la contraseña del usuario
-  /// 
-  /// Requiere la contraseña actual y la nueva contraseña
-  /// Retorna un mapa con `success` (bool) y `message` (String)
+ 
   Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
     try {
-      // Obtener token de autenticación almacenado
+      
       final prefs = await SharedPreferences.getInstance();
       final String? token = prefs.getString('auth_token');
       
@@ -210,7 +207,7 @@ class AuthRemoteDataSource {
         };
       }
       
-      // Manejar diferentes errores
+     
       Map<String, dynamic> result = {'success': false};
       
       if (response.body.isNotEmpty) {

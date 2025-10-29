@@ -14,7 +14,7 @@ class ForgotPasswordPage extends StatelessWidget {
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          // Botón Volver
+          
           Positioned(
             top: 40,
             left: 16,
@@ -34,13 +34,13 @@ class ForgotPasswordPage extends StatelessWidget {
               ),
             ),
           ),
-          // Contenido principal
+          
           Center(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Header con título y subtítulo
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -73,7 +73,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // Contenedor del formulario
+                  
                   Container(
                     width: 320,
                     padding: const EdgeInsets.all(20),
@@ -203,7 +203,7 @@ class ForgotPasswordPage extends StatelessWidget {
                             )),
                           ),
 
-                          // 🚫 **Mensaje de Rate Limiting**
+                          
                           Obx(() => controller.isRateLimited.value
                               ? Padding(
                                   padding: const EdgeInsets.only(top: 12),
@@ -242,7 +242,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Footer
+                  
                   const SizedBox(height: 40),
                   const Text(
                     ' 2025 CRM\nTerminos & Condiciones | Politica de privacidad | Legal',

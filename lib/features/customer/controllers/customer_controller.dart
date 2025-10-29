@@ -8,14 +8,14 @@ class HomeController extends GetxController {
 
   HomeController({required this.repository});
 
-  final customers = <CustomerModel>[].obs; // Clientes de la página actual
-  final allCustomers = <CustomerModel>[].obs; // TODOS los clientes (para dropdowns)
-  final isLoading = false.obs; // Indicador de carga
-  final isLoadingAll = false.obs; // Indicador de carga para todos los clientes
-  final currentPage = 1.obs; // Página actual
-  final totalPages = 1.obs; // Total de páginas
+  final customers = <CustomerModel>[].obs; 
+  final allCustomers = <CustomerModel>[].obs; 
+  final isLoading = false.obs;
+  final isLoadingAll = false.obs; 
+  final currentPage = 1.obs; 
+  final totalPages = 1.obs; 
   final noClientMessage = "No hay clientes disponibles".obs;
-  final isCreating = false.obs; // Indicador de alta de cliente
+  final isCreating = false.obs; 
   final searchQuery = ''.obs;
   final filteredCustomers = <CustomerModel>[].obs;
 
@@ -36,11 +36,11 @@ class HomeController extends GetxController {
     try {
       final response = await repository.fetchCustomers(currentPage.value);
       
-      // Verificar si hay un error en la respuesta
+     
       if (response.containsKey('success') && response['success'] == false) {
         final errorMsg = response['error'] as String? ?? 'Error desconocido';
         noClientMessage.value = errorMsg;
-        // Mostrar snackbar con el error para mejorar la UX
+        
         Get.snackbar(
           'Error',
           errorMsg,
@@ -60,13 +60,13 @@ class HomeController extends GetxController {
       if (fetchedCustomers.isEmpty && totalCount == 0) {
         noClientMessage.value = "No hay clientes disponibles";
       } else {
-        customers.value = fetchedCustomers; // Guardar clientes de la página actual
-        totalPages.value = totalPagesFromApi; // Guardar total de páginas
+        customers.value = fetchedCustomers; 
+        totalPages.value = totalPagesFromApi; 
       }
     } catch (e) {
       print('Error en el controlador al cargar clientes: $e');
       noClientMessage.value = "Error al cargar los clientes. Intente nuevamente.";
-      // Mostrar snackbar con el error para mejorar la UX
+      
       Get.snackbar(
         'Error',
         'Ocurrió un problema al cargar los clientes',
@@ -81,7 +81,7 @@ class HomeController extends GetxController {
     }
   }
 
-  // Método para cargar TODOS los clientes de todas las páginas (para dropdowns)
+ 
   Future<void> fetchAllCustomers() async {
     if (isLoadingAll.value) return;
 
@@ -141,7 +141,7 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Actualizar cliente (Senior approach)
+  
   Future<bool> updateCustomer({
     required String customerId,
     required Map<String, dynamic> updateData,
@@ -154,11 +154,11 @@ class HomeController extends GetxController {
         updateData: updateData,
       );
       
-      // Actualizar la lista local (optimistic update)
+      
       final index = customers.indexWhere((c) => c.id == customerId);
       if (index != -1) {
         customers[index] = updatedCustomer;
-        filterCustomers(); // Refrescar filtros
+        filterCustomers(); 
       }
       
       return true;
@@ -171,7 +171,7 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Eliminar cliente (Senior approach)
+  
   Future<bool> deleteCustomer(String customerId) async {
     try {
       isLoading.value = true;
@@ -180,12 +180,12 @@ class HomeController extends GetxController {
       await repository.deleteCustomer(customerId);
       print('🎮 Controller: Repository completó eliminación exitosamente');
       
-      // Remover de la lista local (optimistic update)
+      
       final removedCount = customers.length;
       customers.removeWhere((c) => c.id == customerId);
       print('🎮 Controller: Removidos ${removedCount - customers.length} clientes de la lista local');
       
-      filterCustomers(); // Refrescar filtros
+      filterCustomers(); 
       print('🎮 Controller: Filtros actualizados');
       
       print('🎮 Controller: Retornando TRUE - eliminación exitosa');
@@ -202,7 +202,7 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Crear cliente (método existente)
+ 
   Future<void> createCustomer({
     required String name,
     required String secondName,
@@ -241,16 +241,16 @@ class HomeController extends GetxController {
 
       await repository.createCustomer(newCustomer);
 
-      // Mostrar diálogo de éxito
+      
       Get.defaultDialog(
         title: "Éxito",
         middleText: "El cliente ha sido creado exitosamente.",
         textConfirm: "Aceptar",
         onConfirm: () async {
-          Get.back(); // Cerrar el diálogo
-          Get.back(); // Volver al HomePageCustomer
+          Get.back(); 
+          Get.back(); 
           
-          // Resetear a la primera página y refrescar
+          
           currentPage.value = 1;
           await fetchCustomers();
         },
@@ -258,23 +258,23 @@ class HomeController extends GetxController {
         buttonColor: const Color(0xFFFF8329),
       );
     } catch (e) {
-      // Manejar errores del backend
+      
       if (e.toString().contains("El email ya está registrado")) {
         Get.defaultDialog(
           title: "Error",
           middleText: "El email proporcionado ya está registrado.",
           textConfirm: "Aceptar",
-          onConfirm: () => Get.back(), // Cerrar el diálogo
+          onConfirm: () => Get.back(), 
           confirmTextColor: Colors.white,
           buttonColor: Colors.red,
         );
       } else {
-        // Manejar errores inesperados
+        
         Get.defaultDialog(
           title: "Error",
           middleText: "Hubo un problema al crear el cliente. Intente nuevamente.",
           textConfirm: "Aceptar",
-          onConfirm: () => Get.back(), // Cerrar el diálogo
+          onConfirm: () => Get.back(), 
           confirmTextColor: Colors.white,
           buttonColor: Colors.red,
         );
@@ -284,7 +284,7 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Métodos de navegación y búsqueda (para compatibilidad)
+  
   void updateSearchQuery(String query) {
     searchQuery.value = query;
   }

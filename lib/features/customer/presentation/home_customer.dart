@@ -141,7 +141,7 @@ class HomePageCustomer extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Avatar del cliente
+                  
                   CircleAvatar(
                     backgroundColor: Colors.blue.shade700,
                     radius: 20,
@@ -157,7 +157,7 @@ class HomePageCustomer extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Información del cliente
+                  
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class HomePageCustomer extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Menú de acciones
+                  
                   CustomerActionsWidget(
                     customer: customer,
                     onCustomerUpdated: () => controller.fetchCustomers(),
@@ -190,7 +190,7 @@ class HomePageCustomer extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              // Información adicional
+              
               Row(
                 children: [
                   Icon(Icons.phone_outlined, 
@@ -206,7 +206,7 @@ class HomePageCustomer extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Estado del cliente
+                 
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -267,7 +267,7 @@ class HomePageCustomer extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp(String contactNumber) async {
-    // 📱 **Formatear número para WhatsApp argentino**
+    
     final formattedPhone = _formatPhoneForWhatsApp(contactNumber);
     
     print('🔗 Número original: $contactNumber');
@@ -286,29 +286,29 @@ class HomePageCustomer extends StatelessWidget {
     }
   }
 
-  /// 📱 **Formatear teléfono para WhatsApp argentino**
+
   String _formatPhoneForWhatsApp(String rawPhone) {
-    // Remover todos los caracteres no numéricos
+    
     String digits = rawPhone.replaceAll(RegExp(r'\D'), '');
     
-    // Para números argentinos de celular (11XXXXXXXX)
+    
     if (digits.length == 10 && digits.startsWith('11')) {
-      // Para WhatsApp argentino: 549 + 11 + número sin 15
+      
       return '549$digits';
     }
     
-    // Para números que ya empiezan con 549 (formato WhatsApp argentino)
+   
     if (digits.startsWith('549')) {
       return digits;
     }
     
-    // Para números que empiezan con 54 (código país argentino)
+   
     if (digits.startsWith('54') && digits.length >= 12) {
-      // Agregar el 9 después del 54
+      
       return '549${digits.substring(2)}';
     }
     
-    // Para números que empiezan con +54
+   
     if (digits.startsWith('54') && digits.length >= 10) {
       final withoutCountryCode = digits.substring(2);
       if (withoutCountryCode.startsWith('11')) {
@@ -316,7 +316,7 @@ class HomePageCustomer extends StatelessWidget {
       }
     }
     
-    // Fallback: usar el número tal como está
+    
     return digits;
   }
 

@@ -87,7 +87,7 @@ class BudgetController extends GetxController {
       debugPrint('💾 Resultado de creación de presupuesto: $result');
       
       if (result['success'] == true) {
-        // Éxito - Mostrar snackbar verde
+       
         Get.snackbar(
           "Éxito", 
           "Presupuesto creado correctamente",
@@ -98,19 +98,19 @@ class BudgetController extends GetxController {
         );
         return true;
       } else {
-        // Error - Mostrar diálogo
+        
         String errorTitle = "Error al crear presupuesto";
         String errorMsg = "No se pudo crear el presupuesto";
         String btnText = "Entendido";
         
-        // Verificar si es un presupuesto duplicado
+        
         if (result['isDuplicate'] == true || 
             result['error']?.toString().toLowerCase().contains('duplicado') == true || 
             result['error']?.toString().toLowerCase().contains('duplicate') == true) {
           errorTitle = "Presupuesto duplicado";
           errorMsg = "Ya existe un presupuesto para esta obra y cliente. No se pueden crear duplicados.";
         }
-        // Verificar errores de servidor (incluyendo error 500)
+        
         else if (result['statusCode'] == 500 || result['error']?.toString().toLowerCase().contains('server') == true) {
           errorTitle = "Error del servidor";
           errorMsg = "El servidor no pudo procesar su solicitud. Esto puede deberse a que:"
@@ -118,18 +118,17 @@ class BudgetController extends GetxController {
                     "\n2. El servidor está experimentando problemas temporales"
                     "\n\nPor favor, verifique si ya existe un presupuesto para este cliente y obra, o inténtelo más tarde.";
         }
-        // Otros errores específicos
+        
         else if (result['error']?.toString().toLowerCase().contains('customerid') == true) {
           errorTitle = "Cliente no válido";
           errorMsg = "El cliente seleccionado no es válido o no existe.";
         }
-        // HTTP 401 ahora se maneja globalmente en HttpHelper
-        // Error genérico pero con mensaje
+    
         else if (result['error'] != null) {
           errorMsg = result['error'].toString();
         }
         
-        // Mostrar diálogo en lugar de snackbar
+        
         await Get.dialog(
           AlertDialog(
             title: Text(errorTitle),
@@ -153,7 +152,7 @@ class BudgetController extends GetxController {
     } catch (e) {
       debugPrint("❌ Error al crear presupuesto: $e");
       
-      // Mostrar diálogo para excepciones inesperadas
+      
       await Get.dialog(
         AlertDialog(
           title: const Text("Error inesperado"),

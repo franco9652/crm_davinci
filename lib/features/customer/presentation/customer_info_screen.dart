@@ -36,7 +36,7 @@ class CustomerInfoScreen extends StatelessWidget {
 
     customerController.fetchCustomerInfo(userId);
 
-    // Asegurarse de obtener el customerId correcto (_id en MongoDB)
+    
     ever(customerController.customer, (_) {
       final String customerId = customerController.customer.value?.id ?? userId;
       workController.fetchWorksByCustomer(customerId);
@@ -66,7 +66,7 @@ class CustomerInfoScreen extends StatelessWidget {
 
         return CustomScrollView(
           slivers: [
-            // App Bar moderno con gradiente
+            
             SliverAppBar(
               expandedHeight: 220,
               floating: false,
@@ -150,18 +150,16 @@ class CustomerInfoScreen extends StatelessWidget {
               ),
             ),
             
-            // Contenido principal
+            
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Acciones rápidas
+                    
                     _buildQuickActionsCard(context, customer),
                     const SizedBox(height: 20),
-                    
-                    // Información de contacto
                     _buildInfoSection('Información de Contacto', [
                       _buildModernInfoRow(Icons.phone, 'Teléfono', customer.contactNumber),
                       _buildModernInfoRow(Icons.email, 'Email', customer.email),
@@ -169,7 +167,7 @@ class CustomerInfoScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     
-                    // Información personal
+                   
                     _buildInfoSection('Información Personal', [
                       _buildModernInfoRow(Icons.badge, 'DNI', customer.dni),
                       _buildModernInfoRow(Icons.business, 'CUIT', customer.cuit),
@@ -179,10 +177,10 @@ class CustomerInfoScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     
-                    // Proyectos del cliente
+                    
                     _buildProjectsSection(workController),
                     
-                    const SizedBox(height: 100), // Espacio extra al final
+                    const SizedBox(height: 100), 
                   ],
                 ),
               ),
@@ -193,7 +191,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🚀 **Tarjeta de Acciones Rápidas**
+ 
   Widget _buildQuickActionsCard(BuildContext context, customer) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -259,7 +257,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🎯 **Botón de Acción Rápida**
+
   Widget _buildQuickActionButton(IconData icon, String label, Color color, VoidCallback onPressed) {
     return GestureDetector(
       onTap: onPressed,
@@ -295,7 +293,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Sección de Información Moderna**
+  
   Widget _buildInfoSection(String title, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -322,7 +320,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Fila de Información Moderna**
+
   Widget _buildModernInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -366,7 +364,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🏢 **Sección de Proyectos**
+ 
   Widget _buildProjectsSection(WorkController workController) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -452,7 +450,7 @@ class CustomerInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Item de Proyecto**
+  
   Widget _buildProjectItem(work) {
     Color statusColor;
     switch (work.statusWork.toLowerCase()) {
@@ -536,10 +534,8 @@ class CustomerInfoScreen extends StatelessWidget {
   }
 
   void _sendEmail(BuildContext context, String email) async {
-    // 1) Intent Gmail (Android/iOS) -> 2) mailto
     final gmailUri = Uri.parse('googlegmail://co?to=${Uri.encodeComponent(email)}');
     final mailtoUri = Uri(scheme: 'mailto', path: email);
-    // 3) Gmail web compose (fallback navegador)
     final gmailWebUri = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=${Uri.encodeComponent(email)}');
 
     try {
@@ -547,11 +543,11 @@ class CustomerInfoScreen extends StatelessWidget {
         final ok = await launchUrl(gmailUri, mode: LaunchMode.externalApplication);
         if (ok) return;
       }
-      // Algunos dispositivos devuelven false en canLaunchUrl. Intentamos directo.
+      
       final okMail = await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
       if (okMail) return;
 
-      // Fallback al navegador (compositor de Gmail web)
+      
       final okWeb = await launchUrl(gmailWebUri, mode: LaunchMode.externalApplication);
       if (okWeb) return;
 
@@ -581,10 +577,10 @@ class CustomerInfoScreen extends StatelessWidget {
 
   void _makeCall(BuildContext context, String phoneNumber) async {
     final normalized = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
-    final Uri phoneUri = Uri(scheme: 'tel', path: normalized); // abre marcador (no requiere permiso)
-    final Uri phonePromptUri = Uri.parse('telprompt:$normalized'); // iOS alternativo
+    final Uri phoneUri = Uri(scheme: 'tel', path: normalized); 
+    final Uri phonePromptUri = Uri.parse('telprompt:$normalized'); 
     try {
-      // Intentamos directo sin chequear canLaunch por dispositivos que devuelven false
+      
       var ok = await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
       if (!ok && await canLaunchUrl(phonePromptUri)) {
         ok = await launchUrl(phonePromptUri, mode: LaunchMode.externalApplication);
@@ -618,11 +614,11 @@ class CustomerInfoScreen extends StatelessWidget {
   Future<void> _launchWhatsApp(BuildContext context, String phoneNumber, String name) async {
     final message = 'Hola $name';
     
-    // 📱 **Formatear número para WhatsApp argentino**
+    
     final formattedPhone = _formatPhoneForWhatsApp(phoneNumber);
     
-    print('🔗 Número original: $phoneNumber');
-    print('🔗 Número formateado: $formattedPhone');
+    print('Número original: $phoneNumber');
+    print('Número formateado: $formattedPhone');
 
     final whatsappUri = Uri.parse(
         'whatsapp://send?phone=$formattedPhone&text=${Uri.encodeComponent(message)}');
@@ -634,7 +630,7 @@ class CustomerInfoScreen extends StatelessWidget {
         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
         return;
       }
-      // Fallback a wa.me (navegador o app)
+     
       final launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
       if (!launched) {
         throw 'No se pudo abrir el enlace wa.me';
@@ -653,37 +649,34 @@ class CustomerInfoScreen extends StatelessWidget {
     }
   }
 
-  /// 📱 **Formatear teléfono para WhatsApp argentino**
+  
   String _formatPhoneForWhatsApp(String rawPhone) {
-    // Remover todos los caracteres no numéricos
+    
     String digits = rawPhone.replaceAll(RegExp(r'\D'), '');
     
     print('📱 Dígitos extraídos: $digits');
     
-    // Para números argentinos de celular (11XXXXXXXX)
+    
     if (digits.length == 10 && digits.startsWith('11')) {
-      // Para WhatsApp argentino: 549 + 11 + número sin 15
-      // Ejemplo: 1158800708 -> 5491158800708
       final formatted = '549$digits';
       print('📱 Formato argentino aplicado: $formatted');
       return formatted;
     }
     
-    // Para números que ya empiezan con 549 (formato WhatsApp argentino)
+    
     if (digits.startsWith('549')) {
       print('📱 Ya tiene formato WhatsApp: $digits');
       return digits;
     }
     
-    // Para números que empiezan con 54 (código país argentino)
+    
     if (digits.startsWith('54') && digits.length >= 12) {
-      // Agregar el 9 después del 54
+      
       final formatted = '549${digits.substring(2)}';
       print('📱 Agregando 9 después de 54: $formatted');
       return formatted;
     }
     
-    // Para números que empiezan con +54
     if (digits.startsWith('54') && digits.length >= 10) {
       final withoutCountryCode = digits.substring(2);
       if (withoutCountryCode.startsWith('11')) {
@@ -693,7 +686,6 @@ class CustomerInfoScreen extends StatelessWidget {
       }
     }
     
-    // Fallback: usar el número tal como está
     print('📱 Usando número sin modificar: $digits');
     return digits;
   }

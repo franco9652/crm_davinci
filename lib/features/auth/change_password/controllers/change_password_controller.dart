@@ -55,7 +55,7 @@ class ChangePasswordController extends GetxController {
       );
       
       if (response['success']) {
-        Get.back(); // Volver a la pantalla anterior
+        Get.back();
         Get.snackbar(
           'Éxito',
           response['message'] ?? 'Contraseña actualizada correctamente',

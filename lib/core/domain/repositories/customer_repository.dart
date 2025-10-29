@@ -9,32 +9,31 @@ class CustomerRepository {
   
   CustomerRepository(this.dataSource);
 
-  /// Crear nuevo cliente
+  
   Future<void> createCustomer(CustomerModel customer) async {
     await dataSource.createCustomer(customer);
   }
 
-  /// Obtener todos los clientes con paginación
   Future<Map<String, dynamic>> fetchCustomers(int page) async {
     return await dataSource.getAllCustomers(page);
   }
 
-  /// Obtener cliente por ID
+
   Future<Map<String, dynamic>> getCustomerById(String userId) async {
     return await dataSource.getCustomerById(userId);
   }
 
-  /// Obtener trabajos por cliente
+
   Future<List<WorkModel>> getWorksByUserId(String customerId) async {
     return await dataSource.getWorksByUserId(customerId);
   }
 
-  /// Obtener presupuestos por cliente
+
   Future<List<BudgetModel>> getBudgetsByCustomer(String customerId) async {
     return await dataSource.getBudgetsByCustomerId(customerId);
   }
 
-  /// Actualizar cliente (Senior approach)
+  
   Future<CustomerModel> updateCustomer({
     required String customerId,
     required Map<String, dynamic> updateData,
@@ -45,7 +44,7 @@ class CustomerRepository {
     );
   }
 
-  /// Eliminar cliente (Senior approach)
+
   Future<void> deleteCustomer(String customerId) async {
     return await dataSource.deleteCustomer(customerId);
   }

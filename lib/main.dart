@@ -32,16 +32,16 @@ void main() async {
   final budgetRemoteDataSource = BudgetRemoteDataSource(client); 
   final budgetRepository = BudgetRepository(budgetRemoteDataSource); 
 
-  // Auth Repositories
+
   final authRemoteDataSource = AuthRemoteDataSource(client);
   final authRepository = AuthRepositoryImpl(authRemoteDataSource);
 
-  // 🔹 Primero, registramos `BudgetRemoteDataSource` en GetX
+  
   Get.put(budgetRemoteDataSource); 
   Get.put(budgetRepository); 
   Get.put(BudgetController(budgetRemoteDataSource: Get.find())); 
 
-  // Registramos las demás dependencias en el orden correcto
+ 
   Get.put(customerRemoteDataSource);
   Get.put(customerRepository);
   Get.put(workRemoteDataSource);
@@ -56,7 +56,7 @@ void main() async {
   Get.put(authRepository);
   Get.put(LoginController(authRepository));
 
-  // 🔐 **Inicializar AuthService**
+ 
   Get.put(AuthService(), permanent: true);
 
   final prefs = await SharedPreferences.getInstance();
@@ -65,7 +65,7 @@ void main() async {
   const allowedRoles = {'Admin', 'Customer', 'Employee'};
   final bool isLoggedIn = hasToken && allowedRoles.contains(role);
 
-  // Inicializar servicio de notificaciones
+
   await NotificationService.initialize();
 
   runApp(MyApp(isLoggedIn: isLoggedIn));

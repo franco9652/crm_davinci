@@ -9,7 +9,7 @@ import 'package:crm_app_dv/features/auth/forgot_password/presentation/reset_pass
 import 'package:get/get.dart';
 
 class AppRoutes {
-  // Rutas principales del BottomNavigationBar
+ 
   static const login = '/login';
   static const register = '/register';
   static const mainNavigation = '/main-navigation';
@@ -22,10 +22,8 @@ class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
 
-  // Todas las rutas registradas
   static final List<GetPage> pages = [
     GetPage(name: mainNavigation, page: () => MainNavigationScreen()),
-    // Páginas principales del BottomNavigationBar
     GetPage(name: login, page: () => LoginPage()),
     GetPage(name: home, page: () => HomePageCustomer()),
     GetPage(name: projects, page: () => WorkListPage()),
@@ -35,7 +33,7 @@ class AppRoutes {
     GetPage(
       name: resetPassword, 
       page: () => ResetPasswordPage(),
-      parameters: {'token': ''}, // El token se pasará dinámicamente
+      parameters: {'token': ''}, 
     ),
   ];
 }

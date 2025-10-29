@@ -31,7 +31,7 @@ class WorkController extends GetxController {
   final hasNextPage = true.obs;
   final limit = 10;
 
-  // Lista de estados posibles
+ 
   final List<String> workStatuses = [
     'Activo',
     'Pausado',
@@ -111,7 +111,7 @@ class WorkController extends GetxController {
     print('📋 Actualizando estado seleccionado: "$status"');
     selectedStatus.value = status ?? '';
     print('📋 Estado guardado: "${selectedStatus.value}"');
-    filterWorks(); // Aplicar filtro inmediatamente
+    filterWorks(); 
   }
 
   void goToPage(int page) {
@@ -150,16 +150,16 @@ class WorkController extends GetxController {
       isLoading(true);
       await workRemoteDataSource.createWork(work);
       print("✅ Trabajo creado correctamente");
-      await fetchWorks(); // Refrescar lista de obras después de crear una nueva
+      await fetchWorks(); // Refresh  de obras después de crear una nueva
 
-      // Mostrar mensaje de éxito y volver al listado
+      
       Get.defaultDialog(
         title: "Éxito",
         middleText: "El proyecto ha sido creado correctamente.",
         textConfirm: "Aceptar",
         onConfirm: () {
-          Get.back(); // Cierra el pop-up
-          Get.offNamed(AppRoutes.projects); // Navega directamente al listado
+          Get.back(); 
+          Get.offNamed(AppRoutes.projects); 
         },
       );
     } catch (e) {
@@ -174,9 +174,9 @@ class WorkController extends GetxController {
     }
   }
 
-  /// Actualizar obra usando PATCH (actualización parcial) - Senior approach
+
   Future<bool> updateWork({
-    required String workId, // Usar _id de MongoDB
+    required String workId, 
     required Map<String, dynamic> updateData,
   }) async {
     try {
@@ -187,14 +187,14 @@ class WorkController extends GetxController {
         updateData: updateData,
       );
       
-      // Actualizar la lista local (optimistic update)
+     
       final index = works.indexWhere((w) => w.id == workId);
       if (index != -1) {
         works[index] = updatedWork;
         filterWorks(); // Refrescar filtros
       }
       
-      // También actualizar en worksByCustomer si existe
+      
       final customerIndex = worksByCustomer.indexWhere((w) => w.id == workId);
       if (customerIndex != -1) {
         worksByCustomer[customerIndex] = updatedWork;
@@ -223,9 +223,9 @@ class WorkController extends GetxController {
     }
   }
 
-  /// Actualizar obra completa usando PUT - Senior approach
+  
   Future<bool> updateWorkComplete({
-    required String workId, // Usar _id de MongoDB
+    required String workId, 
     required WorkModel work,
   }) async {
     try {
@@ -237,14 +237,14 @@ class WorkController extends GetxController {
         workData: workData,
       );
       
-      // Actualizar la lista local (optimistic update)
+      
       final index = works.indexWhere((w) => w.id == workId);
       if (index != -1) {
         works[index] = updatedWork;
-        filterWorks(); // Refrescar filtros
+        filterWorks();
       }
       
-      // También actualizar en worksByCustomer si existe
+      
       final customerIndex = worksByCustomer.indexWhere((w) => w.id == workId);
       if (customerIndex != -1) {
         worksByCustomer[customerIndex] = updatedWork;
@@ -273,10 +273,10 @@ class WorkController extends GetxController {
     }
   }
 
-  /// Eliminar obra - Senior approach
+
   Future<bool> deleteWork({
-    required String workAutoIncrementId, // Usar ID auto-increment
-    required String workMongoId, // Para remover de listas locales
+    required String workAutoIncrementId,
+    required String workMongoId, 
   }) async {
     try {
       isLoading.value = true;
@@ -284,7 +284,7 @@ class WorkController extends GetxController {
       print('   - ID auto-increment: $workAutoIncrementId');
       print('   - ID MongoDB: $workMongoId');
       
-      // Agregar timeout para evitar carga infinita
+     
       await workRepository.deleteWork(workAutoIncrementId).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
@@ -294,10 +294,10 @@ class WorkController extends GetxController {
       
       print('🎮 Controller: Eliminación exitosa, actualizando listas locales');
       
-      // Remover de las listas locales (optimistic update)
+     
       works.removeWhere((w) => w.id == workMongoId);
       worksByCustomer.removeWhere((w) => w.id == workMongoId);
-      filterWorks(); // Refrescar filtros
+      filterWorks(); 
       
       Get.snackbar(
         'Éxito',
@@ -323,17 +323,15 @@ class WorkController extends GetxController {
     }
   }
 
-  /// Helper para obtener el ID auto-increment de una obra (Senior approach)
-  /// Nota: Este método maneja la inconsistencia entre MongoDB _id y auto-increment ID
+  
   String? getWorkAutoIncrementId(WorkModel work) {
-    // Primero intentar usar el campo number si existe y no está vacío
+   
     if (work.number != null && work.number!.isNotEmpty && work.number != 'T000') {
       print('🆔 Usando number como ID auto-increment: ${work.number}');
       return work.number;
     }
     
-    // Si no hay number válido, usar el _id de MongoDB como fallback
-    // Nota: Esto puede no funcionar si el backend espera específicamente un ID numérico
+    
     if (work.id != null && work.id!.isNotEmpty) {
       print('⚠️ Usando MongoDB _id como fallback: ${work.id}');
       return work.id;
@@ -343,7 +341,7 @@ class WorkController extends GetxController {
     return null;
   }
 
-  /// Refrescar lista de obras después de cambios
+ 
   Future<void> refreshWorks() async {
     currentPage.value = 1;
     await fetchWorks();

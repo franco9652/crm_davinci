@@ -18,15 +18,15 @@ class MeetingsController extends GetxController {
   final filteredMeetings = <MeetingModel>[].obs;
   final error = ''.obs;
   
-  // 🔍 **Filtros Mejorados**
+  
   final selectedDate = Rxn<DateTime>();
   final selectedDay = RxnString();
   final searchQuery = ''.obs;
-  final selectedType = ''.obs; // virtual, presencial
-  final selectedStatus = ''.obs; // próxima, en curso, finalizada
+  final selectedType = ''.obs; 
+  final selectedStatus = ''.obs; 
   final isFilterActive = false.obs;
 
-  // 📄 **Paginación**
+  
   final currentPage = 1.obs;
   final itemsPerPage = 10;
   final paginatedMeetings = <MeetingModel>[].obs;
@@ -60,16 +60,16 @@ class MeetingsController extends GetxController {
       List<MeetingModel> data = [];
 
       if (isAdmin || isEmployee) {
-        // Admin ve todas las meetings, Employee ve solo las asignadas
+        
         print('🔧 ${isAdmin ? "Admin" : "Employee"}: calling getAllMeetings()');
         data = await remote.getAllMeetings();
       } else {
-        // Para Customer: usar por username si lo tenemos
+        
         print('🔧 Customer: calling getMeetingsByUsername()');
         if (email != null && email.isNotEmpty) {
           data = await remote.getMeetingsByUsername(email);
         } else {
-          // Si no hay email en prefs, último recurso: pedir todas
+          
           data = await remote.getAllMeetings();
         }
       }
@@ -82,7 +82,7 @@ class MeetingsController extends GetxController {
         }
       }
       
-      // Actualizar la lista de meetings
+      
       final previousCount = meetings.length;
       meetings.assignAll(data);
       print('🔧 Meetings updated: $previousCount → ${meetings.length}');
@@ -93,11 +93,11 @@ class MeetingsController extends GetxController {
         print('❌ Backend returned EMPTY meetings list!');
       }
       
-      // Resetear página y aplicar filtros
+      
       currentPage.value = 1;
       _applyFilters();
       
-      // Programar notificaciones para todas las meetings (no-bloqueante)
+      
       _scheduleNotificationsForMeetings().catchError((e) {
         print('⚠️ Error scheduling notifications (non-blocking): $e');
       });
@@ -111,11 +111,11 @@ class MeetingsController extends GetxController {
   }
 
 
-  // 🔍 **Sistema de Filtros Mejorado**
+ 
   void _applyFilters() {
     List<MeetingModel> filtered = List.from(meetings);
     
-    // 🔍 Filtro por búsqueda de texto
+    
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((meeting) {
@@ -125,7 +125,7 @@ class MeetingsController extends GetxController {
       }).toList();
     }
     
-    // 📅 Filtro por fecha específica
+    
     if (selectedDate.value != null) {
       filtered = filtered.where((meeting) {
         return meeting.date.year == selectedDate.value!.year &&
@@ -134,7 +134,7 @@ class MeetingsController extends GetxController {
       }).toList();
     }
     
-    // 📆 Filtro por día de la semana
+    
     if (selectedDay.value != null && selectedDay.value!.isNotEmpty) {
       filtered = filtered.where((meeting) {
         final weekday = _getWeekdayName(meeting.date.weekday);
@@ -142,19 +142,19 @@ class MeetingsController extends GetxController {
       }).toList();
     }
     
-    // 💻 Filtro por tipo (virtual/presencial)
+    
     if (selectedType.value.isNotEmpty) {
       filtered = filtered.where((meeting) {
         return meeting.meetingType.toLowerCase() == selectedType.value.toLowerCase();
       }).toList();
     }
     
-    // ⏰ Filtro por estado (próxima/en curso/finalizada)
+    
     if (selectedStatus.value.isNotEmpty) {
       final now = DateTime.now();
       filtered = filtered.where((meeting) {
         try {
-          // Parsear la hora desde string "HH:MM"
+          
           final timeParts = meeting.time.split(':');
           final hour = int.parse(timeParts[0]);
           final minute = int.parse(timeParts[1]);
@@ -167,7 +167,7 @@ class MeetingsController extends GetxController {
             minute,
           );
           
-          // Parsear duración desde string
+          
           final durationMinutes = int.tryParse(meeting.duration) ?? 60;
           
           switch (selectedStatus.value.toLowerCase()) {
@@ -184,21 +184,21 @@ class MeetingsController extends GetxController {
           }
         } catch (e) {
           print('❌ Error parsing meeting time/duration: $e');
-          return true; // En caso de error, incluir la reunión
+          return true; 
         }
       }).toList();
     }
     
     filteredMeetings.assignAll(filtered);
     
-    // Actualizar estado de filtros activos
+    
     isFilterActive.value = searchQuery.value.isNotEmpty ||
                           selectedDate.value != null || 
                           (selectedDay.value != null && selectedDay.value!.isNotEmpty) ||
                           selectedType.value.isNotEmpty ||
                           selectedStatus.value.isNotEmpty;
     
-    // 📄 **Aplicar paginación**
+    
     _applyPagination();
   }
 
@@ -217,22 +217,22 @@ class MeetingsController extends GetxController {
     _applyFilters();
   }
 
-  // 🔍 **Nuevos Métodos de Filtrado**
+
   void updateSearchQuery(String query) {
     searchQuery.value = query;
-    currentPage.value = 1; // Resetear a página 1
+    currentPage.value = 1; 
     _applyFilters();
   }
 
   void filterByType(String? type) {
     selectedType.value = type ?? '';
-    currentPage.value = 1; // Resetear a página 1
+    currentPage.value = 1; 
     _applyFilters();
   }
 
   void filterByStatus(String? status) {
     selectedStatus.value = status ?? '';
-    currentPage.value = 1; // Resetear a página 1
+    currentPage.value = 1; 
     _applyFilters();
   }
 
@@ -242,15 +242,14 @@ class MeetingsController extends GetxController {
     searchQuery.value = '';
     selectedType.value = '';
     selectedStatus.value = '';
-    currentPage.value = 1; // Resetear a página 1
+    currentPage.value = 1; 
     _applyFilters();
   }
 
-  // 📊 **Obtener listas para dropdowns**
+ 
   List<String> get meetingTypes => ['virtual', 'presencial'];
   List<String> get meetingStatuses => ['próxima', 'en curso', 'finalizada'];
 
-  // 📄 **Métodos de Paginación**
   void _applyPagination() {
     final sourceList = isFilterActive.value ? filteredMeetings : meetings;
     final startIndex = (currentPage.value - 1) * itemsPerPage;
@@ -286,7 +285,7 @@ class MeetingsController extends GetxController {
       print('🔧 Backend createMeeting returned: ${created != null ? "SUCCESS" : "NULL"}');
       if (created != null) {
         print('🔧 Created meeting details: id="${created.id}", title="${created.title}", date=${created.date}');
-        // Optimistic update: insertar/actualizar en memoria para que aparezca de inmediato
+       
         final idx = meetings.indexWhere((m) => m.id == created.id);
         print('🔧 Looking for existing meeting with id="${created.id}": found at index $idx');
         if (idx >= 0) {
@@ -297,16 +296,16 @@ class MeetingsController extends GetxController {
           meetings.insert(0, created);
         }
         print('🔧 Meetings list now has ${meetings.length} items');
-        // Enfocar filtro por fecha en la reunión creada, para asegurar visibilidad
+        
         try {
           print('✅ Reunión creada localmente: id=${created.id}, title=${created.title}, date=${created.date}');
           selectedDate.value = created.date;
         } catch (_) {}
         _applyFilters();
         print('🔧 After _applyFilters(), displayMeetings count: ${displayMeetings.length}');
-        // Ya no necesitamos cache - el backend maneja Employee correctamente
         
-        // Programar notificaciones para la nueva meeting (no-bloqueante)
+        
+        
         _scheduleNotificationsForMeetings().catchError((e) {
           print('⚠️ Error scheduling notifications after create (non-blocking): $e');
         });
@@ -327,7 +326,7 @@ class MeetingsController extends GetxController {
     }
   }
 
-  /// Programar notificaciones para todas las meetings actuales
+  
   Future<void> _scheduleNotificationsForMeetings() async {
     try {
       print('🔔 Scheduling notifications for ${meetings.length} meetings...');
@@ -339,37 +338,35 @@ class MeetingsController extends GetxController {
       }
     } catch (e) {
       print('❌ Error scheduling notifications: $e');
-      // No re-lanzar el error para que no afecte el flujo principal
+      
     }
   }
 
   String _formatPhoneForWhatsApp(String rawPhone) {
-    // Remover todos los caracteres no numéricos
+    
     String digits = rawPhone.replaceAll(RegExp(r'\D'), '');
     
-    // Si tiene código de país +1, removerlo
+    
     if (digits.startsWith('1') && digits.length == 11) {
-      digits = digits.substring(1); // Remover el 1 inicial
+      digits = digits.substring(1); 
     }
     
-    // Para números argentinos de celular (11XXXXXXXX)
+    
     if (digits.length == 10 && digits.startsWith('11')) {
-      // Para WhatsApp argentino: 549 + 11 + número sin 15
-      // Ejemplo: 1158800708 -> 5491158800708
       return '549$digits';
     }
     
-    // Para números que ya empiezan con 549 (formato WhatsApp argentino)
+
     if (digits.startsWith('549')) {
       return digits;
     }
     
-    // Para números que empiezan con 54 pero sin el 9
+    
     if (digits.startsWith('54') && !digits.startsWith('549')) {
       return '549${digits.substring(2)}';
     }
     
-    // Para cualquier otro número argentino, agregar 549
+   
     return '549$digits';
   }
 
@@ -396,28 +393,28 @@ class MeetingsController extends GetxController {
     try {
       print('📨 INICIO - Enviar resumen: customerId=${meeting.customerId}, customerPhone=${meeting.customerPhone}');
       
-      // 1) Usar teléfono embebido si viene en la meeting
+      
       if ((meeting.customerPhone ?? '').isNotEmpty) {
         print('📨 Usando teléfono embebido: ${meeting.customerPhone}');
         return await _launchWhatsAppOrSMS(meeting.customerPhone!, _buildSummary(meeting));
       }
 
-      // 2) Si no hay customerId, no se puede enviar
+      
       if ((meeting.customerId ?? '').isEmpty) {
         print('❌ No hay customerId en la meeting');
         Get.snackbar('Cliente requerido', 'La reunión no tiene un cliente asociado.');
         return false;
       }
 
-      // 3) Los endpoints de customers no funcionan, usar datos embebidos
+      
       print('📨 Endpoints de customers no disponibles, usando datos embebidos');
       
-      // Buscar todos los customers disponibles para encontrar el teléfono
+      
       print('📨 Buscando en lista completa de customers...');
       final ds = CustomerRemoteDataSource(http.Client());
       
       try {
-        // Usar getAllCustomers que SÍ funciona - buscar en todas las páginas si es necesario
+       
         CustomerModel? targetCustomer;
         int page = 1;
 
@@ -429,7 +426,7 @@ class MeetingsController extends GetxController {
 
           print('📨 Página $page: ${customersList.length} customers disponibles');
 
-          // 3a) Buscar por el customerId de la meeting (match exacto por id)
+         
           for (final c in customersList) {
             final id = (c.id ?? '').toString();
             final name = c.name;
@@ -440,7 +437,7 @@ class MeetingsController extends GetxController {
             }
           }
 
-          // 3b) Si no se encontró por id, intentar por nombre (case-insensitive, trimmed)
+          
           if (targetCustomer == null && (meeting.customerName ?? '').trim().isNotEmpty) {
             final meetingName = (meeting.customerName ?? '').trim().toLowerCase();
             for (final c in customersList) {
@@ -465,12 +462,12 @@ class MeetingsController extends GetxController {
             return await _launchWhatsAppOrSMS(rawPhone, _buildSummary(meeting));
           } else {
             print('❌ Customer sin contactNumber');
-            // Mostrar diálogo para ingresar número manualmente
+            
             return await _showManualPhoneDialog(meeting);
           }
         } else {
           print('❌ Customer no encontrado en lista completa');
-          // En lugar de fallar, mostrar diálogo para ingresar número manualmente
+          
           return await _showManualPhoneDialog(meeting);
         }
       } catch (e) {
@@ -493,7 +490,7 @@ class MeetingsController extends GetxController {
     print('🔗 Teléfono formateado: $phone');
     print('📝 Mensaje: ${message.substring(0, message.length > 50 ? 50 : message.length)}...');
     
-    // Intentar WhatsApp primero
+    
     final waUri = Uri.parse('https://wa.me/$phone?text=$text');
     print('🔗 URL WhatsApp: $waUri');
     
@@ -513,7 +510,7 @@ class MeetingsController extends GetxController {
       print('❌ Error lanzando WhatsApp: $e');
     }
     
-    // Fallback a SMS
+  
     try {
       final smsUri = Uri.parse('sms:$phone?body=$text');
       print('🔗 Intentando SMS: $smsUri');

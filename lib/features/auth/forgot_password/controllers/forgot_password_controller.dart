@@ -9,7 +9,7 @@ class ForgotPasswordController extends GetxController {
   final isLoading = false.obs;
   final AuthRemoteDataSource _authRemoteDataSource = AuthRemoteDataSource(http.Client());
 
-  // 🚫 **Rate Limiting Variables**
+  
   var isRateLimited = false.obs;
   var cooldownSeconds = 0.obs;
   Timer? _cooldownTimer;
@@ -32,7 +32,7 @@ class ForgotPasswordController extends GetxController {
       
       final response = await _authRemoteDataSource.sendPasswordRecoveryEmail(emailController.text);
       
-      // 🚫 **Manejo de Rate Limiting**
+      
       if (response['rateLimited'] == true) {
         isRateLimited.value = true;
         cooldownSeconds.value = response['cooldownTime'] ?? 300;
@@ -73,7 +73,7 @@ class ForgotPasswordController extends GetxController {
     }
   }
 
-  // 🚫 **Sistema de Cooldown**
+  
   void _startCooldown() {
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {

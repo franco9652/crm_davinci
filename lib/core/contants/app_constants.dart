@@ -5,8 +5,7 @@ class AppConstants {
   static const String customerCreateEndpoint = "$baseUrl/customerCreate";
   static const String worksGetAllEndpoint = "$baseUrl/works";
   static const String workCreateEndpoint = "$baseUrl/workCreate";
-  // Meetings
-  static const String meetingsEndpoint = "$baseUrl/meetings"; // GET all, PUT/DELETE /:id
-  static const String meetingCreateEndpoint = "$baseUrl/meetingsCreate"; // POST create
-  static const String meetingsByUsernameEndpoint = "$baseUrl/meetings/username"; // + /:username
+  static const String meetingsEndpoint = "$baseUrl/meetings"; 
+  static const String meetingCreateEndpoint = "$baseUrl/meetingsCreate"; 
+  static const String meetingsByUsernameEndpoint = "$baseUrl/meetings/username"; 
 }

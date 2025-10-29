@@ -28,7 +28,7 @@ class ModernPaginationWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icono y contador compacto
+          
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
@@ -47,12 +47,12 @@ class ModernPaginationWidget extends StatelessWidget {
             ),
           ),
           
-          // Controles de paginación compactos
+          
           Expanded(
             child: Row(
               children: [
-                const SizedBox(width: 20), // Espacio desde la izquierda
-                // Botón anterior
+                const SizedBox(width: 20), 
+             
                 _buildCompactNavigationButton(
                   icon: Icons.chevron_left,
                   onPressed: currentPage > 1 && !isLoading
@@ -62,12 +62,12 @@ class ModernPaginationWidget extends StatelessWidget {
                 
                 const SizedBox(width: 8),
                 
-                // Páginas (máximo 5 visibles)
+                
                 ..._buildCompactPageNumbers(),
                 
                 const SizedBox(width: 8),
                 
-                // Botón siguiente
+               
                 _buildCompactNavigationButton(
                   icon: Icons.chevron_right,
                   onPressed: currentPage < totalPages && !isLoading
@@ -75,12 +75,12 @@ class ModernPaginationWidget extends StatelessWidget {
                       : null,
                 ),
                 
-                const Spacer(), // Empuja hacia la izquierda
+                const Spacer(), 
               ],
             ),
           ),
           
-          // Loading indicator compacto
+         
           if (isLoading) ...[
             const SizedBox(width: 12),
             SizedBox(
@@ -136,19 +136,18 @@ class ModernPaginationWidget extends StatelessWidget {
   List<Widget> _buildCompactPageNumbers() {
     List<Widget> pages = [];
     
-    // Lógica compacta: máximo 5 páginas visibles
     if (totalPages <= 5) {
-      // Mostrar todas las páginas si son 5 o menos
+      
       for (int i = 1; i <= totalPages; i++) {
         pages.add(_buildCompactPageButton(i));
         if (i < totalPages) pages.add(const SizedBox(width: 4));
       }
     } else {
-      // Mostrar páginas alrededor de la actual
+      
       int start = (currentPage - 2).clamp(1, totalPages - 4);
       int end = (start + 4).clamp(5, totalPages);
       
-      // Ajustar start si end está en el límite
+     
       if (end == totalPages) {
         start = (totalPages - 4).clamp(1, totalPages);
       }

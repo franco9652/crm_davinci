@@ -53,7 +53,7 @@ class LoginPage extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // Contenedor del formulario
+           
               Container(
                 width: 320,
                 padding: const EdgeInsets.all(20),
@@ -75,9 +75,9 @@ class LoginPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Título del formulario
+                
                     const Text(
-                      'Ingresar a Lotus',
+                      'Ingresar a CRM',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -86,7 +86,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    // Email Input
+                    
                     Obx(() => _buildInputField(
                           icon: Icons.email_outlined,
                           hintText: 'Email address',
@@ -95,7 +95,7 @@ class LoginPage extends StatelessWidget {
                         )),
                     const SizedBox(height: 20),
 
-                    // Password Input con el botón "ojito"
+                    
                     Obx(() => _buildInputField(
                           icon: Icons.lock_outline,
                           hintText: 'Password',
@@ -115,7 +115,7 @@ class LoginPage extends StatelessWidget {
                         )),
                     const SizedBox(height: 10),
 
-                    // Forgot Password Link
+                   
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -131,7 +131,7 @@ class LoginPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 20),
-                    // Login Button
+                    
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -189,7 +189,7 @@ class LoginPage extends StatelessWidget {
                       )),
                     ),
 
-                    //  **Mensaje de Rate Limiting**
+                    
                     Obx(() => controller.isRateLimited.value
                         ? Padding(
                             padding: const EdgeInsets.only(top: 12),
@@ -230,7 +230,7 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
 
-              // Divider
+           
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -256,7 +256,6 @@ class LoginPage extends StatelessWidget {
 
               const SizedBox(height: 100),
 
-              // Footer
               const Text(
                 ' 2025 CRM\nTerminos & Condiciones | Politica de privacidad | Legal',
                 textAlign: TextAlign.center,

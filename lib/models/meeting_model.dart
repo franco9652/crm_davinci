@@ -2,9 +2,9 @@ class MeetingModel {
   final String id;
   final String title;
   final DateTime date;
-  final String time; // HH:MM
-  final String duration; // minutes as string per API
-  final String meetingType; // virtual | presencial
+  final String time; 
+  final String duration;
+  final String meetingType;
   final String? meetingLink;
   final String? address;
   final String? description;
@@ -32,7 +32,7 @@ class MeetingModel {
   });
 
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
-    // API can nest customer/project as objects or ids
+    
     final customer = json['customer'];
     final project = json['project'];
     String? cId;
@@ -40,11 +40,11 @@ class MeetingModel {
     if (customer is Map) {
       cId = (customer['_id'] ?? customer['id'])?.toString();
       cName = customer['name']?.toString();
-      // intentar extraer teléfono si viene embebido (varios posibles nombres)
+      
       try {
         final phone = (customer['contactNumber'] ?? customer['phone'] ?? customer['telefono'])?.toString();
         if (phone != null && phone.isNotEmpty) {
-          // asignaremos más abajo
+        
         }
       } catch (_) {}
     } else if (customer != null) {
@@ -59,7 +59,7 @@ class MeetingModel {
       pId = project.toString();
     }
 
-    // obtener teléfono embebido si existe
+  
     String? cPhone;
     if (customer is Map) {
       try {
@@ -111,10 +111,10 @@ class MeetingModel {
       'time': time,
       'meetingType': meetingType,
     };
-    // duration as int when possible
+  
     final d = int.tryParse(duration);
     payload['duration'] = d ?? duration;
-    // Backend expects 'customer' and 'project' (ObjectId strings)
+    
     if (customerId != null && customerId!.isNotEmpty) payload['customer'] = customerId;
     if (projectId != null && projectId!.isNotEmpty) payload['project'] = projectId;
     if (meetingLink != null && meetingLink!.isNotEmpty) payload['meetingLink'] = meetingLink;
@@ -124,7 +124,7 @@ class MeetingModel {
   }
 
   static String _dateIso(DateTime d) {
-    // YYYY-MM-DD
+    
     return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 }

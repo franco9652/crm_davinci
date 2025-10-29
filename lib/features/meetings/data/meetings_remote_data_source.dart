@@ -50,20 +50,20 @@ class MeetingsRemoteDataSource {
         final meetingData = Map<String, dynamic>.from(e);
         print('🔍 Meeting data: ${meetingData.toString()}');
         
-        // Enriquecer customer embebido con contactNumber desde endpoint customers
+        
         if (meetingData['customer'] is Map) {
           final customer = meetingData['customer'] as Map;
           final customerId = customer['_id']?.toString();
           if (customerId != null && customerId.isNotEmpty) {
             print('🔍 Customer embebido encontrado: $customerId');
-            // Por ahora usar datos embebidos tal como vienen
+           
           }
         }
         
         return MeetingModel.fromJson(meetingData);
       }).toList();
       
-      // Log customer phone info for debugging
+     
       for (final meeting in meetings) {
         print('📱 Meeting ${meeting.id}: customerId=${meeting.customerId}, customerPhone=${meeting.customerPhone}');
       }
@@ -81,7 +81,7 @@ class MeetingsRemoteDataSource {
     
     print('🔧 createMeeting() - Original body: $body');
     
-    // Normalize keys to match backend expectations
+    
     if (body.containsKey('customerId') && !body.containsKey('customer')) {
       body['customer'] = body['customerId'];
       body.remove('customerId');
@@ -94,7 +94,7 @@ class MeetingsRemoteDataSource {
       body['username'] = username;
     }
     
-    // Try to decode JWT to get userId
+    
     if (token != null && token.split('.').length == 3) {
       try {
         final payloadPart = token.split('.')[1];
@@ -110,7 +110,7 @@ class MeetingsRemoteDataSource {
     
     print('🔧 createMeeting() - Final body: $body');
     
-    // POST /meetingsCreate requires auth token
+   
     final headers = await _authHeaders();
     final resp = await HttpHelper.post(AppConstants.meetingCreateEndpoint, body, headers: headers);
     
@@ -120,16 +120,16 @@ class MeetingsRemoteDataSource {
     if (resp['success'] == true) {
       final data = resp['data'];
       
-      // According to API docs, backend should return the created meeting directly
+      
       Map<String, dynamic> meetingData;
       if (data is Map) {
-        // Try different possible response structures
+        
         if (data.containsKey('meeting')) {
           meetingData = Map<String, dynamic>.from(data['meeting']);
         } else if (data.containsKey('newMeeting')) {
           meetingData = Map<String, dynamic>.from(data['newMeeting']);
         } else {
-          // Assume the data itself is the meeting
+        
           meetingData = Map<String, dynamic>.from(data);
         }
       } else {
@@ -139,7 +139,7 @@ class MeetingsRemoteDataSource {
       
       print('🔧 createMeeting() - Parsed meeting data: $meetingData');
       
-      // Ensure we have an ID
+      
       if (!meetingData.containsKey('_id') && !meetingData.containsKey('id')) {
         print('❌ No ID found in response, generating temporary one');
         meetingData['_id'] = DateTime.now().millisecondsSinceEpoch.toString();
@@ -158,7 +158,7 @@ class MeetingsRemoteDataSource {
   Future<MeetingModel?> updateMeeting(String id, Map<String, dynamic> patch) async {
     final headers = await _authHeaders();
     final url = '${AppConstants.meetingsEndpoint}/$id';
-    final resp = await HttpHelper.post(url, patch, headers: headers); // If API expects PUT, we should implement HttpHelper.put; using post as fallback
+    final resp = await HttpHelper.post(url, patch, headers: headers); 
     if (resp['success'] == true) {
       final data = resp['data'];
       final m = (data is Map && data['meeting'] is Map) ? Map<String, dynamic>.from(data['meeting']) : Map<String, dynamic>.from(data);
@@ -170,7 +170,7 @@ class MeetingsRemoteDataSource {
   Future<bool> deleteMeeting(String id) async {
     final headers = await _authHeaders();
     final url = '${AppConstants.meetingsEndpoint}/$id';
-    final resp = await HttpHelper.get(url, headers: {...headers, 'X-HTTP-Method-Override': 'DELETE'}); // Fallback: implement HttpHelper.delete later
+    final resp = await HttpHelper.get(url, headers: {...headers, 'X-HTTP-Method-Override': 'DELETE'}); 
     return resp['success'] == true;
   }
 }

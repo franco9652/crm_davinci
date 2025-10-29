@@ -13,7 +13,7 @@ class ChangePasswordScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F172A),
       body: CustomScrollView(
         slivers: [
-          // 🎨 **SliverAppBar Moderno con Gradiente**
+          
           SliverAppBar(
             expandedHeight: 140,
             floating: false,
@@ -26,8 +26,8 @@ class ChangePasswordScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF6366F1), // Azul primario
-                      Color(0xFF8B5CF6), // Púrpura secundario
+                      Color(0xFF6366F1), 
+                      Color(0xFF8B5CF6), 
                     ],
                   ),
                 ),
@@ -86,14 +86,14 @@ class ChangePasswordScreen extends StatelessWidget {
             ),
           ),
           
-          // 📋 **Formulario Principal**
+          
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 🔐 **Sección: Contraseña Actual**
+                  
                   _buildModernSection(
                     title: 'Contraseña Actual',
                     icon: Icons.lock_outline,
@@ -111,7 +111,7 @@ class ChangePasswordScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 🔑 **Sección: Nueva Contraseña**
+                 
                   _buildModernSection(
                     title: 'Nueva Contraseña',
                     icon: Icons.lock_open,
@@ -137,15 +137,15 @@ class ChangePasswordScreen extends StatelessWidget {
                   
                   const SizedBox(height: 20),
                   
-                  // 💡 **Sección: Consejos de Seguridad**
+                  
                   _buildSecurityTips(),
                   
                   const SizedBox(height: 30),
                   
-                  // 🚀 **Botón de Cambiar Moderno**
+                  
                   Obx(() => _buildModernChangeButton(controller)),
                   
-                  const SizedBox(height: 40), // Espacio final
+                  const SizedBox(height: 40), 
                 ],
               ),
             ),
@@ -155,7 +155,7 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  // 🎨 **Sección Moderna**
+  
   Widget _buildModernSection({
     required String title,
     required IconData icon,
@@ -171,7 +171,7 @@ class ChangePasswordScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header de la sección
+        
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -203,7 +203,7 @@ class ChangePasswordScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Contenido de la sección
+          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -215,7 +215,7 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  // 🔐 **Campo de Contraseña Moderno**
+  
   Widget _buildModernPasswordField({
     required TextEditingController controller,
     required String label,
@@ -297,7 +297,7 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  // 💡 **Consejos de Seguridad**
+ 
   Widget _buildSecurityTips() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -340,7 +340,7 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  // 📝 **Tip de Seguridad Individual**
+  
   Widget _buildSecurityTip(IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -360,7 +360,7 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  // 🚀 **Botón de Cambiar Moderno**
+  
   Widget _buildModernChangeButton(ChangePasswordController controller) {
     return Container(
       width: double.infinity,

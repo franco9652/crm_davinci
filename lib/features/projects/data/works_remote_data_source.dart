@@ -20,7 +20,6 @@ class WorkRemoteDataSource {
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
 
-      // Actualizar el total de páginas en el controlador
       if (jsonResponse.containsKey('totalPages')) {
         final totalPagesFromServer = jsonResponse['totalPages'] as int;
         final workController = Get.find<WorkController>();
@@ -120,14 +119,13 @@ class WorkRemoteDataSource {
           .map((data) => WorkModel.fromJson(data))
           .toList();
     } else if (response.statusCode == 404) {
-      return []; // Devuelve una lista vacía si no hay trabajos
+      return []; 
     } else {
       throw Exception('Error al obtener los trabajos del cliente');
     }
   }
 
-  // Usa el endpoint correcto provisto: /getcustomersbyid/{userId}
-  // Obtiene el cliente por userId y resuelve los proyectos listados en su payload
+ 
   Future<List<WorkModel>> getWorksByCustomerUserId(String userId) async {
     final url = '${AppConstants.baseUrl}/getcustomersbyid/$userId';
     final response = await client.get(
@@ -152,7 +150,7 @@ class WorkRemoteDataSource {
           final w = await getWorkById(id);
           works.add(w);
         } catch (_) {
-          // continuar con los demás
+          // - 
         }
       }
       return works;
@@ -178,7 +176,7 @@ class WorkRemoteDataSource {
     }
   }
 
-  /// Actualizar obra usando PATCH (actualización parcial) - Senior approach
+  
   Future<WorkModel> updateWork({
     required String workId, // Usar _id de MongoDB
     Map<String, dynamic>? updateData,
@@ -208,7 +206,7 @@ class WorkRemoteDataSource {
     }
   }
 
-  /// Actualizar obra usando PUT (actualización completa) - Senior approach
+ 
   Future<WorkModel> updateWorkComplete({
     required String workId, // Usar _id de MongoDB
     required Map<String, dynamic> workData,
@@ -270,12 +268,12 @@ class WorkRemoteDataSource {
     }
   }
 
-  /// Helper para convertir WorkModel a Map para actualización (Senior approach)
+
   Map<String, dynamic> workModelToUpdateMap(WorkModel work) {
     return {
       'name': work.name,
-      'direccion': work.address, // Nota: backend usa 'direccion', modelo usa 'address'
-      'startDate': work.startDate, // Ya es String en el modelo
+      'direccion': work.address, //TODO: backend usa 'direccion'Y mi modelo usa 'address'
+      'startDate': work.startDate,
       'endDate': work.endDate,
       'budget': work.budget,
       'employeeInWork': work.employeeInWork,

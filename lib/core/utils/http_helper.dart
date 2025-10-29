@@ -31,7 +31,6 @@ class HttpHelper {
     }
   }
 
-  /// Realizar una petición PUT con manejo de errores
   static Future<Map<String, dynamic>> put(
     String url, 
     dynamic body, 
@@ -61,7 +60,6 @@ class HttpHelper {
     }
   }
 
-  /// Realizar una petición DELETE con manejo de errores
   static Future<Map<String, dynamic>> delete(
     String url, 
     {Map<String, String>? headers, bool suppressErrors = false}
@@ -89,7 +87,6 @@ class HttpHelper {
     }
   }
 
-  /// Realizar una petición PATCH con manejo de errores
   static Future<Map<String, dynamic>> patch(
     String url, 
     dynamic body, 
@@ -255,7 +252,6 @@ class HttpHelper {
     };
   }
 
-  /// 🚨 **Maneja token expirado globalmente**
   static Future<void> _handleTokenExpired() async {
     try {
       // Usar AuthService si está disponible, sino fallback manual

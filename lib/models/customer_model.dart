@@ -1,6 +1,6 @@
 class CustomerModel {
-  final String? id; // _id del cliente en MongoDB
-  final String? userId; // Usuario que registró el cliente
+  final String? id; 
+  final String? userId; 
   final String name;
   final String secondName;
   final String dni;
@@ -13,7 +13,7 @@ class CustomerModel {
   final String password;
   final bool firstRegister;
   final bool clienteActivo;
-  final List<String> worksActive; // Lista de IDs de trabajos activos
+  final List<String> worksActive; 
   final List<String> documents;
   final DateTime createdAt;
   final bool active;
@@ -39,15 +39,15 @@ class CustomerModel {
     required this.active,
   });
 
-  /// **Método para convertir JSON a `CustomerModel`**
+  
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
-    // Función auxiliar para convertir cualquier tipo a String de forma segura
+    
     String safeString(dynamic value, String defaultValue) {
       if (value == null) return defaultValue;
       return value is String ? value : value.toString();
     }
     
-    // Función auxiliar para convertir cualquier tipo a bool de forma segura
+    
     bool safeBool(dynamic value, bool defaultValue) {
       if (value == null) return defaultValue;
       if (value is bool) return value;
@@ -56,7 +56,7 @@ class CustomerModel {
       return defaultValue;
     }
     
-    // Función auxiliar para parsear DateTime de forma segura
+   
     DateTime safeDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       if (value is String) {
@@ -69,7 +69,7 @@ class CustomerModel {
       return DateTime.now();
     }
 
-    // Función auxiliar para convertir a List<String> de forma segura
+    
     List<String> safeStringList(dynamic value) {
       if (value == null) return [];
       if (value is List) {
@@ -103,10 +103,10 @@ class CustomerModel {
     );
   }
 
-  /// **Método para convertir `CustomerModel` a JSON**
+
   Map<String, dynamic> toJson() {
     return {
-      '_id': id, // Asegura que se envíe al backend
+      '_id': id, 
       'userId': userId,
       'name': name,
       'secondName': secondName,
@@ -120,7 +120,7 @@ class CustomerModel {
       'password': password,
       'firstRegister': firstRegister,
       'clienteActivo': clienteActivo,
-      'worksActive': worksActive, // Lista de trabajos activos
+      'worksActive': worksActive, 
       'documents': documents,
       'createdAt': createdAt.toIso8601String(),
       'active': active,

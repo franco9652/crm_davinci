@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 
-/// Pantalla de edición de obra/proyecto (Senior approach)
 class EditWorkScreen extends StatefulWidget {
   final WorkModel work;
   
@@ -20,7 +19,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
   final _formKey = GlobalKey<FormState>();
   final _controller = Get.find<WorkController>();
   
-  // Controllers para los campos
+ 
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
   late final TextEditingController _startDateController;
@@ -35,7 +34,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
   String _selectedProjectType = 'residencial';
   bool _isLoading = false;
 
-  // Opciones disponibles
+
   final List<String> _statusOptions = ['activo', 'pausado', 'inactivo', 'En progreso'];
   final List<String> _projectTypeOptions = ['residencial', 'comercial', 'industrial', 'Construcción'];
 
@@ -45,7 +44,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     _initializeControllers();
   }
 
-  /// Inicializar controllers con datos existentes (Senior approach)
   void _initializeControllers() {
     _nameController = TextEditingController(text: widget.work.name);
     _addressController = TextEditingController(text: widget.work.address);
@@ -63,7 +61,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
 
   @override
   void dispose() {
-    // Limpiar controllers (Senior approach)
     _nameController.dispose();
     _addressController.dispose();
     _startDateController.dispose();
@@ -85,7 +82,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// AppBar con estilo consistente (Senior approach)
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text(
@@ -113,7 +109,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Cuerpo principal con formulario (Senior approach)
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -143,7 +138,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Card de información de la obra (Senior approach)
   Widget _buildInfoCard() {
     return Card(
       color: const Color(0xFF1E293B),
@@ -209,7 +203,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de información básica (Senior approach)
   Widget _buildBasicInfoSection() {
     return _buildSection(
       title: 'Información Básica',
@@ -231,7 +224,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de fechas (Senior approach)
   Widget _buildDatesSection() {
     return _buildSection(
       title: 'Fechas del Proyecto',
@@ -265,7 +257,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de presupuesto (Senior approach)
   Widget _buildBudgetSection() {
     return _buildSection(
       title: 'Presupuesto',
@@ -286,7 +277,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de ubicación (Senior approach)
   Widget _buildLocationSection() {
     return _buildSection(
       title: 'Ubicación',
@@ -310,7 +300,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de cliente (Senior approach)
   Widget _buildCustomerSection() {
     return _buildSection(
       title: 'Información del Cliente',
@@ -339,7 +328,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Sección de estado y tipo (Senior approach)
   Widget _buildStatusSection() {
     return _buildSection(
       title: 'Estado y Tipo de Proyecto',
@@ -420,7 +408,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Botones de acción (Senior approach)
   Widget _buildActionButtons() {
     return Row(
       children: [
@@ -459,7 +446,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Constructor de secciones reutilizable (Senior approach)
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -494,7 +480,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Constructor de campos de texto reutilizable (Senior approach)
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -539,7 +524,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     );
   }
 
-  /// Seleccionar fecha (Senior approach)
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -566,7 +550,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     }
   }
 
-  /// Obtener color según el estado (Senior approach)
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'activo':
@@ -581,14 +564,13 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     }
   }
 
-  /// Guardar cambios (Senior approach)
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Preparar datos para actualización (solo campos modificados)
+      
       final updateData = <String, dynamic>{};
       
       if (_nameController.text != widget.work.name) {
@@ -636,7 +618,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
         updateData['projectType'] = _selectedProjectType;
       }
 
-      // Solo actualizar si hay cambios
+      // Solo actualiza si hay cambios
       if (updateData.isEmpty) {
         _showMessage('No hay cambios para guardar', isError: false);
         return;
@@ -649,7 +631,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
 
       if (success) {
         _showMessage('Obra actualizada exitosamente', isError: false);
-        Get.back(result: true); // Indicar que hubo cambios
+        Get.back(result: true); 
       } else {
         _showMessage('Error al actualizar obra', isError: true);
       }
@@ -662,7 +644,6 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
     }
   }
 
-  /// Mostrar mensaje al usuario (Senior approach)
   void _showMessage(String message, {required bool isError}) {
     Get.snackbar(
       isError ? 'Error' : 'Éxito',

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 
-/// Diálogo de confirmación para eliminar obra (Senior approach)
 class DeleteWorkDialog extends StatefulWidget {
   final WorkModel work;
   
@@ -33,7 +32,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     );
   }
 
-  /// Título del diálogo (Senior approach)
   Widget _buildTitle() {
     return Row(
       children: [
@@ -64,7 +62,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     );
   }
 
-  /// Contenido del diálogo (Senior approach)
   Widget _buildContent() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -114,7 +111,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     );
   }
 
-  /// Información de la obra a eliminar (Senior approach)
   Widget _buildWorkInfo() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -192,7 +188,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     );
   }
 
-  /// Botones de acción (Senior approach)
   List<Widget> _buildActions() {
     return [
       TextButton(
@@ -228,7 +223,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     ];
   }
 
-  /// Eliminar obra (Senior approach)
   Future<void> _deleteWork() async {
     setState(() => _isDeleting = true);
 
@@ -272,7 +266,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     }
   }
 
-  /// Obtener color según el estado (Senior approach)
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'activo':
@@ -287,7 +280,6 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
     }
   }
 
-  /// Mostrar mensaje al usuario (Senior approach)
   void _showMessage(String message, {required bool isError}) {
     Get.snackbar(
       isError ? 'Error' : 'Éxito',
@@ -306,9 +298,7 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
   }
 }
 
-/// Función helper para mostrar el diálogo (Senior approach)
 class WorkDialogs {
-  /// Mostrar diálogo de confirmación para eliminar obra
   static Future<bool> showDeleteConfirmation(WorkModel work) async {
     final result = await Get.dialog<bool>(
       DeleteWorkDialog(work: work),
@@ -317,7 +307,6 @@ class WorkDialogs {
     return result ?? false;
   }
 
-  /// Mostrar diálogo de información de la obra
   static void showWorkInfo(WorkModel work) {
     Get.dialog(
       AlertDialog(
@@ -394,7 +383,6 @@ class WorkDialogs {
     );
   }
 
-  /// Helper para construir filas de información
   static Widget _buildInfoRow(String label, String value, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -424,7 +412,6 @@ class WorkDialogs {
     );
   }
 
-  /// Obtener color según el estado
   static Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'activo':

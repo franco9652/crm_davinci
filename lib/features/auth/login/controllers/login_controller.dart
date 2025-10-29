@@ -18,7 +18,7 @@ class LoginController extends GetxController {
   var emailError = ''.obs;
   var passwordError = ''.obs;
 
-  // 🚫 **Rate Limiting Variables**
+ 
   var isRateLimited = false.obs;
   var cooldownSeconds = 0.obs;
   Timer? _cooldownTimer;
@@ -29,7 +29,7 @@ class LoginController extends GetxController {
     _loadUserEmail();
   }
   
-  // Cargar el email guardado
+ 
   Future<void> _loadUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     final savedEmail = prefs.getString('user_email');
@@ -45,7 +45,7 @@ class LoginController extends GetxController {
     try {
       final result = await authRepository.login(email.value, password.value);
       
-      // 🚫 **Manejo de Rate Limiting**
+    
       if (result['rateLimited'] == true) {
         isRateLimited.value = true;
         cooldownSeconds.value = result['cooldownTime'] ?? 300;
@@ -59,18 +59,18 @@ class LoginController extends GetxController {
         return;
       }
 
-      // ❌ **Error en login**
+      
       if (result['success'] != true) {
         Get.snackbar('Error', result['error'] ?? 'Credenciales incorrectas');
         return;
       }
 
-      // ✅ **Login exitoso**
+      
       final token = result['token'] as String?;
       final roleRaw = (result['role'] as String? ?? '').trim();
       final roleLower = roleRaw.toLowerCase();
       
-      // Normalizar a valores canónicos
+      
       String canonicalRole = '';
       if (['admin','administrator','administrador'].contains(roleLower)) {
         canonicalRole = 'Admin';
@@ -84,18 +84,18 @@ class LoginController extends GetxController {
         throw Exception('Token inválido');
       }
 
-      // Validar rol permitido
+      
       const allowedRoles = {'Admin', 'Customer', 'Employee'};
       if (!allowedRoles.contains(canonicalRole)) {
         Get.snackbar('Acceso denegado', 'Tu rol ("$roleRaw") no tiene acceso a la app.');
-        return; // No navegar ni guardar token si el rol no es válido
+        return; 
       }
 
-      // Usar AuthService para establecer la sesión
+      
       if (Get.isRegistered<AuthService>()) {
         await AuthService.instance.setAuthenticated(token, canonicalRole, email.value);
       } else {
-        // Fallback manual si AuthService no está disponible
+        
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_email', email.value);
@@ -110,7 +110,7 @@ class LoginController extends GetxController {
     }
   }
 
-  // 🚫 **Sistema de Cooldown**
+ 
   void _startCooldown() {
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -140,7 +140,7 @@ class LoginController extends GetxController {
     if (Get.isRegistered<AuthService>()) {
       await AuthService.instance.logout();
     } else {
-      // Fallback manual si AuthService no está disponible
+      
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('user_role');

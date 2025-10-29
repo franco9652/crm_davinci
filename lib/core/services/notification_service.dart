@@ -55,7 +55,7 @@ class NotificationService {
     }
   }
 
-  /// Solicitar permisos de notificación
+  
   static Future<void> _requestPermissions() async {
     try {
       final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
@@ -70,19 +70,19 @@ class NotificationService {
     }
   }
 
-  /// Manejar cuando se toca una notificación
+  
   static void _onNotificationTapped(NotificationResponse response) {
     print('🔔 Notification tapped: ${response.payload}');
-    // Aquí puedes navegar a la pantalla correspondiente
+    
   }
 
-  /// Programar todas las notificaciones para meetings
+ 
   static Future<void> scheduleAllNotifications({
     List<MeetingModel>? meetings,
   }) async {
     await initialize();
     
-    // Si no se pudo inicializar, salir silenciosamente
+   
     if (!_initialized) {
       print('⚠️ NotificationService not initialized, skipping notifications');
       return;
@@ -91,13 +91,13 @@ class NotificationService {
     try {
       print('🔔 Scheduling notifications for ${meetings?.length ?? 0} meetings...');
       
-      // Cancelar todas las notificaciones anteriores
+      
       await _notifications.cancelAll();
       print('🔔 Cancelled all previous notifications');
       
       int notificationCount = 0;
       
-      // Programar notificaciones para meetings
+      
       if (meetings != null) {
         for (var meeting in meetings) {
           final scheduled = await _scheduleMeetingNotifications(meeting);
@@ -107,7 +107,7 @@ class NotificationService {
       
       print('✅ Scheduled $notificationCount notifications total');
       
-      // Debug: Mostrar notificaciones pendientes después de programar
+      
       await printPendingNotifications();
       
     } catch (e) {
@@ -115,7 +115,7 @@ class NotificationService {
     }
   }
 
-  /// Programar notificaciones para una meeting específica
+ 
   static Future<int> _scheduleMeetingNotifications(MeetingModel meeting) async {
     try {
       
@@ -140,7 +140,7 @@ class NotificationService {
       final meetingTz = tz.TZDateTime.from(meetingDateTime, tz.local);
       int scheduledCount = 0;
       
-      // 1 día antes
+    
       final oneDayBefore = meetingTz.subtract(const Duration(days: 1));
       if (oneDayBefore.isAfter(tz.TZDateTime.now(tz.local))) {
         await _scheduleNotification(
@@ -152,7 +152,7 @@ class NotificationService {
         scheduledCount++;
       }
       
-      // 1 hora antes
+     
       final oneHourBefore = meetingTz.subtract(const Duration(hours: 1));
       if (oneHourBefore.isAfter(tz.TZDateTime.now(tz.local))) {
         await _scheduleNotification(
@@ -164,7 +164,7 @@ class NotificationService {
         scheduledCount++;
       }
       
-      // 15 minutos antes
+      
       final fifteenMinBefore = meetingTz.subtract(const Duration(minutes: 15));
       if (fifteenMinBefore.isAfter(tz.TZDateTime.now(tz.local))) {
         await _scheduleNotification(
@@ -185,7 +185,7 @@ class NotificationService {
     }
   }
 
-  /// Programar una notificación individual
+  
   static Future<void> _scheduleNotification({
     required int id,
     required String title,
@@ -225,12 +225,12 @@ class NotificationService {
     print('🔔 Scheduled notification: $title at ${scheduledDate.toString()}');
   }
 
-  /// Generar ID único para notificaciones
+ 
   static int _generateId(String itemId, String type) {
     return '${itemId}_$type'.hashCode;
   }
 
-  /// Obtener notificaciones pendientes (para debug)
+  
   static Future<void> printPendingNotifications() async {
     try {
       final pending = await _notifications.pendingNotificationRequests();
@@ -244,7 +244,7 @@ class NotificationService {
     }
   }
 
-  /// Crear notificación de prueba inmediata (para testing)
+  
   static Future<void> sendTestNotification() async {
     await initialize();
     
@@ -254,7 +254,7 @@ class NotificationService {
     }
 
     try {
-      // Notificación en 10 segundos
+      
       final testTime = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 10));
       
       await _scheduleNotification(

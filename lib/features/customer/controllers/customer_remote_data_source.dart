@@ -18,7 +18,7 @@ class CustomerRemoteDataSource {
     try {
       debugPrint('🔄 Creando cliente: ${customer.name}');
       
-      // Obtener token de autorización
+      
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       
@@ -27,7 +27,7 @@ class CustomerRemoteDataSource {
         if (token != null) 'Authorization': 'Bearer $token',
       };
       
-      // Usar HttpHelper con headers de auth
+      
       final response = await HttpHelper.post(
         '${AppConstants.baseUrl}/customerCreate',
         customer.toJson(),
@@ -50,24 +50,24 @@ class CustomerRemoteDataSource {
 
   Future<Map<String, dynamic>> getAllCustomers(int page) async {
     try {
-      // Usar paginación del backend directamente
+     
       final url = '${AppConstants.baseUrl}/customers?page=$page';
       debugPrint('🔄 Solicitando clientes a: $url');
       
-      // Hacemos la solicitud a través del helper
+      
       final response = await HttpHelper.get(url);
       
-      // Verificar si la solicitud fue exitosa
+      
       if (response['success'] != true) {
         debugPrint('❌ Error en la respuesta: ${response['error']}');
         throw Exception(response['error'] ?? 'Error al obtener clientes');
       }
       
-      // El helper ya maneja errores HTTP básicos, aquí procesamos la respuesta
+     
       final dynamic jsonResponse = response['data'];
       debugPrint('✅ Respuesta recibida tipo: ${jsonResponse.runtimeType}');
       
-      // El backend ya maneja la paginación, usar directamente su respuesta
+      
       if (jsonResponse is Map && jsonResponse.containsKey('customers')) {
         final customersData = jsonResponse['customers'] as List<dynamic>;
         final totalPages = jsonResponse['totalPages'] as int? ?? 1;
@@ -75,7 +75,7 @@ class CustomerRemoteDataSource {
         
         debugPrint('📋 Página $currentPage de $totalPages - ${customersData.length} clientes recibidos');
         
-        // Convertir a CustomerModel
+       
         List<CustomerModel> customers = [];
         int errorCount = 0;
         
@@ -121,29 +121,29 @@ class CustomerRemoteDataSource {
         };
       }
     } catch (e, stackTrace) {
-      // Log detallado del error
+     
       debugPrint('❌❌❌ ERROR AL OBTENER CLIENTES:');
       debugPrint('💥 Excepción: $e');
       debugPrint('📍 StackTrace: \n$stackTrace');
       
-      // Mensaje de error personalizado según tipo
+      
       String errorMessage;
       
-      // Verificar si es un error de timeout
+      
       if (e.toString().contains('timeout')) {
         errorMessage = 'La conexión al servidor ha tardado demasiado. Por favor, inténtelo nuevamente.';
       }
-      // Verificar si es un error de conexión 
+      
       else if (e.toString().contains('SocketException') || 
           e.toString().contains('Connection refused')) {
         errorMessage = 'No se pudo conectar al servidor. Verifique su conexión a internet.';
       }
-      // Error general
+      
       else {
         errorMessage = 'No se pudieron cargar los clientes: ${e.toString().split('\n').first}';
       }
       
-      // Devolvemos un mapa con error para manejarlo mejor en el controlador
+    
       return <String, dynamic>{
         'success': false,
         'error': errorMessage,
@@ -167,7 +167,7 @@ class CustomerRemoteDataSource {
           .map((data) => WorkModel.fromJson(data))
           .toList();
     } else if (response.statusCode == 404) {
-      return []; // Devuelve una lista vacía si no hay trabajos
+      return []; 
     } else {
       throw Exception('Error al obtener los trabajos del usuario');
     }
@@ -186,7 +186,7 @@ class CustomerRemoteDataSource {
   Future<Map<String, dynamic>> getCustomerById(String userId) async {
     try {
       debugPrint('🔎 Obteniendo cliente con ID: $userId');
-      // Recuperar token para autorización
+      
       String? token;
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -197,16 +197,14 @@ class CustomerRemoteDataSource {
         if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
       };
 
-      // El customerId de meeting apunta al customer embebido, no al customer real
-      // Necesitamos buscar por el _id del customer embebido en lugar del customerId
+      
       print('🔍 Analizando customerId: $userId');
       
-      // Intentar múltiples endpoints que funcionan en el proyecto
+     
       final endpoints = [
         '${AppConstants.baseUrl}/getcustomersbyid/$userId',
         '${AppConstants.baseUrl}/customers/$userId', 
         '${AppConstants.baseUrl}/customer/$userId',
-        // Probar con el _id del customer embebido que vimos en logs
         '${AppConstants.baseUrl}/getcustomersbyid/6893a93c4a9e9b8508717ee2',
         '${AppConstants.baseUrl}/customers/6893a93c4a9e9b8508717ee2',
       ];
@@ -220,15 +218,15 @@ class CustomerRemoteDataSource {
           Map<String, dynamic>? found;
           
           if (data is Map) {
-            // Formato: { customer: [...] }
+            
             if (data['customer'] is List && (data['customer'] as List).isNotEmpty) {
               found = Map<String, dynamic>.from((data['customer'] as List).first);
             }
-            // Formato: { customer: {...} }
+            
             else if (data['customer'] is Map) {
               found = Map<String, dynamic>.from(data['customer'] as Map);
             }
-            // Formato directo: { _id: ..., name: ..., contactNumber: ... }
+            
             else if (data.containsKey('_id') || data.containsKey('name') || data.containsKey('contactNumber')) {
               found = Map<String, dynamic>.from(data);
             }
@@ -252,7 +250,6 @@ class CustomerRemoteDataSource {
     }
   }
 
-  /// Actualizar cliente existente (Senior approach)
   Future<CustomerModel> updateCustomer({
     required String customerId,
     required Map<String, dynamic> updateData,
@@ -281,7 +278,7 @@ class CustomerRemoteDataSource {
     }
   }
 
-  /// Eliminar cliente (Senior approach)
+
   Future<void> deleteCustomer(String customerId) async {
     try {
       debugPrint('🗑️ Eliminando cliente: $customerId');
@@ -292,7 +289,7 @@ class CustomerRemoteDataSource {
       
       debugPrint('📡 Respuesta del servidor: $response');
       
-      // Verificar diferentes formatos de respuesta exitosa
+     
       if (response['success'] == true || 
           response.containsKey('message') && response['message'].toString().contains('eliminado correctamente')) {
         debugPrint('✅ Cliente eliminado correctamente');

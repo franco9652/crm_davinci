@@ -5,7 +5,7 @@ import 'package:crm_app_dv/features/customer/presentation/edit_customer_screen.d
 import 'package:crm_app_dv/features/customer/presentation/widgets/delete_customer_dialog.dart';
 import 'package:crm_app_dv/features/customer/presentation/customer_info_screen.dart';
 
-/// Widget de acciones para clientes (Senior approach)
+
 class CustomerActionsWidget extends StatelessWidget {
   final CustomerModel customer;
   final VoidCallback? onCustomerUpdated;
@@ -54,7 +54,7 @@ class CustomerActionsWidget extends StatelessWidget {
     );
   }
 
-  /// Construir item del menú (Senior approach)
+  
   PopupMenuItem<CustomerAction> _buildMenuItem(
     CustomerAction action,
     String title,
@@ -79,7 +79,7 @@ class CustomerActionsWidget extends StatelessWidget {
     );
   }
 
-  /// Manejar acción seleccionada (Senior approach)
+  
   Future<void> _handleAction(CustomerAction action) async {
     switch (action) {
       case CustomerAction.view:
@@ -94,7 +94,7 @@ class CustomerActionsWidget extends StatelessWidget {
     }
   }
 
-  /// Ver información del cliente (Senior approach)
+  
   Future<void> _viewCustomer() async {
     if (customer.userId?.isNotEmpty == true) {
       Get.to(() => CustomerInfoScreen(userId: customer.userId!));
@@ -103,7 +103,6 @@ class CustomerActionsWidget extends StatelessWidget {
     }
   }
 
-  /// Editar cliente (Senior approach)
   Future<void> _editCustomer() async {
     final result = await Get.to<bool>(
       () => EditCustomerScreen(customer: customer),
@@ -116,7 +115,7 @@ class CustomerActionsWidget extends StatelessWidget {
     }
   }
 
-  /// Eliminar cliente (Senior approach)
+
   Future<void> _deleteCustomer() async {
     final confirmed = await CustomerDialogs.showDeleteConfirmation(customer);
     
@@ -126,7 +125,6 @@ class CustomerActionsWidget extends StatelessWidget {
   }
 }
 
-/// Widget de acciones rápidas (botones en línea)
 class CustomerQuickActions extends StatelessWidget {
   final CustomerModel customer;
   final VoidCallback? onCustomerUpdated;
@@ -168,7 +166,7 @@ class CustomerQuickActions extends StatelessWidget {
     );
   }
 
-  /// Construir botón de acción (Senior approach)
+ 
   Widget _buildActionButton({
     required IconData icon,
     required Color color,
@@ -199,7 +197,7 @@ class CustomerQuickActions extends StatelessWidget {
     );
   }
 
-  /// Ver información del cliente
+  
   Future<void> _viewCustomer() async {
     if (customer.userId?.isNotEmpty == true) {
       Get.to(() => CustomerInfoScreen(userId: customer.userId!));
@@ -208,7 +206,7 @@ class CustomerQuickActions extends StatelessWidget {
     }
   }
 
-  /// Editar cliente
+ 
   Future<void> _editCustomer() async {
     final result = await Get.to<bool>(
       () => EditCustomerScreen(customer: customer),
@@ -221,7 +219,7 @@ class CustomerQuickActions extends StatelessWidget {
     }
   }
 
-  /// Eliminar cliente
+ 
   Future<void> _deleteCustomer() async {
     final confirmed = await CustomerDialogs.showDeleteConfirmation(customer);
     
@@ -231,7 +229,7 @@ class CustomerQuickActions extends StatelessWidget {
   }
 }
 
-/// Widget de botón flotante para acciones del cliente
+
 class CustomerFloatingActions extends StatelessWidget {
   final CustomerModel customer;
   final VoidCallback? onCustomerUpdated;
@@ -266,7 +264,7 @@ class CustomerFloatingActions extends StatelessWidget {
     );
   }
 
-  /// Editar cliente
+ 
   Future<void> _editCustomer() async {
     final result = await Get.to<bool>(
       () => EditCustomerScreen(customer: customer),
@@ -279,7 +277,7 @@ class CustomerFloatingActions extends StatelessWidget {
     }
   }
 
-  /// Eliminar cliente
+ 
   Future<void> _deleteCustomer() async {
     final confirmed = await CustomerDialogs.showDeleteConfirmation(customer);
     
@@ -289,7 +287,7 @@ class CustomerFloatingActions extends StatelessWidget {
   }
 }
 
-/// Enumeración de acciones disponibles
+
 enum CustomerAction {
   view,
   edit,

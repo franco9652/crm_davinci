@@ -40,7 +40,6 @@ class WorkInfoScreen extends StatelessWidget {
         final work = controller.work.value!;
         return CustomScrollView(
           slivers: [
-            // App Bar moderno con gradiente
             SliverAppBar(
               expandedHeight: 200,
               floating: false,
@@ -121,18 +120,18 @@ class WorkInfoScreen extends StatelessWidget {
               ),
             ),
             
-            // Contenido principal
+          
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Estado y información básica
+                    
                     _buildStatusCard(work),
                     const SizedBox(height: 20),
                     
-                    // Información del proyecto
+                    
                     _buildInfoSection('Información del Proyecto', [
                       _buildModernInfoRow(Icons.numbers, 'Número', work.number ?? 'No disponible'),
                       _buildModernInfoRow(Icons.location_on, 'Ubicación', work.workUbication),
@@ -141,7 +140,7 @@ class WorkInfoScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     
-                    // Fechas
+                   
                     _buildInfoSection('Cronograma', [
                       _buildModernInfoRow(Icons.calendar_today, 'Inicio', _formatDate(work.startDate)),
                       if (work.endDate != null)
@@ -149,7 +148,7 @@ class WorkInfoScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     
-                    // Contacto
+                   
                     _buildInfoSection('Contacto', [
                       _buildModernInfoRow(Icons.person, 'Cliente', work.customerName),
                       if (work.emailCustomer != null)
@@ -157,27 +156,27 @@ class WorkInfoScreen extends StatelessWidget {
                     ]),
                     const SizedBox(height: 20),
                     
-                    // Descripción
+               
                     if (work.description != null && work.description!.isNotEmpty)
                       _buildDescriptionSection(work.description!),
                     
-                    // Documentos
+                    
                     if (work.documents.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       _buildDocumentsSection(work.documents),
                     ],
                     
-                    // Empleados
+                   
                     if (work.employeeInWork.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       _buildEmployeesSection(work.employeeInWork),
                     ],
                     
-                    // Mapa
+                    
                     const SizedBox(height: 20),
                     _buildMapSection(context, work.workUbication),
                     
-                    const SizedBox(height: 100), // Espacio extra al final
+                    const SizedBox(height: 100), 
                   ],
                 ),
               ),
@@ -188,7 +187,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📅 **Función para Formatear Fechas**
+  
   String _formatDate(String dateStr) {
     try {
       final DateTime parsedDate = DateTime.parse(dateStr);
@@ -198,7 +197,7 @@ class WorkInfoScreen extends StatelessWidget {
     }
   }
 
-  // 🎨 **Tarjeta de Estado Moderna**
+  
   Widget _buildStatusCard(work) {
     Color statusColor;
     IconData statusIcon;
@@ -272,7 +271,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Sección de Información Moderna**
+  
   Widget _buildInfoSection(String title, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -299,7 +298,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Fila de Información Moderna**
+ 
   Widget _buildModernInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -343,7 +342,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📝 **Sección de Descripción**
+ 
   Widget _buildDescriptionSection(String description) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -390,7 +389,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📄 **Sección de Documentos**
+
   Widget _buildDocumentsSection(List<String> documents) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -430,7 +429,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 📄 **Item de Documento**
+
   Widget _buildDocumentItem(String docName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -459,7 +458,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 👥 **Sección de Empleados**
+ 
   Widget _buildEmployeesSection(List<String> employees) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -499,7 +498,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 👤 **Item de Empleado**
+
   Widget _buildEmployeeItem(String employee) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -535,7 +534,7 @@ class WorkInfoScreen extends StatelessWidget {
     );
   }
 
-  // 🗺️ **Sección de Mapa Moderna**
+
   Widget _buildMapSection(BuildContext context, String ubicacion) {
     final latLng = _parseLatLng(ubicacion);
     return Container(

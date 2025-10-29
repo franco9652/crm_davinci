@@ -17,7 +17,7 @@ class CreateWorkPage extends StatefulWidget {
 class _CreateWorkPageState extends State<CreateWorkPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores de texto
+  
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final budgetController = TextEditingController();
@@ -37,7 +37,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      customerController.fetchAllCustomers(); // Cargar TODOS los clientes para el dropdown
+      customerController.fetchAllCustomers(); 
     });
   }
 
@@ -71,7 +71,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
 
         return CustomScrollView(
           slivers: [
-            // App Bar moderno con gradiente
+           
             SliverAppBar(
               expandedHeight: 180,
               floating: false,
@@ -145,7 +145,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
               ),
             ),
             
-            // Contenido principal
+            
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -154,7 +154,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Sección Cliente
+                     
                       _buildFormSection(
                         'Cliente',
                         Icons.person,
@@ -165,7 +165,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       ),
                       const SizedBox(height: 20),
                       
-                      // Sección Información Básica
+                    
                       _buildFormSection(
                         'Información Básica',
                         Icons.info,
@@ -193,7 +193,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       ),
                       const SizedBox(height: 20),
                       
-                      // Sección Presupuesto y Fechas
+                      
                       _buildFormSection(
                         'Presupuesto y Cronograma',
                         Icons.attach_money,
@@ -224,7 +224,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       ),
                       const SizedBox(height: 20),
                       
-                      // Sección Detalles del Proyecto
+                    
                       _buildFormSection(
                         'Detalles del Proyecto',
                         Icons.settings,
@@ -242,10 +242,10 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
                       ),
                       const SizedBox(height: 40),
                       
-                      // Botón de crear
+                   
                       _buildCreateButton(),
                       
-                      const SizedBox(height: 100), // Espacio extra al final
+                      const SizedBox(height: 100), 
                     ],
                   ),
                 ),
@@ -257,7 +257,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 🏗️ **Sección de Formulario Moderna**
+  
   Widget _buildFormSection(String title, IconData icon, Color color, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -297,7 +297,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 📝 **Campo de Texto Moderno**
+  
   Widget _buildModernTextField(
     TextEditingController controller,
     String label,
@@ -356,7 +356,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 📅 **Campo de Fecha Moderno**
+  
   Widget _buildModernDateField(
     TextEditingController controller,
     String label,
@@ -425,7 +425,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 👤 **Dropdown de Cliente Moderno**
+  
   Widget _buildModernDropdownField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -498,7 +498,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 📊 **Dropdown de Estado Moderno**
+ 
   Widget _buildModernDropdownStatus() {
     final statusOptions = ['Activo', 'Pausado', 'Inactivo'];
     
@@ -595,7 +595,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 🏗️ **Dropdown de Tipo de Proyecto Moderno**
+  
   Widget _buildModernDropdownProjectType() {
     final projectTypes = ['Residencial', 'Comercial', 'Industrial'];
     
@@ -692,7 +692,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 🚀 **Botón de Crear Moderno**
+ 
   Widget _buildCreateButton() {
     return Container(
       width: double.infinity,
@@ -773,7 +773,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
     );
   }
 
-  // 🔹 Generar número aleatorio para el proyecto
+  
   String generateRandomNumber() {
     final random = Random();
     return (100000 + random.nextInt(900000)).toString();

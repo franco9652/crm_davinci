@@ -5,7 +5,6 @@ import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:crm_app_dv/features/projects/presentation/edit_work_screen.dart';
 import 'package:crm_app_dv/features/projects/presentation/widgets/delete_work_dialog.dart';
 
-/// Widget de acciones para obras (Senior approach)
 class WorkActionsWidget extends StatelessWidget {
   final WorkModel work;
   final VoidCallback? onWorkUpdated;
@@ -54,7 +53,6 @@ class WorkActionsWidget extends StatelessWidget {
     );
   }
 
-  /// Construir item del menú (Senior approach)
   PopupMenuItem<WorkAction> _buildMenuItem(
     WorkAction action,
     String title,
@@ -79,7 +77,6 @@ class WorkActionsWidget extends StatelessWidget {
     );
   }
 
-  /// Manejar acción seleccionada (Senior approach)
   Future<void> _handleAction(WorkAction action) async {
     switch (action) {
       case WorkAction.view:
@@ -94,12 +91,10 @@ class WorkActionsWidget extends StatelessWidget {
     }
   }
 
-  /// Ver información de la obra (Senior approach)
   Future<void> _viewWork() async {
     WorkDialogs.showWorkInfo(work);
   }
 
-  /// Editar obra (Senior approach)
   Future<void> _editWork() async {
     final result = await Get.to<bool>(
       () => EditWorkScreen(work: work),
@@ -112,7 +107,6 @@ class WorkActionsWidget extends StatelessWidget {
     }
   }
 
-  /// Eliminar obra (Senior approach)
   Future<void> _deleteWork() async {
     final confirmed = await WorkDialogs.showDeleteConfirmation(work);
     
@@ -122,7 +116,6 @@ class WorkActionsWidget extends StatelessWidget {
   }
 }
 
-/// Widget de acciones rápidas (botones en línea)
 class WorkQuickActions extends StatelessWidget {
   final WorkModel work;
   final VoidCallback? onWorkUpdated;
@@ -164,7 +157,6 @@ class WorkQuickActions extends StatelessWidget {
     );
   }
 
-  /// Construir botón de acción (Senior approach)
   Widget _buildActionButton({
     required IconData icon,
     required Color color,
@@ -195,12 +187,10 @@ class WorkQuickActions extends StatelessWidget {
     );
   }
 
-  /// Ver información de la obra
   Future<void> _viewWork() async {
     WorkDialogs.showWorkInfo(work);
   }
 
-  /// Editar obra
   Future<void> _editWork() async {
     final result = await Get.to<bool>(
       () => EditWorkScreen(work: work),
@@ -213,7 +203,6 @@ class WorkQuickActions extends StatelessWidget {
     }
   }
 
-  /// Eliminar obra
   Future<void> _deleteWork() async {
     final confirmed = await WorkDialogs.showDeleteConfirmation(work);
     
@@ -223,7 +212,6 @@ class WorkQuickActions extends StatelessWidget {
   }
 }
 
-/// Widget de botón flotante para acciones de la obra
 class WorkFloatingActions extends StatelessWidget {
   final WorkModel work;
   final VoidCallback? onWorkUpdated;
@@ -258,7 +246,6 @@ class WorkFloatingActions extends StatelessWidget {
     );
   }
 
-  /// Editar obra
   Future<void> _editWork() async {
     final result = await Get.to<bool>(
       () => EditWorkScreen(work: work),
@@ -271,7 +258,6 @@ class WorkFloatingActions extends StatelessWidget {
     }
   }
 
-  /// Eliminar obra
   Future<void> _deleteWork() async {
     final confirmed = await WorkDialogs.showDeleteConfirmation(work);
     
@@ -281,7 +267,6 @@ class WorkFloatingActions extends StatelessWidget {
   }
 }
 
-/// Widget de estado de la obra con acciones
 class WorkStatusChip extends StatelessWidget {
   final WorkModel work;
   final VoidCallback? onWorkUpdated;
@@ -328,7 +313,6 @@ class WorkStatusChip extends StatelessWidget {
     );
   }
 
-  /// Mostrar menú de cambio de estado
   void _showStatusMenu(BuildContext context) {
     final statusOptions = ['activo', 'pausado', 'inactivo', 'En progreso'];
     
@@ -369,7 +353,6 @@ class WorkStatusChip extends StatelessWidget {
     });
   }
 
-  /// Actualizar estado de la obra
   Future<void> _updateWorkStatus(String newStatus) async {
     // Aquí implementarías la lógica para actualizar solo el estado
     // Por ahora, usaremos el método general de actualización
@@ -385,7 +368,6 @@ class WorkStatusChip extends StatelessWidget {
     }
   }
 
-  /// Obtener color según el estado
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'activo':
@@ -401,7 +383,6 @@ class WorkStatusChip extends StatelessWidget {
   }
 }
 
-/// Enumeración de acciones disponibles
 enum WorkAction {
   view,
   edit,

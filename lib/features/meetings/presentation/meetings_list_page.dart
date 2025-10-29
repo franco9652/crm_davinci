@@ -25,12 +25,12 @@ class MeetingsListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // 🔍 **Filtros Compactos Modernos**
+          
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               children: [
-                // Primera fila: Buscador
+               
                 Container(
                   height: 44,
                   decoration: BoxDecoration(
@@ -91,7 +91,7 @@ class MeetingsListPage extends StatelessWidget {
                     
                     const SizedBox(width: 12),
                     
-                    // Filtro por estado
+                 
                     Expanded(
                       child: _buildCompactDropdown(
                         label: 'Estado',
@@ -118,7 +118,7 @@ class MeetingsListPage extends StatelessWidget {
                   ],
                 ),
                 
-                // Botón limpiar filtros (solo si hay filtros activos)
+               
                 Obx(() => controller.isFilterActive.value
                     ? Padding(
                         padding: const EdgeInsets.only(top: 12),
@@ -147,7 +147,7 @@ class MeetingsListPage extends StatelessWidget {
             ),
           ),
           
-          // Lista de reuniones
+        
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -193,7 +193,7 @@ class MeetingsListPage extends StatelessWidget {
                       },
                     ),
                   ),
-                  // 📄 **Paginación Moderna**
+                  
                   Obx(() => ModernPaginationWidget(
                     currentPage: controller.currentPage.value,
                     totalPages: controller.totalPages,
@@ -210,7 +210,7 @@ class MeetingsListPage extends StatelessWidget {
     );
   }
 
-  // 🎨 **FAB Moderno**
+  
   Widget _buildModernFAB() {
     return Container(
       decoration: BoxDecoration(
@@ -238,7 +238,7 @@ class MeetingsListPage extends StatelessWidget {
     );
   }
 
-  // 📋 **Dropdown Compacto**
+  
   Widget _buildCompactDropdown({
     required String label,
     required IconData icon,
@@ -315,7 +315,7 @@ class MeetingsListPage extends StatelessWidget {
     );
   }
 
-  // 📅 **Card de Reunión**
+  
   Widget _buildMeetingCard(BuildContext context, meeting) {
     final now = DateTime.now();
     final meetingDate = meeting.date;
@@ -341,7 +341,7 @@ class MeetingsListPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header con título y estado
+              
               Row(
                 children: [
                   Expanded(
@@ -388,10 +388,10 @@ class MeetingsListPage extends StatelessWidget {
               
               const SizedBox(height: 12),
               
-              // Información de la reunión
+             
               Row(
                 children: [
-                  // Fecha y hora
+               
                   Expanded(
                     child: Row(
                       children: [
@@ -430,7 +430,7 @@ class MeetingsListPage extends StatelessWidget {
               
               const SizedBox(height: 8),
               
-              // Tipo y duración
+              
               Row(
                 children: [
                   Icon(
@@ -464,7 +464,7 @@ class MeetingsListPage extends StatelessWidget {
                 ],
               ),
               
-              // Cliente (si existe)
+              
               if (meeting.customerName != null && meeting.customerName!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Row(
@@ -492,7 +492,7 @@ class MeetingsListPage extends StatelessWidget {
     );
   }
 
-  // 🎨 **Helpers para iconos y colores de estado**
+ 
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'próxima':
@@ -532,7 +532,7 @@ class MeetingsListPage extends StatelessWidget {
     }
   }
 
-  // 📊 **Estado dinámico de la reunión**
+ 
   Color _getMeetingStatusColor(meeting) {
     try {
       final timeParts = meeting.time.split(':');
@@ -552,14 +552,14 @@ class MeetingsListPage extends StatelessWidget {
       final now = DateTime.now();
       
       if (meetingDateTime.isAfter(now)) {
-        return const Color(0xFF06B6D4); // Próxima
+        return const Color(0xFF06B6D4); 
       } else if (meetingDateTime.isBefore(now) && endTime.isAfter(now)) {
-        return const Color(0xFFF59E0B); // En curso
+        return const Color(0xFFF59E0B); 
       } else {
-        return const Color(0xFF10B981); // Finalizada
+        return const Color(0xFF10B981); 
       }
     } catch (e) {
-      return const Color(0xFF6B7280); // Error
+      return const Color(0xFF6B7280); 
     }
   }
 
@@ -582,14 +582,14 @@ class MeetingsListPage extends StatelessWidget {
       final now = DateTime.now();
       
       if (meetingDateTime.isAfter(now)) {
-        return Icons.schedule; // Próxima
+        return Icons.schedule; 
       } else if (meetingDateTime.isBefore(now) && endTime.isAfter(now)) {
-        return Icons.play_circle; // En curso
+        return Icons.play_circle; 
       } else {
-        return Icons.check_circle; // Finalizada
+        return Icons.check_circle; 
       }
     } catch (e) {
-      return Icons.help_outline; // Error
+      return Icons.help_outline; 
     }
   }
 

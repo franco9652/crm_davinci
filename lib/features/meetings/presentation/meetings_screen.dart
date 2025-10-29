@@ -17,7 +17,7 @@ class MeetingsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
         slivers: [
-          // App Bar moderno con gradiente
+         
           SliverAppBar(
             expandedHeight: 200,
             floating: false,
@@ -130,17 +130,17 @@ class MeetingsScreen extends StatelessWidget {
             ],
           ),
           
-          // Contenido principal
+          
           SliverToBoxAdapter(
             child: Column(
               children: [
-                // Info banner para Employee
+                
                 _buildModernInfoBanner(),
                 
-                // 🔍 **Filtros Compactos Modernos**
+                
                 _buildCompactFilters(controller),
                 
-                // Lista de reuniones
+                
                 Obx(() {
                   if (controller.isLoading.value) {
                     return Container(
@@ -180,7 +180,7 @@ class MeetingsScreen extends StatelessWidget {
     }
   }
 
-  // 🎨 **Botón de Acción Moderno**
+  
   Widget _buildModernActionButton(IconData icon, String tooltip, VoidCallback onPressed, Color color) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -203,7 +203,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Banner de Información Moderno**
+  
   Widget _buildModernInfoBanner() {
     return FutureBuilder<bool>(
       future: _shouldShowEmployeeBanner(),
@@ -253,7 +253,7 @@ class MeetingsScreen extends StatelessWidget {
     return role == 'Employee';
   }
 
-  // ❌ **Estado de Error Moderno**
+ 
   Widget _buildErrorState(String error) {
     return Container(
       margin: const EdgeInsets.all(20),
@@ -296,7 +296,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 📅 **Lista de Reuniones Moderna**
+  
   Widget _buildModernMeetingsList(MeetingsController controller) {
     final displayMeetings = controller.displayMeetings;
     
@@ -361,7 +361,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 🗓️ **Tarjeta de Reunión Moderna**
+  
   Widget _buildModernMeetingCard(dynamic meeting, DateFormat dateFmt) {
     return Container(
       decoration: BoxDecoration(
@@ -456,7 +456,6 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 📝 **Fila de Información de Reunión**
   Widget _buildMeetingInfoRow(IconData icon, String text, Color color) {
     return Row(
       children: [
@@ -475,7 +474,6 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // ➕ **FAB Moderno**
   Widget _buildModernFAB() {
     return Container(
       decoration: BoxDecoration(
@@ -537,7 +535,7 @@ class MeetingsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Filtro por fecha específica
+              
               Obx(() => _buildModernFilterOption(
                 Icons.calendar_today,
                 'Fecha específica',
@@ -574,7 +572,7 @@ class MeetingsScreen extends StatelessWidget {
                 color: const Color(0xFF334155),
               ),
               const SizedBox(height: 12),
-              // Filtro por día de la semana
+           
               Obx(() => _buildModernFilterOption(
                 Icons.today,
                 'Día de la semana',
@@ -621,7 +619,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 🎛️ **Opción de Filtro Moderna**
+  
   Widget _buildModernFilterOption(
     IconData icon,
     String title,
@@ -694,7 +692,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 📅 **Selector de Día Moderno**
+ 
   void _showModernDayPicker(BuildContext context, MeetingsController controller) {
     final days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     
@@ -727,7 +725,7 @@ class MeetingsScreen extends StatelessWidget {
         ),
         content: SizedBox(
           width: double.maxFinite,
-          height: 300, // Altura fija para evitar overflow
+          height: 300, 
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -738,8 +736,8 @@ class MeetingsScreen extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       controller.filterByDay(day);
-                      Get.back(); // Cerrar selector de día
-                      Get.back(); // Cerrar diálogo de filtros
+                      Get.back(); 
+                      Get.back(); 
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
@@ -793,13 +791,13 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 🔍 **Filtros Compactos Modernos**
+ 
   Widget _buildCompactFilters(MeetingsController controller) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
-          // Primera fila: Buscador
+          
           Container(
             height: 44,
             decoration: BoxDecoration(
@@ -830,10 +828,10 @@ class MeetingsScreen extends StatelessWidget {
           
           const SizedBox(height: 12),
           
-          // Segunda fila: Filtros por tipo y estado
+      
           Row(
             children: [
-              // Filtro por tipo
+              
               Expanded(
                 child: _buildCompactDropdown(
                   label: 'Tipo',
@@ -860,7 +858,7 @@ class MeetingsScreen extends StatelessWidget {
               
               const SizedBox(width: 12),
               
-              // Filtro por estado
+            
               Expanded(
                 child: _buildCompactDropdown(
                   label: 'Estado',
@@ -887,7 +885,7 @@ class MeetingsScreen extends StatelessWidget {
             ],
           ),
           
-          // Botón limpiar filtros (solo si hay filtros activos)
+         
           Obx(() => controller.isFilterActive.value
               ? Padding(
                   padding: const EdgeInsets.only(top: 12),
@@ -917,7 +915,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 📋 **Dropdown Compacto**
+
   Widget _buildCompactDropdown({
     required String label,
     required IconData icon,
@@ -994,7 +992,7 @@ class MeetingsScreen extends StatelessWidget {
     );
   }
 
-  // 🎨 **Helpers para iconos y colores de estado**
+  
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'próxima':

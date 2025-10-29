@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 
 class CreateCustomerPage extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // Controladores para los campos del formulario
   final TextEditingController nameController = TextEditingController();
   final TextEditingController secondNameController = TextEditingController();
   final TextEditingController dniController = TextEditingController();
@@ -25,7 +23,6 @@ class CreateCustomerPage extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
         slivers: [
-          // App Bar moderno con gradiente
           SliverAppBar(
             expandedHeight: 180,
             floating: false,
@@ -99,7 +96,6 @@ class CreateCustomerPage extends StatelessWidget {
             ),
           ),
           
-          // Contenido principal
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -108,7 +104,6 @@ class CreateCustomerPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Sección Información Personal
                     _buildFormSection(
                       'Información Personal',
                       Icons.person,
@@ -131,7 +126,6 @@ class CreateCustomerPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     
-                    // Sección Información Fiscal
                     _buildFormSection(
                       'Información Fiscal',
                       Icons.account_balance,
@@ -161,7 +155,6 @@ class CreateCustomerPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     
-                    // Sección Direcciones
                     _buildFormSection(
                       'Direcciones',
                       Icons.location_on,
@@ -183,7 +176,6 @@ class CreateCustomerPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     
-                    // Sección Contacto y Acceso
                     _buildFormSection(
                       'Contacto y Acceso',
                       Icons.contact_phone,
@@ -215,10 +207,10 @@ class CreateCustomerPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 40),
                     
-                    // Botón de crear
+
                     _buildCreateButton(),
                     
-                    const SizedBox(height: 100), // Espacio extra al final
+                    const SizedBox(height: 100), 
                   ],
                 ),
               ),
@@ -229,7 +221,6 @@ class CreateCustomerPage extends StatelessWidget {
     );
   }
 
-  // 🏗️ **Sección de Formulario Moderna**
   Widget _buildFormSection(String title, IconData icon, Color color, List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -269,7 +260,7 @@ class CreateCustomerPage extends StatelessWidget {
     );
   }
 
-  // 📝 **Campo de Texto Moderno**
+
   Widget _buildModernTextField(
     TextEditingController controller,
     String label,
@@ -401,7 +392,6 @@ class CreateCustomerPage extends StatelessWidget {
     );
   }
 
-  // 🚀 **Botón de Crear Moderno**
   Widget _buildCreateButton() {
     return Container(
       width: double.infinity,
