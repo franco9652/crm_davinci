@@ -158,6 +158,32 @@ class HttpHelper {
     
     if (response.statusCode >= 500) {
       print('🚨 Server error detected: ${response.statusCode}');
+      
+      
+      try {
+        final Map<String, dynamic> responseBody = jsonDecode(response.body);
+        final message = responseBody['message']?.toString().toLowerCase() ?? '';
+        
+        
+        if (message.contains('cliente creado') || message.contains('creado exitosamente')) {
+          print('Operación exitosa con advertencia: $message');
+          
+          if (!suppressErrors) {
+            _showErrorSnackbar('Advertencia', responseBody['message'] ?? 'Operación completada con advertencias');
+          }
+          
+          return {
+            'success': true,
+            'data': responseBody,
+            'statusCode': response.statusCode,
+            'warning': responseBody['message']
+          };
+        }
+      } catch (e) {
+        print('No se pudo parsear el body del error 500: $e');
+      }
+      
+      
       final errorMessage = _getServerErrorMessage(response.statusCode, response.body);
       
       if (!suppressErrors) {
