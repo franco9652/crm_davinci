@@ -155,8 +155,25 @@ class HttpHelper {
     print('🔷 Response Body Length: ${response.body.length}');
     print('🔷 Response Body Type: ${response.body.runtimeType}');
     
+    
+    if (response.statusCode >= 500) {
+      print('🚨 Server error detected: ${response.statusCode}');
+      final errorMessage = _getServerErrorMessage(response.statusCode, response.body);
+      
+      if (!suppressErrors) {
+        _showErrorSnackbar('Error del Servidor', errorMessage);
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+        'statusCode': response.statusCode,
+        'rawBody': response.body
+      };
+    }
+    
     try {
-      // Verificar si el body está vacío
+      
       if (response.body.isEmpty) {
         print('⚠️ Response body is empty');
         if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -168,7 +185,7 @@ class HttpHelper {
         }
       }
       
-      // Intentar decodificar JSON
+      
       print('🔧 Attempting to decode JSON...');
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
       print('✅ JSON decoded successfully: $responseBody');
@@ -204,6 +221,20 @@ class HttpHelper {
       print('❌ Response body bytes: ${response.bodyBytes}');
       
       
+      if (response.statusCode >= 400 && response.statusCode < 500) {
+        final errorMessage = _getErrorMessage(response.statusCode, {});
+        if (!suppressErrors) {
+          _showErrorSnackbar('Error', errorMessage);
+        }
+        return {
+          'success': false,
+          'error': errorMessage,
+          'statusCode': response.statusCode,
+          'rawBody': response.body
+        };
+      }
+      
+     
       String detailedError = 'Error al procesar la respuesta';
       if (e.toString().contains('FormatException')) {
         detailedError = 'Respuesta del servidor no es JSON válido';
@@ -211,7 +242,9 @@ class HttpHelper {
         detailedError = 'Formato de respuesta inesperado';
       }
       
-      _showErrorSnackbar('Error', detailedError);
+      if (!suppressErrors) {
+        _showErrorSnackbar('Error', detailedError);
+      }
       return {
         'success': false,
         'error': 'Error procesando respuesta: ${e.toString()}',
@@ -235,8 +268,20 @@ class HttpHelper {
   }
 
   
+  static String _getServerErrorMessage(int statusCode, String responseBody) {
+    return switch (statusCode) {
+      500 => 'El servidor encontró un error interno. Por favor, contacta al administrador.',
+      501 => 'Funcionalidad no implementada en el servidor.',
+      502 => 'El servidor no está disponible en este momento. Verifica que el backend esté corriendo.',
+      503 => 'El servicio no está disponible temporalmente. Intenta nuevamente en unos minutos.',
+      504 => 'El servidor tardó demasiado en responder. Verifica tu conexión.',
+      _ => 'Error del servidor ($statusCode). Por favor, intenta más tarde.',
+    };
+  }
+
+  
   static String _getErrorMessage(int statusCode, Map<String, dynamic> responseBody) {
-    // 🚨 **Manejo especial para token expirado**
+    
     if (statusCode == 401) {
       _handleTokenExpired();
       return 'Sesión expirada. Redirigiendo al login...';
@@ -254,11 +299,11 @@ class HttpHelper {
 
   static Future<void> _handleTokenExpired() async {
     try {
-      // Usar AuthService si está disponible, sino fallback manual
+      
       if (Get.isRegistered<AuthService>()) {
         await AuthService.instance.handleTokenExpired();
       } else {
-        // Fallback manual si AuthService no está registrado
+        
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('auth_token');
         await prefs.remove('user_role');
@@ -275,7 +320,7 @@ class HttpHelper {
       }
     } catch (e) {
       print('❌ Error manejando token expirado: $e');
-      // Último recurso: redirigir inmediatamente
+      
       Get.offAllNamed('/login');
     }
   }

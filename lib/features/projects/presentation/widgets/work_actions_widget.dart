@@ -354,8 +354,7 @@ class WorkStatusChip extends StatelessWidget {
   }
 
   Future<void> _updateWorkStatus(String newStatus) async {
-    // Aquí implementarías la lógica para actualizar solo el estado
-    // Por ahora, usaremos el método general de actualización
+
     final controller = Get.find<WorkController>();
     
     final success = await controller.updateWork(

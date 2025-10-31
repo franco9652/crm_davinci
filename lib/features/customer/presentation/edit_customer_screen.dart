@@ -498,7 +498,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
 
       if (success) {
         _showMessage('Cliente actualizado exitosamente', isError: false);
-        Get.back(result: true); // Indicar que hubo cambios
+        Get.back(result: true); 
       } else {
         _showMessage('Error al actualizar cliente', isError: true);
       }

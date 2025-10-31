@@ -578,7 +578,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
       }
       
       if (_addressController.text != widget.work.address) {
-        updateData['direccion'] = _addressController.text.trim(); // Backend usa 'direccion'
+        updateData['direccion'] = _addressController.text.trim(); 
       }
       
       if (_startDateController.text != widget.work.startDate) {
@@ -618,7 +618,7 @@ class _EditWorkScreenState extends State<EditWorkScreen> {
         updateData['projectType'] = _selectedProjectType;
       }
 
-      // Solo actualiza si hay cambios
+      
       if (updateData.isEmpty) {
         _showMessage('No hay cambios para guardar', isError: false);
         return;

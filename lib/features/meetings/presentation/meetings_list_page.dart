@@ -61,10 +61,10 @@ class MeetingsListPage extends StatelessWidget {
                 
                 const SizedBox(height: 12),
                 
-                // Segunda fila: Filtros por tipo y estado
+                
                 Row(
                   children: [
-                    // Filtro por tipo
+                    
                     Expanded(
                       child: _buildCompactDropdown(
                         label: 'Tipo',

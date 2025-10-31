@@ -685,7 +685,7 @@ class WorkInfoScreen extends StatelessWidget {
   LatLng? _parseLatLng(String value) {
     try {
       if (value.isEmpty) return null;
-      // Normalizar separadores y extraer numeros (admite "," o "." como decimal)
+      
       final text = value.replaceAll(';', ',');
       final reg = RegExp(r'-?\d+[\.,]?\d*');
       final matches = reg
@@ -699,7 +699,6 @@ class WorkInfoScreen extends StatelessWidget {
       if (a == null || b == null) return null;
       double lat = a;
       double lng = b;
-      // Si el primer valor no parece latitud pero el segundo sí, intercambiamos
       bool aIsLat = lat.abs() <= 90;
       bool bIsLng = lng.abs() <= 180;
       bool bIsLat = lng.abs() <= 90;

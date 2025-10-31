@@ -233,7 +233,7 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
       print('   - Number: ${widget.work.number}');
       print('   - Name: ${widget.work.name}');
       
-      // Obtener el ID auto-increment para la eliminación
+      
       final autoIncrementId = _controller.getWorkAutoIncrementId(widget.work);
       
       if (autoIncrementId == null || autoIncrementId.isEmpty) {
@@ -253,7 +253,7 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
       if (success) {
         print('✅ Obra eliminada exitosamente');
         _showMessage('Obra eliminada exitosamente', isError: false);
-        Get.back(result: true); // Indicar que se eliminó
+        Get.back(result: true); 
       } else {
         print('❌ Error al eliminar obra - success = false');
         _showMessage('Error al eliminar obra', isError: true);
