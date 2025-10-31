@@ -150,7 +150,7 @@ class WorkController extends GetxController {
       isLoading(true);
       await workRemoteDataSource.createWork(work);
       print("✅ Trabajo creado correctamente");
-      await fetchWorks(); // Refresh  de obras después de crear una nueva
+      await fetchWorks(); 
 
       
       Get.defaultDialog(
@@ -191,7 +191,7 @@ class WorkController extends GetxController {
       final index = works.indexWhere((w) => w.id == workId);
       if (index != -1) {
         works[index] = updatedWork;
-        filterWorks(); // Refrescar filtros
+        filterWorks(); 
       }
       
       

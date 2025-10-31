@@ -150,7 +150,7 @@ class WorkRemoteDataSource {
           final w = await getWorkById(id);
           works.add(w);
         } catch (_) {
-          // - 
+          
         }
       }
       return works;
@@ -178,7 +178,7 @@ class WorkRemoteDataSource {
 
   
   Future<WorkModel> updateWork({
-    required String workId, // Usar _id de MongoDB
+    required String workId,
     Map<String, dynamic>? updateData,
   }) async {
     try {
@@ -208,7 +208,7 @@ class WorkRemoteDataSource {
 
  
   Future<WorkModel> updateWorkComplete({
-    required String workId, // Usar _id de MongoDB
+    required String workId, 
     required Map<String, dynamic> workData,
   }) async {
     try {
@@ -235,7 +235,7 @@ class WorkRemoteDataSource {
     }
   }
 
-  /// Eliminar obra - Senior approach
+  
   Future<void> deleteWork(String workAutoIncrementId) async {
     try {
       print('🗑️ Eliminando obra con ID: $workAutoIncrementId');

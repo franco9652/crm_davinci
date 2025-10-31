@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:crm_app_dv/models/customer_model.dart';
 import 'package:crm_app_dv/features/customer/controllers/customer_controller.dart';
 
-/// Diálogo de confirmación para eliminar cliente (Senior approach)
+
 class DeleteCustomerDialog extends StatefulWidget {
   final CustomerModel customer;
   
@@ -33,7 +33,6 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     );
   }
 
-  /// Título del diálogo (Senior approach)
   Widget _buildTitle() {
     return Row(
       children: [
@@ -64,7 +63,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     );
   }
 
-  /// Contenido del diálogo (Senior approach)
+  
   Widget _buildContent() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -114,7 +113,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     );
   }
 
-  /// Información del cliente a eliminar (Senior approach)
+  
   Widget _buildCustomerInfo() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -178,7 +177,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     );
   }
 
-  /// Botones de acción (Senior approach)
+  
   List<Widget> _buildActions() {
     return [
       TextButton(
@@ -214,7 +213,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     ];
   }
 
-  /// Eliminar cliente (Senior approach)
+ 
   Future<void> _deleteCustomer() async {
     setState(() => _isDeleting = true);
 
@@ -226,8 +225,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
       
       print('🎯 Resultado de eliminación: $success');
       
-      // FORZAR CIERRE: Si llegamos aquí, el servidor respondió (éxito o error)
-      // Vamos a cerrar el diálogo de todas formas y manejar el resultado después
+    
       
       if (success) {
         print('✅ Cliente eliminado exitosamente, cerrando diálogo FORZADAMENTE');
@@ -235,13 +233,13 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
         print('⚠️ Success = false, pero cerrando diálogo de todas formas');
       }
       
-      // CERRAR DIÁLOGO INMEDIATAMENTE - ENFOQUE AGRESIVO
+      
       if (mounted) {
-        Navigator.of(context).pop(true); // Usar Navigator directamente
+        Navigator.of(context).pop(true); 
         print('🚪 Diálogo cerrado con Navigator.pop()');
       }
       
-      // Mostrar mensaje apropiado DESPUÉS de cerrar
+      
       Future.delayed(const Duration(milliseconds: 100), () {
         if (success) {
           _showMessage('Cliente eliminado exitosamente', isError: false);
@@ -256,7 +254,7 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
     }
   }
 
-  /// Mostrar mensaje al usuario (Senior approach)
+  
   void _showMessage(String message, {required bool isError}) {
     Get.snackbar(
       isError ? 'Error' : 'Éxito',
@@ -275,9 +273,9 @@ class _DeleteCustomerDialogState extends State<DeleteCustomerDialog> {
   }
 }
 
-/// Función helper para mostrar el diálogo (Senior approach)
+
 class CustomerDialogs {
-  /// Mostrar diálogo de confirmación para eliminar cliente
+  
   static Future<bool> showDeleteConfirmation(CustomerModel customer) async {
     final result = await Get.dialog<bool>(
       DeleteCustomerDialog(customer: customer),
@@ -286,7 +284,7 @@ class CustomerDialogs {
     return result ?? false;
   }
 
-  /// Mostrar diálogo de información del cliente
+ 
   static void showCustomerInfo(CustomerModel customer) {
     Get.dialog(
       AlertDialog(
@@ -366,7 +364,7 @@ class CustomerDialogs {
     );
   }
 
-  /// Helper para construir filas de información
+
   static Widget _buildInfoRow(String label, String value, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
