@@ -36,27 +36,25 @@ class WorkRemoteDataSource {
   }
 
   Future<void> createWork(WorkModel work) async {
-    final workJson = jsonEncode(work.toJson());
-  
-    print(" Enviando Work al Backend: $workJson"); 
-
-    final response = await client.post(
-      Uri.parse('${AppConstants.baseUrl}/workCreate'),
-      headers: {'Content-Type': 'application/json'},
-      body: workJson,
-    );
-
-    print(" Status Code: ${response.statusCode}");
-    print(" Respuesta del Backend: ${response.body}");
-
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      print(' Proyecto creado exitosamente: ${response.body}');
-    } else {
-      final errorResponse = json.decode(response.body);
-      final errorMessage =
-          errorResponse['message'] ?? 'Error desconocido al crear el proyecto';
-      print(" Error al crear trabajo: $errorMessage");
-      throw Exception(errorMessage);
+    try {
+      print('🔄 Creando obra: ${work.name}');
+      
+      final response = await HttpHelper.post(
+        '${AppConstants.baseUrl}/workCreate',
+        work.toJson(),
+      );
+      
+      if (response['success'] == true) {
+        print('✅ Obra creada exitosamente');
+        return;
+      } else {
+        final errorMsg = response['error'] ?? 'Error desconocido al crear la obra';
+        print('❌ Error creando obra: $errorMsg');
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('❌ Excepción al crear obra: $e');
+      throw Exception('Error al crear la obra: ${e.toString()}');
     }
   }
 
