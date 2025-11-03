@@ -261,6 +261,7 @@ class CustomerRemoteDataSource {
   }) async {
     try {
       debugPrint('🔄 Actualizando cliente: $customerId');
+      debugPrint('📤 Datos enviados al backend: $updateData');
       
       final response = await HttpHelper.put(
         '${AppConstants.baseUrl}/updateCustomer/$customerId',
@@ -269,8 +270,9 @@ class CustomerRemoteDataSource {
       
       if (response['success'] == true) {
         final customerData = response['data'] as Map<String, dynamic>;
+        debugPrint('📥 Datos recibidos del backend: $customerData');
         final updatedCustomer = CustomerModel.fromJson(customerData);
-        debugPrint('✅ Cliente actualizado: ${updatedCustomer.name}');
+        debugPrint('✅ Cliente actualizado: ${updatedCustomer.name} ${updatedCustomer.secondName}');
         return updatedCustomer;
       } else {
         final errorMsg = response['error'] ?? 'Error desconocido al actualizar cliente';

@@ -139,6 +139,8 @@ class HomeController extends GetxController {
         ).toList(),
       );
     }
+    // Forzar actualización de la lista filtrada
+    filteredCustomers.refresh();
   }
 
   
@@ -148,21 +150,35 @@ class HomeController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
+      print('🎮 Controller: Iniciando actualización de cliente ID: $customerId');
       
       final updatedCustomer = await repository.updateCustomer(
         customerId: customerId,
         updateData: updateData,
       );
       
+      print('🎮 Controller: Cliente actualizado desde backend: ${updatedCustomer.name}');
       
       final index = customers.indexWhere((c) => c.id == customerId);
+      print('🎮 Controller: Índice del cliente en la lista: $index');
+      
       if (index != -1) {
+        print('🎮 Controller: Cliente antes de actualizar: ${customers[index].name}');
         customers[index] = updatedCustomer;
-        filterCustomers(); 
+        print('🎮 Controller: Cliente después de actualizar: ${customers[index].name}');
+        
+        // Forzar actualización de la lista observable
+        customers.refresh();
+        
+        filterCustomers();
+        print('🎮 Controller: Filtros aplicados, clientes filtrados: ${filteredCustomers.length}');
+      } else {
+        print('❌ Controller: Cliente no encontrado en la lista local');
       }
       
       return true;
     } catch (e) {
+      print('❌ Controller: Error al actualizar cliente: $e');
       final errorMsg = 'Error al actualizar cliente: ${e.toString()}';
       noClientMessage.value = errorMsg;
       return false;
