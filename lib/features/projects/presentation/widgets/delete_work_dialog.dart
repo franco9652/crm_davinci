@@ -252,8 +252,14 @@ class _DeleteWorkDialogState extends State<DeleteWorkDialog> {
       
       if (success) {
         print('✅ Obra eliminada exitosamente');
-        _showMessage('Obra eliminada exitosamente', isError: false);
-        Get.back(result: true); 
+        
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+        
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _showMessage('Obra eliminada exitosamente', isError: false);
+        });
       } else {
         print('❌ Error al eliminar obra - success = false');
         _showMessage('Error al eliminar obra', isError: true);

@@ -165,12 +165,9 @@ class HttpHelper {
         final message = responseBody['message']?.toString().toLowerCase() ?? '';
         
         
-        if (message.contains('cliente creado') || message.contains('creado exitosamente')) {
-          print('Operación exitosa con advertencia: $message');
+        if (message.contains('creado') && !message.contains('error al crear')) {
+          print('✅ Operación exitosa con advertencia: $message');
           
-          if (!suppressErrors) {
-            _showErrorSnackbar('Advertencia', responseBody['message'] ?? 'Operación completada con advertencias');
-          }
           
           return {
             'success': true,
@@ -180,7 +177,7 @@ class HttpHelper {
           };
         }
       } catch (e) {
-        print('No se pudo parsear el body del error 500: $e');
+        print('⚠️ No se pudo parsear el body del error 500: $e');
       }
       
       
@@ -295,6 +292,17 @@ class HttpHelper {
 
   
   static String _getServerErrorMessage(int statusCode, String responseBody) {
+    
+    try {
+      final Map<String, dynamic> body = jsonDecode(responseBody);
+      final errorMsg = body['error'] ?? body['message'];
+      if (errorMsg != null && errorMsg.toString().isNotEmpty) {
+        return errorMsg.toString();
+      }
+    } catch (e) {
+      
+    }
+    
     return switch (statusCode) {
       500 => 'El servidor encontró un error interno. Por favor, contacta al administrador.',
       501 => 'Funcionalidad no implementada en el servidor.',

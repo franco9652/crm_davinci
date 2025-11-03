@@ -49,34 +49,37 @@ class ModernPaginationWidget extends StatelessWidget {
           
           
           Expanded(
-            child: Row(
-              children: [
-                const SizedBox(width: 20), 
-             
-                _buildCompactNavigationButton(
-                  icon: Icons.chevron_left,
-                  onPressed: currentPage > 1 && !isLoading
-                      ? () => onPageChanged(currentPage - 1)
-                      : null,
-                ),
-                
-                const SizedBox(width: 8),
-                
-                
-                ..._buildCompactPageNumbers(),
-                
-                const SizedBox(width: 8),
-                
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  const SizedBox(width: 20), 
                
-                _buildCompactNavigationButton(
-                  icon: Icons.chevron_right,
-                  onPressed: currentPage < totalPages && !isLoading
-                      ? () => onPageChanged(currentPage + 1)
-                      : null,
-                ),
-                
-                const Spacer(), 
-              ],
+                  _buildCompactNavigationButton(
+                    icon: Icons.chevron_left,
+                    onPressed: currentPage > 1 && !isLoading
+                        ? () => onPageChanged(currentPage - 1)
+                        : null,
+                  ),
+                  
+                  const SizedBox(width: 8),
+                  
+                  
+                  ..._buildCompactPageNumbers(),
+                  
+                  const SizedBox(width: 8),
+                  
+                 
+                  _buildCompactNavigationButton(
+                    icon: Icons.chevron_right,
+                    onPressed: currentPage < totalPages && !isLoading
+                        ? () => onPageChanged(currentPage + 1)
+                        : null,
+                  ),
+                  
+                  const SizedBox(width: 20), 
+                ],
+              ),
             ),
           ),
           

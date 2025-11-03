@@ -13,6 +13,7 @@ class MeetingModel {
   final String? customerPhone;
   final String? projectId;
   final String? projectTitle;
+  final bool archived;
 
   MeetingModel({
     required this.id,
@@ -29,6 +30,7 @@ class MeetingModel {
     this.customerPhone,
     this.projectId,
     this.projectTitle,
+    this.archived = false,
   });
 
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
@@ -82,6 +84,7 @@ class MeetingModel {
       customerPhone: cPhone,
       projectId: pId,
       projectTitle: pTitle,
+      archived: json['archived'] == true,
     );
   }
 
@@ -101,6 +104,7 @@ class MeetingModel {
       'customerPhone': customerPhone,
       'project': projectId,
       'projectTitle': projectTitle,
+      'archived': archived,
     };
   }
 
@@ -126,5 +130,74 @@ class MeetingModel {
   static String _dateIso(DateTime d) {
     
     return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  
+  bool isPast() {
+    try {
+      final timeParts = time.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      
+      final meetingDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        hour,
+        minute,
+      );
+      
+      final durationMinutes = int.tryParse(duration) ?? 60;
+      final endTime = meetingDateTime.add(Duration(minutes: durationMinutes));
+      final now = DateTime.now();
+      final isPastMeeting = endTime.isBefore(now);
+      
+     
+      if (isPastMeeting) {
+        print('📅 Reunión pasada detectada: $title - Fin: $endTime, Ahora: $now');
+      }
+      
+      return isPastMeeting;
+    } catch (e) {
+      print('❌ Error al verificar si reunión pasó: $e');
+      return false;
+    }
+  }
+
+  
+  MeetingModel copyWith({
+    String? id,
+    String? title,
+    DateTime? date,
+    String? time,
+    String? duration,
+    String? meetingType,
+    String? meetingLink,
+    String? address,
+    String? description,
+    String? customerId,
+    String? customerName,
+    String? customerPhone,
+    String? projectId,
+    String? projectTitle,
+    bool? archived,
+  }) {
+    return MeetingModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      duration: duration ?? this.duration,
+      meetingType: meetingType ?? this.meetingType,
+      meetingLink: meetingLink ?? this.meetingLink,
+      address: address ?? this.address,
+      description: description ?? this.description,
+      customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      projectId: projectId ?? this.projectId,
+      projectTitle: projectTitle ?? this.projectTitle,
+      archived: archived ?? this.archived,
+    );
   }
 }

@@ -13,6 +13,8 @@ class MeetingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MeetingsController controller = Get.put(MeetingsController());
+    final selectedTab = 0.obs; 
+    
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
@@ -138,6 +140,9 @@ class MeetingsScreen extends StatelessWidget {
                 _buildModernInfoBanner(),
                 
                 
+                _buildTabBar(selectedTab),
+                
+                
                 _buildCompactFilters(controller),
                 
                 
@@ -155,7 +160,10 @@ class MeetingsScreen extends StatelessWidget {
                   if (controller.error.isNotEmpty) {
                     return _buildErrorState(controller.error.value);
                   }
-                  return _buildModernMeetingsList(controller);
+                  
+                 
+                  final showArchived = selectedTab.value == 1;
+                  return _buildModernMeetingsList(controller, showArchived: showArchived);
                 }),
               ],
             ),
@@ -297,8 +305,15 @@ class MeetingsScreen extends StatelessWidget {
   }
 
   
-  Widget _buildModernMeetingsList(MeetingsController controller) {
-    final displayMeetings = controller.displayMeetings;
+  Widget _buildModernMeetingsList(MeetingsController controller, {required bool showArchived}) {
+    
+    final allMeetings = controller.isFilterActive.value 
+        ? controller.filteredMeetings 
+        : controller.meetings;
+    
+    final displayMeetings = allMeetings.where((meeting) {
+      return meeting.archived == showArchived;
+    }).toList();
     
     if (displayMeetings.isEmpty) {
       return Container(
@@ -320,9 +335,9 @@ class MeetingsScreen extends StatelessWidget {
               child: const Icon(Icons.calendar_today, color: Color(0xFF6366F1), size: 48),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No hay reuniones',
-              style: TextStyle(
+            Text(
+              showArchived ? 'No hay reuniones archivadas' : 'No hay próximas reuniones',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -330,7 +345,9 @@ class MeetingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Aún no hay reuniones programadas.\nUsa el botón + para crear una.',
+              showArchived 
+                  ? 'Las reuniones pasadas aparecerán aquí automáticamente.'
+                  : 'Aún no hay reuniones programadas.\nUsa el botón + para crear una.',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.7),
                 fontSize: 14,
@@ -789,6 +806,104 @@ class MeetingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  
+  Widget _buildTabBar(RxInt selectedTab) {
+    return Obx(() => Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => selectedTab.value = 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: selectedTab.value == 0
+                      ? const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.event_available,
+                      size: 18,
+                      color: selectedTab.value == 0
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Próximas',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: selectedTab.value == 0
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: selectedTab.value == 0
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => selectedTab.value = 1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: selectedTab.value == 1
+                      ? const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.archive,
+                      size: 18,
+                      color: selectedTab.value == 1
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Archivadas',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: selectedTab.value == 1
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: selectedTab.value == 1
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ));
   }
 
  

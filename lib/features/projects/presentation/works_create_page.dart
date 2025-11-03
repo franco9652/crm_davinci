@@ -712,8 +712,8 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
           ),
         ],
       ),
-      child: ElevatedButton.icon(
-        onPressed: () async {
+      child: Obx(() => ElevatedButton.icon(
+        onPressed: workController.isLoading.value ? null : () async {
           if (_formKey.currentState!.validate() && selectedCustomer != null) {
             try {
               final work = WorkModel(
@@ -735,7 +735,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
               );
 
               await workController.createWork(work);
-              Get.back();
+              
             } catch (e) {
               Get.snackbar(
                 'Error',
@@ -753,10 +753,19 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
             );
           }
         },
-        icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
-        label: const Text(
-          'Crear Proyecto',
-          style: TextStyle(
+        icon: workController.isLoading.value 
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+        label: Text(
+          workController.isLoading.value ? 'Creando...' : 'Crear Proyecto',
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -769,7 +778,7 @@ class _CreateWorkPageState extends State<CreateWorkPage> {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-      ),
+      )),
     );
   }
 

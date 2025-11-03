@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:crm_app_dv/core/contants/app_constants.dart';
 import 'package:crm_app_dv/models/budget_model.dart';
 import 'package:crm_app_dv/core/utils/http_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BudgetRemoteDataSource {
   final http.Client client;
@@ -142,31 +143,33 @@ class BudgetRemoteDataSource {
 
 Future<Map<String, dynamic>> createBudget(BudgetModel budget) async {
   try {
-   
-    Map<String, dynamic> requestBody = {
-      "customerId": budget.customerId,
-      "items": [
-        {
-          "descripcion": budget.projectType,
-          "cantidad": 1,
-          "precioUnitario": budget.estimatedBudget
-        }
-      ],
-      "total": budget.estimatedBudget,
-      "estado": budget.status
-    };
     
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
    
-    if (budget.workId != null && budget.workId!.isNotEmpty) {
-      requestBody["workId"] = budget.workId;
+    
+    Map<String, dynamic> requestBody = budget.toJson();
+    
+    
+    if (requestBody['status'] != null) {
+      requestBody['status'] = requestBody['status'].toString().toUpperCase();
     }
+    
+    
+    requestBody.removeWhere((key, value) => value == null);
 
     debugPrint('🔄 Creando nuevo presupuesto para cliente ID: ${budget.customerId}');
     debugPrint('💾 Datos del presupuesto: ${jsonEncode(requestBody)}');
     
     final response = await HttpHelper.post(
       '${AppConstants.baseUrl}/budget',
-      requestBody
+      requestBody,
+      headers: headers,
     );
 
     if (response['success'] != true) {

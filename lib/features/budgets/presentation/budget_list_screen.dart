@@ -51,7 +51,8 @@ class CreateBudgetScreen extends StatelessWidget {
     );
 
     if (picked != null) {
-      controller.text = "${picked.day}/${picked.month}/${picked.year}";
+     
+      controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
     }
   }
 
@@ -61,6 +62,8 @@ class CreateBudgetScreen extends StatelessWidget {
       Get.snackbar("Error", "Selecciona un cliente primero.");
       return;
     }
+
+
 
     if (startDateController.text.isEmpty || endDateController.text.isEmpty) {
       Get.snackbar("Error", "Selecciona una fecha de inicio y finalización.");
@@ -85,11 +88,12 @@ class CreateBudgetScreen extends StatelessWidget {
     }
 
     final budget = BudgetModel(
+      workId: budgetController.selectedWorkId.value,
       customerId: budgetController.selectedCustomerId.value!,
       customerName: selectedCustomer['name'] ?? '',
       email: selectedCustomer['email'] ?? '',
       projectAddress: projectAddressController.text,
-      projectType: projectTypeController.text,
+      projectType: projectTypeController.text.toLowerCase(), 
       m2: m2Controller.text,
       materials: budgetController.selectedMaterials.toList(),
       approvals: budgetController.selectedApprovals.toList(),
@@ -301,11 +305,7 @@ class CreateBudgetScreen extends StatelessWidget {
                         "Dirección del Proyecto",
                         Icons.location_on,
                       ),
-                      _buildModernTextField(
-                        projectTypeController,
-                        "Tipo de Proyecto",
-                        Icons.category,
-                      ),
+                      _buildModernDropdownProjectType(),
                       _buildModernTextField(
                         m2Controller,
                         "Metros Cuadrados (m²)",
@@ -585,6 +585,102 @@ class CreateBudgetScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildModernDropdownProjectType() {
+    final projectTypes = ['Residencial', 'Comercial', 'Industrial'];
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        value: projectTypeController.text.isEmpty ? null : projectTypeController.text,
+        items: projectTypes.map((type) {
+          Color typeColor;
+          IconData typeIcon;
+          
+          switch (type.toLowerCase()) {
+            case 'residencial':
+              typeColor = const Color(0xFF8B5CF6);
+              typeIcon = Icons.home;
+              break;
+            case 'comercial':
+              typeColor = const Color(0xFF06B6D4);
+              typeIcon = Icons.business;
+              break;
+            case 'industrial':
+              typeColor = const Color(0xFFF59E0B);
+              typeIcon = Icons.factory;
+              break;
+            default:
+              typeColor = const Color(0xFF6B7280);
+              typeIcon = Icons.category;
+          }
+          
+          return DropdownMenuItem(
+            value: type,
+            child: Row(
+              children: [
+                Icon(typeIcon, color: typeColor, size: 16),
+                const SizedBox(width: 8),
+                Text(type, style: TextStyle(color: typeColor)),
+              ],
+            ),
+          );
+        }).toList(),
+        onChanged: (String? value) {
+          projectTypeController.text = value ?? '';
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Debe seleccionar un tipo de proyecto';
+          }
+          return null;
+        },
+        isExpanded: true,
+        dropdownColor: const Color(0xFF1E293B),
+        style: const TextStyle(color: Colors.white),
+        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+        decoration: InputDecoration(
+          labelText: 'Tipo de Proyecto',
+          labelStyle: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 14,
+          ),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.category, color: Color(0xFF6366F1), size: 18),
+          ),
+          filled: true,
+          fillColor: const Color(0xFF0F172A),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: const Color(0xFF334155).withOpacity(0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: const Color(0xFF334155).withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      ),
+    );
+  }
+
   
   Widget _buildModernMultiSelect(
     String label,
@@ -756,12 +852,21 @@ class CreateBudgetScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: ElevatedButton.icon(
-        onPressed: _createBudget,
-        icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
-        label: const Text(
-          'Crear Presupuesto',
-          style: TextStyle(
+      child: Obx(() => ElevatedButton.icon(
+        onPressed: budgetController.isLoading.value ? null : _createBudget,
+        icon: budgetController.isLoading.value
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+        label: Text(
+          budgetController.isLoading.value ? 'Creando...' : 'Crear Presupuesto',
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -774,7 +879,7 @@ class CreateBudgetScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-      ),
+      )),
     );
   }
 }

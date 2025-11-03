@@ -280,36 +280,30 @@ class WorkController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
-      print('🎮 Controller: Iniciando eliminación de obra');
+      print('Controller: Iniciando eliminación de obra');
       print('   - ID auto-increment: $workAutoIncrementId');
       print('   - ID MongoDB: $workMongoId');
       
-     
-      await workRepository.deleteWork(workAutoIncrementId).timeout(
+      
+      await workRepository.deleteWork(workMongoId).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
           throw Exception('Timeout: La operación tardó demasiado tiempo');
         },
       );
       
-      print('🎮 Controller: Eliminación exitosa, actualizando listas locales');
+      print('Controller: Eliminación exitosa, actualizando listas locales');
       
      
       works.removeWhere((w) => w.id == workMongoId);
       worksByCustomer.removeWhere((w) => w.id == workMongoId);
       filterWorks(); 
       
-      Get.snackbar(
-        'Éxito',
-        'Obra eliminada correctamente',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Get.theme.primaryColor,
-        colorText: Get.theme.colorScheme.onPrimary,
-      );
+     
       
       return true;
     } catch (e) {
-      print('🎮 Controller: Error al eliminar obra: $e');
+      print('Controller: Error al eliminar obra: $e');
       Get.snackbar(
         'Error',
         'Error al eliminar obra: ${e.toString()}',

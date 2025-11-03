@@ -411,40 +411,50 @@ class CreateCustomerPage extends StatelessWidget {
           ),
         ],
       ),
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          if (_formKey.currentState!.validate()) {
-            final customerController = Get.find<HomeController>();
-            await customerController.createCustomer(
-              name: nameController.text,
-              secondName: secondNameController.text,
-              dni: dniController.text,
-              cuit: cuitController.text,
-              cuil: cuilController.text,
-              address: addressController.text,
-              workDirection: workDirectionController.text,
-              contactNumber: contactNumberController.text,
-              email: emailController.text,
-              password: passwordController.text,
-            );
-          }
-        },
-        icon: const Icon(Icons.person_add, color: Colors.white, size: 20),
-        label: const Text(
-          'Crear Cliente',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+      child: GetBuilder<HomeController>(
+        builder: (customerController) => Obx(() => ElevatedButton.icon(
+          onPressed: customerController.isCreating.value ? null : () async {
+            if (_formKey.currentState!.validate()) {
+              await customerController.createCustomer(
+                name: nameController.text,
+                secondName: secondNameController.text,
+                dni: dniController.text,
+                cuit: cuitController.text,
+                cuil: cuilController.text,
+                address: addressController.text,
+                workDirection: workDirectionController.text,
+                contactNumber: contactNumberController.text,
+                email: emailController.text,
+                password: passwordController.text,
+              );
+            }
+          },
+          icon: customerController.isCreating.value
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Icon(Icons.person_add, color: Colors.white, size: 20),
+          label: Text(
+            customerController.isCreating.value ? 'Creando...' : 'Crear Cliente',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
-        ),
+        )),
       ),
     );
   }

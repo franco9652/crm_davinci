@@ -5,6 +5,7 @@ import 'package:crm_app_dv/features/projects/controllers/works_controller.dart';
 import 'package:crm_app_dv/models/work_model.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WorkRemoteDataSource {
   final http.Client client;
@@ -39,9 +40,37 @@ class WorkRemoteDataSource {
     try {
       print('🔄 Creando obra: ${work.name}');
       
+      
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+      
+      final workData = work.toJson();
+      workData.remove('_id'); 
+      
+      if (workData['userId'] is String) {
+        workData['userId'] = [workData['userId']];
+      } else if (workData['userId'] is List && (workData['userId'] as List).isEmpty) {
+        workData.remove('userId');
+      }
+      
+      if (workData['statusWork'] != null) {
+        workData['statusWork'] = workData['statusWork'].toString().toLowerCase();
+      }
+      if (workData['projectType'] != null) {
+        workData['projectType'] = workData['projectType'].toString().toLowerCase();
+      }
+      
+      print('📤 Datos enviados: $workData');
+      
       final response = await HttpHelper.post(
         '${AppConstants.baseUrl}/workCreate',
-        work.toJson(),
+        workData,
+        headers: headers,
       );
       
       if (response['success'] == true) {
@@ -234,10 +263,10 @@ class WorkRemoteDataSource {
   }
 
   
-  Future<void> deleteWork(String workAutoIncrementId) async {
+  Future<void> deleteWork(String workMongoId) async {
     try {
-      print('🗑️ Eliminando obra con ID: $workAutoIncrementId');
-      final url = '${AppConstants.baseUrl}/workDelete/$workAutoIncrementId';
+      print('🗑️ Eliminando obra con MongoDB ID: $workMongoId');
+      final url = '${AppConstants.baseUrl}/workDelete/$workMongoId';
       print('🌐 URL de eliminación: $url');
       
       final response = await HttpHelper.delete(url);
@@ -257,7 +286,7 @@ class WorkRemoteDataSource {
       if (e.toString().contains('SocketException') || e.toString().contains('TimeoutException')) {
         throw Exception('Error de conexión: Verifica tu conexión a internet');
       } else if (e.toString().contains('404')) {
-        throw Exception('Obra no encontrada en el servidor (ID: $workAutoIncrementId)');
+        throw Exception('Obra no encontrada en el servidor (ID: $workMongoId)');
       } else if (e.toString().contains('500')) {
         throw Exception('Error interno del servidor');
       } else {

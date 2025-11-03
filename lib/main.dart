@@ -36,22 +36,22 @@ void main() async {
   final authRemoteDataSource = AuthRemoteDataSource(client);
   final authRepository = AuthRepositoryImpl(authRemoteDataSource);
 
-  
-  Get.put(budgetRemoteDataSource); 
-  Get.put(budgetRepository); 
-  Get.put(BudgetController(budgetRemoteDataSource: Get.find())); 
 
- 
-  Get.put(customerRemoteDataSource);
-  Get.put(customerRepository);
-  Get.put(workRemoteDataSource);
-  Get.put(workRepository);
-  Get.put(WorkController(
+  Get.lazyPut(() => budgetRemoteDataSource, fenix: true); 
+  Get.lazyPut(() => budgetRepository, fenix: true); 
+  Get.lazyPut(() => BudgetController(budgetRemoteDataSource: Get.find()), fenix: true); 
+
+  Get.lazyPut(() => customerRemoteDataSource, fenix: true);
+  Get.lazyPut(() => customerRepository, fenix: true);
+  Get.lazyPut(() => workRemoteDataSource, fenix: true);
+  Get.lazyPut(() => workRepository, fenix: true);
+  Get.lazyPut(() => WorkController(
     customerRepository: customerRepository,
     workRemoteDataSource: workRemoteDataSource,
     workRepository: workRepository,
-  ));
+  ), fenix: true);
 
+  
   Get.put(authRemoteDataSource);
   Get.put(authRepository);
   Get.put(LoginController(authRepository));

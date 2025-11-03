@@ -25,6 +25,7 @@ class MeetingsController extends GetxController {
   final selectedType = ''.obs; 
   final selectedStatus = ''.obs; 
   final isFilterActive = false.obs;
+  final showArchivedMeetings = false.obs; 
 
   
   final currentPage = 1.obs;
@@ -101,6 +102,11 @@ class MeetingsController extends GetxController {
       _scheduleNotificationsForMeetings().catchError((e) {
         print('⚠️ Error scheduling notifications (non-blocking): $e');
       });
+      
+      
+      autoArchivePastMeetings().catchError((e) {
+        print('⚠️ Error auto-archiving past meetings (non-blocking): $e');
+      });
     } catch (e) {
       print('❌ Error in fetchMeetings: $e');
       error.value = e.toString();
@@ -114,8 +120,7 @@ class MeetingsController extends GetxController {
  
   void _applyFilters() {
     List<MeetingModel> filtered = List.from(meetings);
-    
-    
+
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((meeting) {
@@ -594,4 +599,81 @@ class MeetingsController extends GetxController {
     );
     return result ?? false;
   }
+
+ 
+  Future<void> autoArchivePastMeetings() async {
+    try {
+      print('🔍 Iniciando auto-archivo de reuniones pasadas...');
+      print('📊 Total de reuniones: ${meetings.length}');
+      
+      int archivedCount = 0;
+      final List<MeetingModel> updatedMeetings = [];
+      
+      for (var meeting in meetings) {
+        final isPastMeeting = meeting.isPast();
+        print('📅 Reunión: ${meeting.title} - Fecha: ${meeting.date} ${meeting.time} - ¿Pasó?: $isPastMeeting - ¿Archivada?: ${meeting.archived}');
+        
+        if (isPastMeeting && !meeting.archived) {
+          updatedMeetings.add(meeting.copyWith(archived: true));
+          archivedCount++;
+          print('  ✅ Archivando: ${meeting.title}');
+        } else {
+          updatedMeetings.add(meeting);
+        }
+      }
+      
+      if (archivedCount > 0) {
+        meetings.assignAll(updatedMeetings);
+        print('📦 Auto-archivadas $archivedCount reuniones pasadas');
+        _applyFilters(); 
+      } else {
+        print('ℹ️ No hay reuniones pasadas para archivar');
+      }
+    } catch (e) {
+      print('❌ Error al auto-archivar reuniones: $e');
+      print('Stack trace: ${StackTrace.current}');
+    }
+  }
+
+  
+  void toggleShowArchived() {
+    showArchivedMeetings.value = !showArchivedMeetings.value;
+    _applyFilters();
+  }
+
+
+  Future<void> toggleArchiveMeeting(String meetingId) async {
+    try {
+      final index = meetings.indexWhere((m) => m.id == meetingId);
+      if (index != -1) {
+        final meeting = meetings[index];
+        meetings[index] = meeting.copyWith(archived: !meeting.archived);
+        _applyFilters();
+        
+        Get.snackbar(
+          'Éxito',
+          meeting.archived ? 'Reunión restaurada' : 'Reunión archivada',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      print('❌ Error al archivar/desarchivar reunión: $e');
+      Get.snackbar(
+        'Error',
+        'No se pudo modificar el estado de la reunión',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+      );
+    }
+  }
+
+
+  int get archivedMeetingsCount => meetings.where((m) => m.archived).length;
+  
+
+  int get activeMeetingsCount => meetings.where((m) => !m.archived).length;
 }
