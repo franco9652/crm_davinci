@@ -18,9 +18,11 @@ class WorkController extends GetxController {
   });
 
   final works = <WorkModel>[].obs;
+  final allWorks = <WorkModel>[].obs; 
   final customers = <CustomerModel>[].obs;
   final worksByCustomer = <WorkModel>[].obs;
   final isLoading = false.obs;
+  final isLoadingAllWorks = false.obs; 
   final isLoadingWorks = false.obs;
   final currentPage = 1.obs;
   final totalPages = 1.obs;
@@ -72,45 +74,56 @@ class WorkController extends GetxController {
   }
 
   void filterWorks() {
-    print('🔍 Filtrando obras:');
-    print('   - Total obras: ${works.length}');
-    print('   - Búsqueda: "${searchQuery.value}"');
-    print('   - Estado seleccionado: "${selectedStatus.value}"');
+    final query = searchQuery.value.trim().toLowerCase();
+    final status = selectedStatus.value.trim().toLowerCase();
+
+    final bool hasFilters = query.isNotEmpty || status.isNotEmpty;
+
     
-    if (searchQuery.value.isEmpty && selectedStatus.value.isEmpty) {
-      filteredWorks.assignAll(works);
-      print('   - Sin filtros, mostrando todas: ${filteredWorks.length}');
+    final List<WorkModel> sourceList;
+    if (!hasFilters) {
+      sourceList = works;
     } else {
-      final filtered = works.where((work) {
-        final matchesSearch = searchQuery.value.isEmpty ||
-            work.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-            work.customerName.toLowerCase().contains(searchQuery.value.toLowerCase());
-        
-        final matchesStatus = selectedStatus.value.isEmpty ||
-            work.statusWork.toLowerCase() == selectedStatus.value.toLowerCase();
-        
-        print('   - Obra: ${work.name}');
-        print('     Estado obra: "${work.statusWork}"');
-        print('     Coincide búsqueda: $matchesSearch');
-        print('     Coincide estado: $matchesStatus');
-        print('     Incluir: ${matchesSearch && matchesStatus}');
-        
-        return matchesSearch && matchesStatus;
-      }).toList();
       
-      filteredWorks.assignAll(filtered);
-      print('   - Obras filtradas: ${filteredWorks.length}');
+      sourceList = allWorks.isNotEmpty ? allWorks : works;
     }
+
+    final filtered = sourceList.where((work) {
+      final name = work.name.toLowerCase();
+      final customer = work.customerName.toLowerCase();
+      final statusWork = work.statusWork.toLowerCase();
+
+      final matchesSearch = query.isEmpty ||
+          name.contains(query) ||
+          customer.contains(query);
+
+      final matchesStatus = status.isEmpty || statusWork == status;
+
+      return matchesSearch && matchesStatus;
+    }).toList();
+
+    filteredWorks.assignAll(filtered);
   }
 
   void updateSearchQuery(String query) {
-    searchQuery.value = query;
+    searchQuery.value = query.trim();
+
+    
+    if (searchQuery.value.isNotEmpty && allWorks.isEmpty && !isLoadingAllWorks.value) {
+      _loadAllWorksForSearch();
+    }
   }
 
   void updateSelectedStatus(String? status) {
     print('📋 Actualizando estado seleccionado: "$status"');
     selectedStatus.value = status ?? '';
     print('📋 Estado guardado: "${selectedStatus.value}"');
+
+    
+    if (selectedStatus.value.isNotEmpty && allWorks.isEmpty && !isLoadingAllWorks.value) {
+      _loadAllWorksForSearch();
+    }
+    
     filterWorks(); 
   }
 
@@ -339,5 +352,40 @@ class WorkController extends GetxController {
   Future<void> refreshWorks() async {
     currentPage.value = 1;
     await fetchWorks();
+  }
+
+  Future<void> _loadAllWorksForSearch() async {
+    if (isLoadingAllWorks.value || allWorks.isNotEmpty) return;
+
+    isLoadingAllWorks.value = true;
+    try {
+      final List<WorkModel> aggregated = [];
+      int page = 1;
+
+      while (true) {
+        final pageWorks = await workRemoteDataSource.fetchAllWorks(page: page, limit: limit);
+        if (pageWorks.isEmpty) break;
+
+        aggregated.addAll(pageWorks);
+
+        if (pageWorks.length < limit) break;
+        page++;
+      }
+
+      allWorks.assignAll(aggregated);
+
+      
+      if (searchQuery.value.isNotEmpty || selectedStatus.value.isNotEmpty) {
+        filterWorks();
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'No se pudieron cargar todos los proyectos para la búsqueda: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoadingAllWorks.value = false;
+    }
   }
 }

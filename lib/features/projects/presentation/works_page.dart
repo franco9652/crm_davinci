@@ -24,6 +24,13 @@ class WorkListPage extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_business, color: Colors.white),
+            tooltip: 'Nuevo proyecto',
+            onPressed: () => Get.to(() => const CreateWorkPage()),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -196,37 +203,15 @@ class WorkListPage extends StatelessWidget {
               );
             }),
           ),
-          _buildPagination(),
+          Obx(() {
+            final hasSearch = controller.searchQuery.value.isNotEmpty;
+            final hasStatus = controller.selectedStatus.value.isNotEmpty;
+            if (hasSearch || hasStatus) {
+              return const SizedBox.shrink();
+            }
+            return _buildPagination();
+          }),
         ],
-      ),
-      floatingActionButton: _buildModernFAB(),
-    );
-  }
-
-
-  Widget _buildModernFAB() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        heroTag: 'createWork',
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        onPressed: () => Get.to(() => const CreateWorkPage()),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

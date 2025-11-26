@@ -36,7 +36,6 @@ class HomeController extends GetxController {
     try {
       final response = await repository.fetchCustomers(currentPage.value);
       
-     
       if (response.containsKey('success') && response['success'] == false) {
         final errorMsg = response['error'] as String? ?? 'Error desconocido';
         noClientMessage.value = errorMsg;
@@ -63,6 +62,9 @@ class HomeController extends GetxController {
         customers.value = fetchedCustomers; 
         totalPages.value = totalPagesFromApi; 
       }
+
+      
+      filterCustomers();
     } catch (e) {
       print('Error en el controlador al cargar clientes: $e');
       noClientMessage.value = "Error al cargar los clientes. Intente nuevamente.";
@@ -113,6 +115,11 @@ class HomeController extends GetxController {
       allCustomers.value = allCustomersList;
       print(' Total clientes cargados para dropdown: ${allCustomersList.length}');
       
+      
+      if (searchQuery.value.isNotEmpty) {
+        filterCustomers();
+      }
+      
     } catch (e) {
       print(' Error cargando todos los clientes: $e');
       Get.snackbar(
@@ -128,18 +135,36 @@ class HomeController extends GetxController {
   }
 
   void filterCustomers() {
-    if (searchQuery.value.isEmpty) {
-      filteredCustomers.assignAll(customers);
+    
+    final query = searchQuery.value.trim().toLowerCase();
+    
+    
+    final List<CustomerModel> sourceList;
+    if (query.isEmpty) {
+      sourceList = customers;
+    } else {
+      
+      sourceList = allCustomers.isNotEmpty ? allCustomers : customers;
+    }
+
+    if (query.isEmpty) {
+      filteredCustomers.assignAll(sourceList);
     } else {
       filteredCustomers.assignAll(
-        customers.where((customer) =>
-          customer.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          customer.email.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          customer.contactNumber.contains(searchQuery.value)
-        ).toList(),
+        sourceList.where((customer) {
+          final name = customer.name.toLowerCase();
+          final secondName = customer.secondName.toLowerCase();
+          final email = customer.email.toLowerCase();
+          final phone = customer.contactNumber;
+          
+          return name.contains(query) ||
+                 secondName.contains(query) ||
+                 email.contains(query) ||
+                 phone.contains(query);
+        }).toList(),
       );
     }
-    // Forzar actualización de la lista filtrada
+
     filteredCustomers.refresh();
   }
 
@@ -302,7 +327,12 @@ class HomeController extends GetxController {
 
   
   void updateSearchQuery(String query) {
-    searchQuery.value = query;
+    searchQuery.value = query.trim();
+
+    
+    if (searchQuery.value.isNotEmpty && allCustomers.isEmpty && !isLoadingAll.value) {
+      fetchAllCustomers();
+    }
   }
 
   void goToPage(int page) {
