@@ -29,6 +29,11 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+
+# Android signing
+android/key.properties
+*.jks
+*.keystore
 /build/
 
 # Symbolication related

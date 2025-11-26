@@ -7,14 +7,38 @@ import 'package:crm_app_dv/features/meetings/presentation/meeting_detail_screen.
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crm_app_dv/core/services/notification_service.dart';
 
-class MeetingsScreen extends StatelessWidget {
+class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({super.key});
 
   @override
+  State<MeetingsScreen> createState() => _MeetingsScreenState();
+}
+
+class _MeetingsScreenState extends State<MeetingsScreen> {
+  late final MeetingsController controller;
+  late final TextEditingController searchController;
+  final selectedTab = 0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(MeetingsController());
+    searchController = TextEditingController();
+    searchController.addListener(() {
+      if (searchController.text != controller.searchQuery.value) {
+        controller.updateSearchQuery(searchController.text);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final MeetingsController controller = Get.put(MeetingsController());
-    final selectedTab = 0.obs; 
-    
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
       body: CustomScrollView(
@@ -306,10 +330,8 @@ class MeetingsScreen extends StatelessWidget {
 
   
   Widget _buildModernMeetingsList(MeetingsController controller, {required bool showArchived}) {
-    
-    final allMeetings = controller.isFilterActive.value 
-        ? controller.filteredMeetings 
-        : controller.meetings;
+  
+    final allMeetings = controller.filteredMeetings;
     
     final displayMeetings = allMeetings.where((meeting) {
       return meeting.archived == showArchived;
@@ -921,7 +943,7 @@ class MeetingsScreen extends StatelessWidget {
               border: Border.all(color: const Color(0xFF334155).withOpacity(0.3)),
             ),
             child: TextField(
-              onChanged: controller.updateSearchQuery,
+              controller: searchController,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Buscar reuniones...',
@@ -935,6 +957,15 @@ class MeetingsScreen extends StatelessWidget {
                   ),
                   child: const Icon(Icons.search, color: Color(0xFF6366F1), size: 16),
                 ),
+                suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white54, size: 18),
+                        onPressed: () {
+                          searchController.clear();
+                          controller.updateSearchQuery('');
+                        },
+                      )
+                    : const SizedBox.shrink()),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),

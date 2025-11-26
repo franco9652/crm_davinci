@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:crm_app_dv/core/contants/app_constants.dart';
+import 'package:crm_app_dv/core/constants/app_constants.dart';
 import 'package:crm_app_dv/core/utils/http_helper.dart';
 import 'package:crm_app_dv/models/meeting_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';

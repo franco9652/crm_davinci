@@ -123,11 +123,22 @@ class MeetingsController extends GetxController {
 
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
+      print('Filtrando con query: "$query"');
+      print('Total reuniones antes de filtrar: ${filtered.length}');
+      
+      
+      for (var m in meetings) {
+        final match = m.title.toLowerCase().contains(query);
+        print('  - "${m.title}" contiene "$query"? $match');
+      }
+      
       filtered = filtered.where((meeting) {
         return meeting.title.toLowerCase().contains(query) ||
                (meeting.description?.toLowerCase().contains(query) ?? false) ||
                (meeting.customerName?.toLowerCase().contains(query) ?? false);
       }).toList();
+      
+      print('🔎 Reuniones después de filtrar: ${filtered.length}');
     }
     
     
@@ -224,9 +235,11 @@ class MeetingsController extends GetxController {
 
 
   void updateSearchQuery(String query) {
+    print('Reuniones filtradas: "$query"');
     searchQuery.value = query;
     currentPage.value = 1; 
     _applyFilters();
+    print('Reuniones filtradas: ${filteredMeetings.length} de ${meetings.length}');
   }
 
   void filterByType(String? type) {
