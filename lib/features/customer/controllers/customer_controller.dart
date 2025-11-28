@@ -192,7 +192,6 @@ class HomeController extends GetxController {
         customers[index] = updatedCustomer;
         print('🎮 Controller: Cliente después de actualizar: ${customers[index].name}');
         
-        // Forzar actualización de la lista observable
         customers.refresh();
         
         filterCustomers();

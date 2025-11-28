@@ -9,6 +9,9 @@ class ChangePasswordController extends GetxController {
   final TextEditingController confirmPasswordController = TextEditingController();
   
   final RxBool isLoading = false.obs;
+  final RxBool isCurrentPasswordObscured = true.obs;
+  final RxBool isNewPasswordObscured = true.obs;
+  final RxBool isConfirmPasswordObscured = true.obs;
   final AuthRemoteDataSource _authRemoteDataSource = AuthRemoteDataSource(http.Client());
 
   @override
@@ -84,5 +87,17 @@ class ChangePasswordController extends GetxController {
       margin: const EdgeInsets.all(10),
       duration: const Duration(seconds: 5),
     );
+  }
+
+  void toggleCurrentPasswordVisibility() {
+    isCurrentPasswordObscured.value = !isCurrentPasswordObscured.value;
+  }
+
+  void toggleNewPasswordVisibility() {
+    isNewPasswordObscured.value = !isNewPasswordObscured.value;
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    isConfirmPasswordObscured.value = !isConfirmPasswordObscured.value;
   }
 }

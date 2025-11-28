@@ -99,13 +99,15 @@ class ChangePasswordScreen extends StatelessWidget {
                     icon: Icons.lock_outline,
                     color: const Color(0xFFEF4444),
                     children: [
-                      _buildModernPasswordField(
-                        controller: controller.currentPasswordController,
-                        label: 'Contraseña Actual',
-                        hint: 'Ingresa tu contraseña actual',
-                        icon: Icons.lock,
-                        color: const Color(0xFFEF4444),
-                      ),
+                      Obx(() => _buildModernPasswordField(
+                            controller: controller.currentPasswordController,
+                            label: 'Contraseña Actual',
+                            hint: 'Ingresa tu contraseña actual',
+                            icon: Icons.lock,
+                            color: const Color(0xFFEF4444),
+                            obscureText: controller.isCurrentPasswordObscured.value,
+                            onToggleVisibility: controller.toggleCurrentPasswordVisibility,
+                          )),
                     ],
                   ),
                   
@@ -117,21 +119,25 @@ class ChangePasswordScreen extends StatelessWidget {
                     icon: Icons.lock_open,
                     color: const Color(0xFF10B981),
                     children: [
-                      _buildModernPasswordField(
-                        controller: controller.newPasswordController,
-                        label: 'Nueva Contraseña',
-                        hint: 'Ingresa tu nueva contraseña',
-                        icon: Icons.vpn_key,
-                        color: const Color(0xFF10B981),
-                      ),
+                      Obx(() => _buildModernPasswordField(
+                            controller: controller.newPasswordController,
+                            label: 'Nueva Contraseña',
+                            hint: 'Ingresa tu nueva contraseña',
+                            icon: Icons.vpn_key,
+                            color: const Color(0xFF10B981),
+                            obscureText: controller.isNewPasswordObscured.value,
+                            onToggleVisibility: controller.toggleNewPasswordVisibility,
+                          )),
                       const SizedBox(height: 16),
-                      _buildModernPasswordField(
-                        controller: controller.confirmPasswordController,
-                        label: 'Confirmar Nueva Contraseña',
-                        hint: 'Vuelve a ingresar tu nueva contraseña',
-                        icon: Icons.verified_user,
-                        color: const Color(0xFF06B6D4),
-                      ),
+                      Obx(() => _buildModernPasswordField(
+                            controller: controller.confirmPasswordController,
+                            label: 'Confirmar Nueva Contraseña',
+                            hint: 'Vuelve a ingresar tu nueva contraseña',
+                            icon: Icons.verified_user,
+                            color: const Color(0xFF06B6D4),
+                            obscureText: controller.isConfirmPasswordObscured.value,
+                            onToggleVisibility: controller.toggleConfirmPasswordVisibility,
+                          )),
                     ],
                   ),
                   
@@ -222,6 +228,8 @@ class ChangePasswordScreen extends StatelessWidget {
     required String hint,
     required IconData icon,
     required Color color,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +258,7 @@ class ChangePasswordScreen extends StatelessWidget {
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          obscureText: true,
+          obscureText: obscureText,
           style: const TextStyle(color: Colors.white, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -266,14 +274,22 @@ class ChangePasswordScreen extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 16),
             ),
-            suffixIcon: Container(
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF374151).withOpacity(0.3),
-                borderRadius: BorderRadius.circular(8),
+            suffixIcon: InkWell(
+              onTap: onToggleVisibility,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.white.withOpacity(0.8),
+                  size: 16,
+                ),
               ),
-              child: Icon(Icons.visibility_off, color: Colors.white.withOpacity(0.6), size: 16),
             ),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: const Color(0xFF334155).withOpacity(0.3)),

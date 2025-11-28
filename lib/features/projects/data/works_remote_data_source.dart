@@ -299,7 +299,7 @@ class WorkRemoteDataSource {
   Map<String, dynamic> workModelToUpdateMap(WorkModel work) {
     return {
       'name': work.name,
-      'direccion': work.address, //TODO: backend usa 'direccion'Y mi modelo usa 'address'
+      'direccion': work.address, 
       'startDate': work.startDate,
       'endDate': work.endDate,
       'budget': work.budget,

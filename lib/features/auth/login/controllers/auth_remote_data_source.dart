@@ -186,7 +186,7 @@ class AuthRemoteDataSource {
       print('🔵 Enviando solicitud de cambio de contraseña');
       
       final response = await client.post(
-        Uri.parse('${AppConstants.baseUrl}/change-password'),
+        Uri.parse(AppConstants.changePasswordEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
