@@ -293,6 +293,9 @@ class HomeController extends GetxController {
           
           currentPage.value = 1;
           await fetchCustomers();
+
+          allCustomers.clear();
+          await fetchAllCustomers();
         },
         confirmTextColor: Colors.white,
         buttonColor: const Color(0xFFFF8329),

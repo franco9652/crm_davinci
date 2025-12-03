@@ -27,10 +27,22 @@ class MeetingsController extends GetxController {
   final isFilterActive = false.obs;
   final showArchivedMeetings = false.obs; 
 
+  final userRole = ''.obs;
+  bool get isAdmin => userRole.value == 'Admin';
+  bool get isEmployee => userRole.value == 'Employee';
+
   
   final currentPage = 1.obs;
   final itemsPerPage = 10;
   final paginatedMeetings = <MeetingModel>[].obs;
+
+  int get totalPages {
+    final sourceList = isFilterActive.value ? filteredMeetings : meetings;
+    if (sourceList.isEmpty) return 1;
+    return (sourceList.length / itemsPerPage).ceil();
+  }
+
+  List<MeetingModel> get displayMeetings => paginatedMeetings;
 
   @override
   void onInit() {
@@ -50,13 +62,11 @@ class MeetingsController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final role = (prefs.getString('user_role') ?? '').trim();
+      userRole.value = role;
       final email = prefs.getString('user_email');
       final userId = prefs.getString('user_id');
       print('🔧 Current role: "$role", email: "$email", userId: "$userId"');
-
-      final isAdmin = role == 'Admin';
-      final isEmployee = role == 'Employee';
-      print('🔧 isAdmin=$isAdmin, isEmployee=$isEmployee');
+      print('🔧 isAdmin=${isAdmin}, isEmployee=${isEmployee}');
 
       List<MeetingModel> data = [];
 
@@ -286,16 +296,9 @@ class MeetingsController extends GetxController {
       _applyPagination();
     }
   }
-
-  int get totalPages {
-    final sourceList = isFilterActive.value ? filteredMeetings : meetings;
-    return (sourceList.length / itemsPerPage).ceil().clamp(1, double.infinity).toInt();
-  }
-
-  List<MeetingModel> get displayMeetings => paginatedMeetings;
-
+ 
   Future<bool> create(MeetingModel meeting) async {
-    print('🔧 create() called with meeting: title="${meeting.title}", date=${meeting.date}');
+    print('🔧 create() called');
     isLoading.value = true;
     error.value = '';
     try {
@@ -303,7 +306,7 @@ class MeetingsController extends GetxController {
       print('🔧 Backend createMeeting returned: ${created != null ? "SUCCESS" : "NULL"}');
       if (created != null) {
         print('🔧 Created meeting details: id="${created.id}", title="${created.title}", date=${created.date}');
-       
+
         final idx = meetings.indexWhere((m) => m.id == created.id);
         print('🔧 Looking for existing meeting with id="${created.id}": found at index $idx');
         if (idx >= 0) {
@@ -314,20 +317,18 @@ class MeetingsController extends GetxController {
           meetings.insert(0, created);
         }
         print('🔧 Meetings list now has ${meetings.length} items');
-        
+
         try {
           print('✅ Reunión creada localmente: id=${created.id}, title=${created.title}, date=${created.date}');
           selectedDate.value = created.date;
         } catch (_) {}
         _applyFilters();
         print('🔧 After _applyFilters(), displayMeetings count: ${displayMeetings.length}');
-        
-        
-        
+
         _scheduleNotificationsForMeetings().catchError((e) {
           print('⚠️ Error scheduling notifications after create (non-blocking): $e');
         });
-        
+
         return true;
       } else {
         print('❌ Backend returned null for createMeeting');
@@ -341,6 +342,68 @@ class MeetingsController extends GetxController {
     } finally {
       isLoading.value = false;
       print('🔧 create() completed');
+    }
+  }
+
+  Future<MeetingModel?> updateMeeting(MeetingModel updatedMeeting) async {
+    print('🔧 updateMeeting() called for id="${updatedMeeting.id}"');
+    isLoading.value = true;
+    error.value = '';
+    try {
+      final patch = updatedMeeting.toCreateJson();
+      final result = await remote.updateMeeting(updatedMeeting.id, patch);
+      if (result != null) {
+        final index = meetings.indexWhere((m) => m.id == result.id);
+        if (index >= 0) {
+          meetings[index] = result;
+        } else {
+          meetings.insert(0, result);
+        }
+        _applyFilters();
+        _scheduleNotificationsForMeetings().catchError((e) {
+          print('⚠️ Error scheduling notifications after update (non-blocking): $e');
+        });
+        return result;
+      } else {
+        error.value = 'No se pudo actualizar la reunión';
+        return null;
+      }
+    } catch (e) {
+      print('❌ Error in updateMeeting(): $e');
+      error.value = e.toString();
+      return null;
+    } finally {
+      isLoading.value = false;
+      print('🔧 updateMeeting() completed');
+    }
+  }
+
+  Future<bool> deleteMeeting(String meetingId) async {
+    print('🗑 deleteMeeting() called for id="$meetingId"');
+    isLoading.value = true;
+    error.value = '';
+    try {
+      final ok = await remote.deleteMeeting(meetingId);
+      if (ok) {
+        final beforeCount = meetings.length;
+        meetings.removeWhere((m) => m.id == meetingId);
+        print('🗑 deleteMeeting() removed ${beforeCount - meetings.length} items from local list');
+        _applyFilters();
+        _scheduleNotificationsForMeetings().catchError((e) {
+          print('⚠️ Error scheduling notifications after delete (non-blocking): $e');
+        });
+        return true;
+      } else {
+        error.value = 'No se pudo eliminar la reunión';
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error in deleteMeeting(): $e');
+      error.value = e.toString();
+      return false;
+    } finally {
+      isLoading.value = false;
+      print('🗑 deleteMeeting() completed');
     }
   }
 

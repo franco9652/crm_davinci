@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:crm_app_dv/models/meeting_model.dart';
 import 'package:crm_app_dv/features/meetings/controllers/meetings_controller.dart';
+import 'package:crm_app_dv/features/meetings/presentation/create_meeting_screen.dart';
 
 class MeetingDetailScreen extends StatelessWidget {
   final MeetingModel meeting;
@@ -36,6 +37,65 @@ class MeetingDetailScreen extends StatelessWidget {
   Future<void> _sendSummaryToCustomer() async {
     final controller = Get.find<MeetingsController>();
     await controller.sendSummaryToCustomer(meeting);
+  }
+
+  Future<void> _editMeeting() async {
+    final controller = Get.find<MeetingsController>();
+    if (!controller.isAdmin && !controller.isEmployee) return;
+
+    final updated = await Get.to<MeetingModel>(
+      () => CreateMeetingScreen(initialMeeting: meeting),
+    );
+
+    if (updated != null) {
+      Get.off(() => MeetingDetailScreen(meeting: updated));
+    }
+  }
+
+  Future<void> _deleteMeeting() async {
+    final controller = Get.find<MeetingsController>();
+    if (!controller.isAdmin) {
+      Get.snackbar('Permisos insuficientes', 'Solo un administrador puede eliminar reuniones');
+      return;
+    }
+
+    final confirm = await Get.defaultDialog<bool>(
+      title: 'Eliminar reunión',
+      middleText: '¿Estás seguro de que deseas eliminar esta reunión? Esta acción no se puede deshacer.',
+      textConfirm: 'Eliminar',
+      textCancel: 'Cancelar',
+      confirmTextColor: Colors.white,
+      buttonColor: const Color(0xFFEF4444),
+      onConfirm: () => Get.back(result: true),
+      onCancel: () => Get.back(result: false),
+    );
+
+    if (confirm != true) return;
+
+    final ok = await controller.deleteMeeting(meeting.id);
+    if (ok) {
+      Get.back();
+      Get.snackbar(
+        'Éxito',
+        'Reunión eliminada correctamente',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(10),
+      );
+    } else {
+      final msg = controller.error.isNotEmpty
+          ? controller.error.value
+          : 'No se pudo eliminar la reunión';
+      Get.snackbar(
+        'Error',
+        msg,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(10),
+      );
+    }
   }
 
   @override
@@ -118,38 +178,94 @@ class MeetingDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              
-              Container(
-                margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _sendSummaryToCustomer,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+              Obx(() {
+                final controller = Get.find<MeetingsController>();
+                final canEdit = controller.isAdmin || controller.isEmployee;
+                final canDelete = controller.isAdmin;
+                return Row(
+                  children: [
+                    if (canEdit)
+                      Container(
+                        margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _editMeeting,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF6366F1)),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Color(0xFF6366F1),
+                                size: 18,
+                              ),
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 20,
+                    if (canDelete)
+                      Container(
+                        margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _deleteMeeting,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFEF4444)),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Color(0xFFEF4444),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Container(
+                      margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _sendSummaryToCustomer,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
+                  ],
+                );
+              }),
             ],
           ),
           

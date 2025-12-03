@@ -157,11 +157,13 @@ class MeetingsRemoteDataSource {
 
   Future<MeetingModel?> updateMeeting(String id, Map<String, dynamic> patch) async {
     final headers = await _authHeaders();
-    final url = '${AppConstants.meetingsEndpoint}/$id';
-    final resp = await HttpHelper.post(url, patch, headers: headers); 
+    final url = '${AppConstants.meetingUpdateEndpoint}/$id';
+    final resp = await HttpHelper.put(url, patch, headers: headers, suppressErrors: true);
     if (resp['success'] == true) {
       final data = resp['data'];
-      final m = (data is Map && data['meeting'] is Map) ? Map<String, dynamic>.from(data['meeting']) : Map<String, dynamic>.from(data);
+      final m = (data is Map && data['meeting'] is Map)
+          ? Map<String, dynamic>.from(data['meeting'])
+          : Map<String, dynamic>.from(data);
       return MeetingModel.fromJson(m);
     }
     return null;
@@ -169,8 +171,8 @@ class MeetingsRemoteDataSource {
 
   Future<bool> deleteMeeting(String id) async {
     final headers = await _authHeaders();
-    final url = '${AppConstants.meetingsEndpoint}/$id';
-    final resp = await HttpHelper.get(url, headers: {...headers, 'X-HTTP-Method-Override': 'DELETE'}); 
+    final url = '${AppConstants.meetingDeleteEndpoint}/$id';
+    final resp = await HttpHelper.delete(url, headers: headers, suppressErrors: true);
     return resp['success'] == true;
   }
 }

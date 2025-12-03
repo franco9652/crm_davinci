@@ -10,7 +10,8 @@ import 'package:crm_app_dv/features/projects/data/works_remote_data_source.dart'
 import 'package:crm_app_dv/models/work_model.dart';
 
 class CreateMeetingScreen extends StatefulWidget {
-  const CreateMeetingScreen({super.key});
+  final MeetingModel? initialMeeting;
+  const CreateMeetingScreen({Key? key, this.initialMeeting}) : super(key: key);
 
   @override
   State<CreateMeetingScreen> createState() => _CreateMeetingScreenState();
@@ -74,6 +75,24 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialMeeting != null) {
+      final m = widget.initialMeeting!;
+      _titleCtrl.text = m.title;
+      _durationCtrl.text = m.duration;
+      _meetingType = m.meetingType.isNotEmpty ? m.meetingType : _meetingType;
+      _meetingLinkCtrl.text = m.meetingLink ?? '';
+      _addressCtrl.text = m.address ?? '';
+      _descriptionCtrl.text = m.description ?? '';
+      _date = m.date;
+      try {
+        final parts = m.time.split(':');
+        if (parts.length >= 2) {
+          final hh = int.tryParse(parts[0]) ?? 0;
+          final mm = int.tryParse(parts[1]) ?? 0;
+          _time = TimeOfDay(hour: hh, minute: mm);
+        }
+      } catch (_) {}
+    }
     _loadCustomers();
   }
 
@@ -96,7 +115,49 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         _customers
           ..clear()
           ..addAll(aggregated);
+
+        if (widget.initialMeeting != null && widget.initialMeeting!.customerId != null) {
+          final cid = widget.initialMeeting!.customerId;
+          if (cid != null && _customers.any((c) => c.id == cid)) {
+            _selectedCustomerId = cid;
+          }
+        }
       });
+
+      if (widget.initialMeeting != null && widget.initialMeeting!.customerId != null) {
+        final cid = widget.initialMeeting!.customerId;
+        final selected = _customers.firstWhere(
+          (c) => c.id == cid,
+          orElse: () => CustomerModel(
+            id: cid,
+            userId: '',
+            name: '',
+            secondName: '',
+            dni: '',
+            cuit: '',
+            cuil: '',
+            address: '',
+            workDirection: '',
+            contactNumber: '',
+            email: '',
+            password: '',
+            firstRegister: true,
+            clienteActivo: true,
+            worksActive: const [],
+            documents: const [],
+            createdAt: DateTime.now(),
+            active: true,
+          ),
+        );
+
+        final uid = selected.userId ?? '';
+        if (uid.isNotEmpty) {
+          setState(() {
+            _selectedProjectId = widget.initialMeeting!.projectId;
+          });
+          await _loadProjectsByUser(userId: uid);
+        }
+      }
     } catch (_) {
       
     } finally {
@@ -136,8 +197,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     final hh = _time!.hour.toString().padLeft(2, '0');
     final mm = _time!.minute.toString().padLeft(2, '0');
 
+    final bool isEditing = widget.initialMeeting != null;
+
     final MeetingModel draft = MeetingModel(
-      id: '',
+      id: isEditing ? (widget.initialMeeting!.id) : '',
       title: _titleCtrl.text.trim(),
       date: DateTime(_date!.year, _date!.month, _date!.day),
       time: '$hh:$mm',
@@ -146,19 +209,31 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
       meetingLink: _meetingType == 'virtual' ? _meetingLinkCtrl.text.trim().isEmpty ? null : _meetingLinkCtrl.text.trim() : null,
       address: _meetingType == 'presencial' ? _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim() : null,
       description: _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      customerId: _selectedCustomerId,
-      projectId: _selectedProjectId,
+      customerId: _selectedCustomerId ?? widget.initialMeeting?.customerId,
+      projectId: _selectedProjectId ?? widget.initialMeeting?.projectId,
     );
 
     final MeetingsController controller = Get.find<MeetingsController>();
-    final ok = await controller.create(draft);
-    if (!mounted) return;
-    if (ok) {
-      Get.back();
-      Get.snackbar('Éxito', 'Reunión creada');
+    if (isEditing) {
+      final updated = await controller.updateMeeting(draft);
+      if (!mounted) return;
+      if (updated != null) {
+        Get.back(result: updated);
+        Get.snackbar('Éxito', 'Reunión actualizada');
+      } else {
+        final msg = controller.error.isNotEmpty ? controller.error.value : 'No se pudo actualizar la reunión';
+        Get.snackbar('Error', msg);
+      }
     } else {
-      final msg = controller.error.isNotEmpty ? controller.error.value : 'No se pudo crear la reunión';
-      Get.snackbar('Error', msg);
+      final ok = await controller.create(draft);
+      if (!mounted) return;
+      if (ok) {
+        Get.back();
+        Get.snackbar('Éxito', 'Reunión creada');
+      } else {
+        final msg = controller.error.isNotEmpty ? controller.error.value : 'No se pudo crear la reunión';
+        Get.snackbar('Error', msg);
+      }
     }
   }
 
@@ -208,22 +283,26 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Nueva Reunión',
-                                    style: TextStyle(
+                                    widget.initialMeeting == null
+                                        ? 'Nueva Reunión'
+                                        : 'Editar Reunión',
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
-                                    'Programa una nueva reunión',
-                                    style: TextStyle(
+                                    widget.initialMeeting == null
+                                        ? 'Programa una nueva reunión'
+                                        : 'Actualiza los datos de la reunión',
+                                    style: const TextStyle(
                                       color: Colors.white70,
                                       fontSize: 14,
                                     ),
@@ -470,15 +549,17 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                         child: InkWell(
                           onTap: _submit,
                           borderRadius: BorderRadius.circular(16),
-                          child: const Center(
+                          child: Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.event_available, color: Colors.white, size: 24),
-                                SizedBox(width: 12),
+                                const Icon(Icons.event_available, color: Colors.white, size: 24),
+                                const SizedBox(width: 12),
                                 Text(
-                                  'Crear Reunión',
-                                  style: TextStyle(
+                                  widget.initialMeeting == null
+                                      ? 'Crear Reunión'
+                                      : 'Guardar Cambios',
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,

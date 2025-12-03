@@ -8,5 +8,7 @@ class AppConstants {
   static const String workCreateEndpoint = "$baseUrl/workCreate";
   static const String meetingsEndpoint = "$baseUrl/meetings"; 
   static const String meetingCreateEndpoint = "$baseUrl/meetingsCreate"; 
+  static const String meetingUpdateEndpoint = "$baseUrl/meetingsUpdate"; 
+  static const String meetingDeleteEndpoint = "$baseUrl/meetingsDelete"; 
   static const String meetingsByUsernameEndpoint = "$baseUrl/meetings/username"; 
 }
