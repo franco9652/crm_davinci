@@ -62,7 +62,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final bool hasToken = prefs.containsKey('auth_token');
   final role = (prefs.getString('user_role') ?? '').trim();
-  const allowedRoles = {'Admin', 'Customer', 'Employee'};
+  const allowedRoles = {'Admin', 'Employee'};
   final bool isLoggedIn = hasToken && allowedRoles.contains(role);
 
 

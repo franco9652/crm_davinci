@@ -24,7 +24,7 @@ class AuthService extends GetxService {
       final role = prefs.getString('user_role') ?? '';
       final email = prefs.getString('user_email') ?? '';
       
-      const allowedRoles = {'Admin', 'Customer', 'Employee'};
+      const allowedRoles = {'Admin', 'Employee'};
       
       isAuthenticated.value = hasToken && allowedRoles.contains(role);
       userRole.value = role;

@@ -85,10 +85,10 @@ class LoginController extends GetxController {
       }
 
       
-      const allowedRoles = {'Admin', 'Customer', 'Employee'};
+      const allowedRoles = {'Admin', 'Employee'};
       if (!allowedRoles.contains(canonicalRole)) {
         Get.snackbar('Acceso denegado', 'Tu rol ("$roleRaw") no tiene acceso a la app.');
-        return; 
+        return;
       }
 
       
@@ -132,7 +132,7 @@ class LoginController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     final hasToken = prefs.containsKey('auth_token');
     final role = (prefs.getString('user_role') ?? '').trim();
-    const allowedRoles = {'Admin', 'Customer', 'Employee'};
+    const allowedRoles = {'Admin', 'Employee'};
     return hasToken && allowedRoles.contains(role);
   }
 
