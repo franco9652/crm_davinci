@@ -44,7 +44,7 @@ class BudgetModel {
     required this.currency,
     this.advancePayment,
     required this.documentation,
-    this.status = "DENEGADO",
+    this.status = "PENDIENTE",
   });
 
   factory BudgetModel.fromJson(Map<String, dynamic> json) {

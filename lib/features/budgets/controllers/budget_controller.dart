@@ -83,6 +83,39 @@ class BudgetController extends GetxController {
     try {
       isLoading(true);
 
+      final workId = (budget.workId ?? '').trim();
+      if (workId.isNotEmpty) {
+        try {
+          final existing = await budgetRemoteDataSource.getBudgetsByCustomer(budget.customerId);
+          final isDuplicate = existing.any((b) => (b.workId ?? '').trim() == workId);
+          if (isDuplicate) {
+            await Get.dialog(
+              AlertDialog(
+                title: const Text("Presupuesto duplicado"),
+                content: const Text(
+                  "Ya existe un presupuesto para este cliente y esta obra. "
+                  "No se pueden crear duplicados.",
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text("Entendido"),
+                    onPressed: () => Get.back(),
+                  ),
+                ],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              ),
+              barrierDismissible: false,
+            );
+            return false;
+          }
+        } catch (_) {
+          
+        }
+      }
+
       final result = await budgetRemoteDataSource.createBudget(budget);
       debugPrint('💾 Resultado de creación de presupuesto: $result');
       
@@ -98,6 +131,28 @@ class BudgetController extends GetxController {
         );
         return true;
       } else {
+        if (result['statusCode'] == 500) {
+          final workIdToCheck = (budget.workId ?? '').trim();
+          if (workIdToCheck.isNotEmpty) {
+            try {
+              final existingAfter = await budgetRemoteDataSource.getBudgetsByCustomer(budget.customerId);
+              final existsNow = existingAfter.any((b) => (b.workId ?? '').trim() == workIdToCheck);
+              if (existsNow) {
+                Get.snackbar(
+                  "Éxito",
+                  "Presupuesto creado correctamente",
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                  margin: const EdgeInsets.all(10),
+                );
+                return true;
+              }
+            } catch (_) {
+              
+            }
+          }
+        }
         
         String errorTitle = "Error al crear presupuesto";
         String errorMsg = "No se pudo crear el presupuesto";

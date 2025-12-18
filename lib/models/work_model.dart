@@ -39,6 +39,25 @@ class WorkModel {
   });
 
   factory WorkModel.fromJson(Map<String, dynamic> json) {
+    final dynamic documentsRaw = json['documents'];
+    final List<String> documentsParsed = (documentsRaw is List)
+        ? documentsRaw
+            .map((e) {
+              if (e is Map) {
+                final m = Map<String, dynamic>.from(e);
+                return (m['url'] ?? m['_id'] ?? m['id'] ?? m['fileName'] ?? m['name'] ?? '').toString();
+              }
+              return e?.toString() ?? '';
+            })
+            .where((e) => e.trim().isNotEmpty)
+            .toList()
+        : <String>[];
+
+    final dynamic employeeInWorkRaw = json['employeeInWork'];
+    final List<String> employeeInWorkParsed = (employeeInWorkRaw is List)
+        ? employeeInWorkRaw.map((e) => e?.toString() ?? '').where((e) => e.trim().isNotEmpty).toList()
+        : <String>[];
+
     return WorkModel(
       id: json['_id'] as String?,
       customerId: json['customerId'] ?? '',
@@ -54,11 +73,8 @@ class WorkModel {
               ? (json['budget'] as int).toDouble()
               : json['budget'])
           : 0.0,
-      documents:
-          json['documents'] != null ? List<String>.from(json['documents']) : [],
-      employeeInWork: json['employeeInWork'] != null
-          ? List<String>.from(json['employeeInWork'])
-          : [],
+      documents: documentsParsed,
+      employeeInWork: employeeInWorkParsed,
       statusWork: json['statusWork'] ?? 'Estado no disponible',
       workUbication: json['workUbication'] ?? 'Ubicación no especificada',
       projectType: json['projectType'] ?? 'Tipo de proyecto no disponible',

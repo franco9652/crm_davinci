@@ -27,8 +27,6 @@ class CustomerInfoController extends GetxController {
 
     try {
       isLoadingCustomer(true);
-      isLoadingWorks(true);
-      isLoadingBudgets(true);
 
       print("UserId recibido: $userId");
 
@@ -42,16 +40,16 @@ class CustomerInfoController extends GetxController {
         
         final customerId = customerData['_id'] ?? customerData['id'] ?? userId;
         if (customerId != null && customerId.toString().isNotEmpty) {
-          fetchWorksByCustomer(customerId.toString());
-          fetchBudgetsByCustomer(customerId.toString());
+          await Future.wait([
+            fetchWorksByCustomer(customerId.toString()),
+            fetchBudgetsByCustomer(customerId.toString()),
+          ]);
         }
       }
     } catch (e) {
       Get.snackbar("Error", "No se pudo cargar la información del cliente: $e");
     } finally {
       isLoadingCustomer(false);
-      isLoadingWorks(false);
-      isLoadingBudgets(false);
     }
   }
 

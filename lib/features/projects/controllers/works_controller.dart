@@ -163,7 +163,13 @@ class WorkController extends GetxController {
       isLoading(true);
       await workRemoteDataSource.createWork(work);
       print("✅ Trabajo creado correctamente");
-      await fetchWorks(); 
+      isLoading(false);
+      currentPage.value = 1;
+      searchQuery.value = '';
+      selectedStatus.value = '';
+      allWorks.clear();
+      await fetchWorks();
+      filterWorks();
 
       
       Get.defaultDialog(

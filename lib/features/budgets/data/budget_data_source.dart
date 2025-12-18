@@ -71,7 +71,7 @@ class BudgetRemoteDataSource {
   Future<List<Map<String, dynamic>>> getWorksByCustomer(String customerId) async {
     try {
       debugPrint('🔄 Solicitando obras del cliente ID: $customerId');
-      final response = await HttpHelper.get('${AppConstants.baseUrl}/worksbycustomerid/$customerId');
+      final response = await HttpHelper.get('${AppConstants.baseUrl}/workgetbycustomerid/$customerId');
       
       if (response['success'] != true) {
         debugPrint('❌ Error al obtener obras: ${response['error']}');
@@ -155,10 +155,22 @@ Future<Map<String, dynamic>> createBudget(BudgetModel budget) async {
    
     
     Map<String, dynamic> requestBody = budget.toJson();
-    
-    
+
+    final dynamic workIdValue = requestBody['workId'];
+    if (workIdValue == null || workIdValue.toString().trim().isEmpty) {
+      requestBody.remove('workId');
+    }
+
+    final dynamic m2Value = requestBody['m2'];
+    if (m2Value is String) {
+      final parsed = int.tryParse(m2Value.trim());
+      if (parsed != null) {
+        requestBody['m2'] = parsed;
+      }
+    }
+
     if (requestBody['status'] != null) {
-      requestBody['status'] = requestBody['status'].toString().toUpperCase();
+      requestBody['status'] = requestBody['status'].toString().trim().toUpperCase();
     }
     
     

@@ -63,6 +63,27 @@ class CreateBudgetScreen extends StatelessWidget {
       return;
     }
 
+    if (budgetController.selectedWorkId.value == null ||
+        budgetController.selectedWorkId.value!.trim().isEmpty) {
+      Get.snackbar("Error", "Selecciona un proyecto/obra primero.");
+      return;
+    }
+
+    if (projectAddressController.text.trim().isEmpty) {
+      Get.snackbar("Error", "Ingrese la dirección del proyecto.");
+      return;
+    }
+
+    if (projectTypeController.text.trim().isEmpty) {
+      Get.snackbar("Error", "Selecciona el tipo de proyecto.");
+      return;
+    }
+
+    if (m2Controller.text.trim().isEmpty) {
+      Get.snackbar("Error", "Ingrese los metros cuadrados (m²).");
+      return;
+    }
+
 
 
     if (startDateController.text.isEmpty || endDateController.text.isEmpty) {
@@ -103,7 +124,7 @@ class CreateBudgetScreen extends StatelessWidget {
       endDate: endDateController.text,
       estimatedBudget: parsedBudget,
       currency: "USD",
-      status: "DENEGADO",
+      status: "PENDIENTE",
       advancePayment: true,
       documentation: [],
     );
@@ -240,8 +261,11 @@ class CreateBudgetScreen extends StatelessWidget {
                                 );
                               }).toList(),
                               (value) {
-                                if (value != null)
+                                if (value != null) {
                                   budgetController.selectedCustomerId.value = value;
+                                  budgetController.selectedWorkId.value = null;
+                                  budgetController.fetchWorksByCustomer(value);
+                                }
                               },
                               Icons.person_outline,
                             )),
@@ -290,6 +314,66 @@ class CreateBudgetScreen extends StatelessWidget {
                           ),
                         ),
                       )),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _buildFormSection(
+                    'Proyecto / Obra',
+                    Icons.construction,
+                    const Color(0xFF06B6D4),
+                    [
+                      Obx(() {
+                        final customerId = budgetController.selectedCustomerId.value;
+                        final isBusy = budgetController.isLoading.value;
+
+                        if (customerId == null || customerId.isEmpty) {
+                          return _buildModernDropdownField(
+                            'Seleccionar Proyecto',
+                            null,
+                            const <DropdownMenuItem<String>>[],
+                            null,
+                            Icons.business,
+                          );
+                        }
+
+                        final items = budgetController.works.map<DropdownMenuItem<String>>((work) {
+                          final id = (work['_id'] ?? work['id'] ?? work['workId'] ?? '').toString();
+                          final name = (work['name'] ?? work['title'] ?? work['projectName'] ?? id).toString();
+                          return DropdownMenuItem<String>(
+                            value: id,
+                            child: Text(
+                              name,
+                              style: const TextStyle(color: Colors.white),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).where((item) => (item.value ?? '').isNotEmpty).toList();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildModernDropdownField(
+                              'Seleccionar Proyecto',
+                              budgetController.selectedWorkId.value,
+                              items,
+                              isBusy ? null : (value) => budgetController.selectedWorkId.value = value,
+                              Icons.business,
+                            ),
+                            if (!isBusy && items.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Este cliente no tiene proyectos/obras asociadas.',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                   const SizedBox(height: 20),
